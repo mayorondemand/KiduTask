@@ -42,7 +42,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     completedTasks: 47,
     rating: 4.8,
     joinedAt: "2023-06-15T00:00:00Z",
-    isAdvertiserRequestPending: true,
+    isAdvertiserRequestPending: false,
   })
   const [isLoading, setIsLoading] = useState(true)
   const router = useRouter()

@@ -1,27 +1,30 @@
 "use client"
 
 import { useAuth } from "@/components/providers/auth-provider"
-import { Navbar } from "@/components/layout/navbar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Eye, Users, Clock, Star, ChevronLeft, ChevronRight, AlertTriangle, X } from "lucide-react"
+import { Users, Clock, Star, AlertTriangle, X } from "lucide-react"
 import Link from "next/link"
 import { useState } from "react"
   import { useDashboardData, type Campaign } from "@/lib/client"
 import { formatCurrency } from "@/lib/utils"
+import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel"
+import Autoplay from "embla-carousel-autoplay"
+import Image from "next/image"
 
 function TrendingCampaignCard({ campaign }: { campaign: Campaign }) {
   return (
-    <Card className="w-80 flex-shrink-0 hover:shadow-xl transition-all duration-300 border-0 bg-gradient-to-br from-white to-gray-50">
+    <Link href={`/campaign/${campaign.id}`}>  
+    <Card className="shadow-none hover:border-primary/50 overflow-clip gap-2 transition-all duration-300 border-1 border-gray-200 p-0">
       <div className="relative">
         <div className="aspect-[4/3] relative overflow-hidden rounded-t-lg">
-          <img
-            src={campaign.thumbnail || "/placeholder.svg"}
+          <Image
+            src={campaign.thumbnail}
             alt={campaign.title}
             className="w-full h-full object-cover"
+            fill
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
 
@@ -34,8 +37,8 @@ function TrendingCampaignCard({ campaign }: { campaign: Campaign }) {
 
           {/* Payout overlay */}
           <div className="absolute bottom-3 left-3">
-            <div className="bg-green-600 text-white px-3 py-1 rounded-full">
-              <span className="text-sm font-bold">{formatCurrency(campaign.payout)}</span>
+            <div className="bg-primary text-white px-3 py-1 rounded-full">
+              <span className="text-sm tracking-loose font-semibold">{formatCurrency(campaign.payout)}</span>
             </div>
           </div>
         </div>
@@ -47,7 +50,7 @@ function TrendingCampaignCard({ campaign }: { campaign: Campaign }) {
           <p className="text-xs text-muted-foreground">{campaign.advertiser}</p>
         </div>
 
-        <div className="flex items-center justify-between text-xs text-muted-foreground mb-3">
+        <div className="flex items-center justify-between text-xs text-muted-foreground">
           <div className="flex items-center gap-1">
             <Users className="h-3 w-3" />
             <span>{campaign.remainingSlots} left</span>
@@ -58,30 +61,24 @@ function TrendingCampaignCard({ campaign }: { campaign: Campaign }) {
           </div>
         </div>
 
-        <div className="flex items-center justify-between">
-          <Badge variant="secondary" className="text-xs px-2 py-1">
-            {campaign.category}
-          </Badge>
-          <Link href={`/campaign/${campaign.id}`}>
-            <Button size="sm" className="h-7 px-3 text-xs">
-              Start Task
-            </Button>
-          </Link>
-        </div>
+        
       </CardContent>
     </Card>
+    </Link>
   )
 }
 
 function CampaignCard({ campaign }: { campaign: Campaign }) {
 
   return (
-    <Card className="hover:shadow-lg transition-shadow">
+    <Link href={`/campaign/${campaign.id}`}>
+    <Card className="overflow-clip shadow-none border-1 border-gray-200 p-0 hover:border-primary/50 transition-shadow">
       <div className="aspect-video relative overflow-hidden rounded-t-lg">
-        <img
-          src={campaign.thumbnail || "/placeholder.svg"}
+        <Image
+          src={campaign.thumbnail}
           alt={campaign.title}
           className="w-full h-full object-cover"
+          fill
         />
       </div>
       <CardHeader className="pb-2">
@@ -91,7 +88,7 @@ function CampaignCard({ campaign }: { campaign: Campaign }) {
             <CardDescription className="text-sm text-muted-foreground">by {campaign.advertiser}</CardDescription>
           </div>
           <div className="text-right">
-            <div className="text-lg font-bold text-green-600">{formatCurrency(campaign.payout)}</div>
+            <div className="text-lg font-bold text-primary">{formatCurrency(campaign.payout)}</div>
             <div className="text-xs text-muted-foreground">per task</div>
           </div>
         </div>
@@ -110,24 +107,16 @@ function CampaignCard({ campaign }: { campaign: Campaign }) {
           </div>
         </div>
 
-        <div className="flex items-center justify-between">
-          <Badge variant="secondary">{campaign.category}</Badge>
-          <Link href={`/campaign/${campaign.id}`}>
-            <Button size="sm">
-              <Eye className="h-4 w-4 mr-1" />
-              View Details
-            </Button>
-          </Link>
-        </div>
       </CardContent>
     </Card>
-  )
+    </Link>
+  ) 
 }
 
 function TrendingCampaignSkeleton() {
   return (
-    <Card className="w-80 flex-shrink-0">
-      <Skeleton className="aspect-[4/3] w-full rounded-t-lg" />
+    <Card className="basis-[28%] border-0 shadow-none flex-shrink-0">
+      <Skeleton className="aspect-[7/3] w-full rounded-t-lg" />
       <CardContent className="p-4 space-y-3">
         <div className="space-y-2">
           <Skeleton className="h-4 w-3/4" />
@@ -214,8 +203,8 @@ export default function TaskerDashboard() {
 
         {/* Trending Campaigns Carousel */}
         <section className="mb-12">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-gray-900 flex items-center">🔥 Trending Campaigns</h2>
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="text-xl font-semibold text-gray-900 flex items-center">Trending Campaigns</h2>
             <div className="flex items-center space-x-2">
               <Link href="/campaigns">
                 <Button variant="outline" size="sm" className="bg-white">
@@ -232,9 +221,26 @@ export default function TaskerDashboard() {
               {isLoading
                 // biome-ignore lint/suspicious/noArrayIndexKey: <Array has no data to create a key>
                 ? Array.from({ length: 6 }).map((_, i) => <TrendingCampaignSkeleton key={i} />)
-                : data?.trendingCampaigns.map((campaign) => (
-                    <TrendingCampaignCard key={campaign.id} campaign={campaign} />
+                : 
+                  <Carousel className="flex transition-transform duration-300 ease-in-out gap-6" plugins={[
+                    Autoplay({
+                      delay: 2000,
+                    }),
+                  ]} opts={{
+                  loop: true,
+                  align: "start",
+                  slidesToScroll: 1,
+                  dragFree: true,
+                }}>
+                  <CarouselContent className="p-4 -ml-5">
+                {data?.trendingCampaigns.map((campaign) => (
+                  <CarouselItem key={campaign.id} className="basis-[28%] pl-5">
+                    <TrendingCampaignCard campaign={campaign} />
+                  </CarouselItem>
                   ))}
+                  </CarouselContent>
+                </Carousel>
+                }
             </div>
           </div>
         </section>

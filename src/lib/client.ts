@@ -16,7 +16,10 @@ export interface Campaign {
 }
 
 // Mock data fetching function
-const fetchDashboardData = async () => {
+const fetchDashboardData = async (): Promise<{
+	trendingCampaigns: Campaign[];
+	activeCampaigns: Campaign[];
+}> => {
 	// Simulate 5-second delay
 	await new Promise((resolve) => setTimeout(resolve, 5000));
 
@@ -30,7 +33,7 @@ const fetchDashboardData = async () => {
 				remainingSlots: 45,
 				totalSlots: 100,
 				category: "Social Media",
-				thumbnail: "/instagram-follow-campaign.png",
+				thumbnail: "https://ik.imagekit.io/bluconvalley/kuditask/campaigns/instagram-follow-campaign.png",
 				advertiser: "TechStartup Inc",
 				difficulty: "easy" as const,
 				estimatedTime: "2 mins",
@@ -44,7 +47,7 @@ const fetchDashboardData = async () => {
 				remainingSlots: 12,
 				totalSlots: 50,
 				category: "App Review",
-				thumbnail: "/app-review-playstore.png",
+				thumbnail: "https://ik.imagekit.io/bluconvalley/kuditask/campaigns/app-review-playstore.png",
 				advertiser: "MobileApp Co",
 				difficulty: "medium" as const,
 				estimatedTime: "10 mins",
@@ -58,7 +61,7 @@ const fetchDashboardData = async () => {
 				remainingSlots: 78,
 				totalSlots: 200,
 				category: "Social Media",
-				thumbnail: "/facebook-share-post.png",
+				thumbnail: "https://ik.imagekit.io/bluconvalley/kuditask/campaigns/facebook-share-post.png",
 				advertiser: "Brand Marketing",
 				difficulty: "easy" as const,
 				estimatedTime: "1 min",
@@ -72,7 +75,7 @@ const fetchDashboardData = async () => {
 				remainingSlots: 25,
 				totalSlots: 75,
 				category: "Video",
-				thumbnail: "/youtube-subscribe-like.png",
+				thumbnail: "https://ik.imagekit.io/bluconvalley/kuditask/campaigns/youtube-subscribe-like.png",
 				advertiser: "Content Creator",
 				difficulty: "easy" as const,
 				estimatedTime: "3 mins",
@@ -86,7 +89,7 @@ const fetchDashboardData = async () => {
 				remainingSlots: 60,
 				totalSlots: 150,
 				category: "Social Media",
-				thumbnail: "/twitter-retweet-campaign.png",
+				thumbnail: "https://ik.imagekit.io/bluconvalley/kuditask/campaigns/twitter-retweet-campaign.png",
 				advertiser: "Social Brand",
 				difficulty: "medium" as const,
 				estimatedTime: "5 mins",
@@ -100,7 +103,7 @@ const fetchDashboardData = async () => {
 				remainingSlots: 8,
 				totalSlots: 20,
 				category: "UGC",
-				thumbnail: "/tiktok-video-creation.png",
+				thumbnail: "https://ik.imagekit.io/bluconvalley/kuditask/campaigns/tiktok-video-creation.png",
 				advertiser: "Creative Agency",
 				difficulty: "hard" as const,
 				estimatedTime: "30 mins",
@@ -116,7 +119,7 @@ const fetchDashboardData = async () => {
 				remainingSlots: 35,
 				totalSlots: 80,
 				category: "Social Media",
-				thumbnail: "/linkedin-engagement.png",
+				thumbnail: "https://ik.imagekit.io/bluconvalley/kuditask/campaigns/linkedin-engagement.png",
 				advertiser: "B2B Solutions",
 				difficulty: "easy" as const,
 				estimatedTime: "3 mins",
@@ -130,12 +133,40 @@ const fetchDashboardData = async () => {
 				remainingSlots: 20,
 				totalSlots: 100,
 				category: "Survey",
-				thumbnail: "/product-survey.png",
+				thumbnail: "https://ik.imagekit.io/bluconvalley/kuditask/campaigns/product-survey.png",
 				advertiser: "Market Research Co",
 				difficulty: "medium" as const,
 				estimatedTime: "8 mins",
 				rating: 4.3,
 			},
+			{
+				id: "9",
+				title: "Product Survey Completion",
+				description: "Complete a 5-minute survey about our new product",
+				payout: 400,
+				remainingSlots: 20,
+				totalSlots: 100,
+				category: "Survey",
+				thumbnail: "https://ik.imagekit.io/bluconvalley/kuditask/campaigns/product-survey.png",
+				advertiser: "Market Research Co",
+				difficulty: "medium" as const,
+				estimatedTime: "8 mins",
+				rating: 4.3,
+			},
+			{
+				id: "10",
+				title: "Product Survey Completion",
+				description: "Complete a 5-minute survey about our new product",
+				payout: 400,
+				remainingSlots: 20,
+				totalSlots: 100,
+				category: "Survey",
+				thumbnail: "https://ik.imagekit.io/bluconvalley/kuditask/campaigns/product-survey.png",
+				advertiser: "Market Research Co",
+				difficulty: "medium" as const,
+				estimatedTime: "8 mins",
+				rating: 4.3,
+			}
 		],
 	};
 };

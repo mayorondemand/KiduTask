@@ -108,8 +108,8 @@ export function Navbar() {
   }
 
   return (
-    <nav className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container mx-auto px-4">
+    <nav className="sticky top-2 z-50 ">
+      <div className="container bg-white rounded-full border border-gray-200 mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
           <div className="flex items-center space-x-8">
             <Link href="/home" className="flex items-center space-x-2">
@@ -135,7 +135,7 @@ export function Navbar() {
             {!user.isAdvertiser && (
               <Dialog open={advertiserDialogOpen} onOpenChange={setAdvertiserDialogOpen}>
                 <DialogTrigger asChild>
-                  <Button className="hidden sm:flex items-center space-x-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white border-0 shadow-lg">
+                  <Button className="hidden sm:flex items-center space-x-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white border-0">
                     <Stars className="h-4 w-4" />
                     <span className="font-medium">Become Advertiser</span>
                   </Button>
