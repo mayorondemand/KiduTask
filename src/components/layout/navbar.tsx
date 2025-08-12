@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Badge } from "@/components/ui/badge"
-import { Wallet, User, Settings, LogOut, Menu, Briefcase, Star, BarChart3, Users2, Zap } from "lucide-react"
+import { Wallet, User, Settings, LogOut, Menu, Briefcase, Star, BarChart3, Users2, Zap, Stars, Clock } from "lucide-react"
 import Link from "next/link"
 import { useState } from "react"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
@@ -26,46 +26,36 @@ import {
 } from "@/components/ui/dialog"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
+import { useAdvertiserRequest } from "@/lib/client"
 
 export function Navbar() {
   const { user, logout, updateUser } = useAuth()
   const [isOpen, setIsOpen] = useState(false)
   const [advertiserDialogOpen, setAdvertiserDialogOpen] = useState(false)
-  const queryClient = useQueryClient()
   
 
-  const advertiserRequestMutation = useMutation({
-    mutationFn: async () => {
-      // 5 second loading as requested
-      await new Promise((resolve) => setTimeout(resolve, 5000))
-      return { success: true }
-    },
-    onSuccess: () => {
-      // Update user to be an advertiser
-      updateUser({ isAdvertiser: true })
-
-      toast({
-        title: "Welcome to Advertiser! 🎉",
-        description: "You now have access to create and manage campaigns. Redirecting to your dashboard...",
-      })
-      setAdvertiserDialogOpen(false)
-
-      // Redirect to advertiser dashboard after a short delay
-      setTimeout(() => {
-        window.location.href = "/advertisers"
-      }, 2000)
-    },
-    onError: () => {
-      toast({
-        title: "Request Failed",
-        description: "There was an error processing your request. Please try again.",
-        variant: "destructive",
-      })
-    },
-  })
+  const advertiserRequestMutation = useAdvertiserRequest()
 
   const handleAdvertiserRequest = () => {
-    advertiserRequestMutation.mutate()
+    advertiserRequestMutation.mutate(undefined,{
+      onSuccess: () => {
+        updateUser( {isAdvertiser: true})
+        toast.success("Welcome to Advertiser! 🎉", {
+          description: "You now have access to create and manage campaigns. Redirecting to your dashboard...",
+        })
+        setAdvertiserDialogOpen(false)
+  
+        // Redirect to advertiser dashboard after a short delay
+        setTimeout(() => {
+          window.location.href = "/advertisers"
+        }, 2000)
+      },
+      onError: () => {
+        toast.error("Request Failed",{
+          description: "There was an error processing your request. Please try again.",
+        })
+      },
+    })
   }
 
   if (!user) return null
@@ -122,11 +112,11 @@ export function Navbar() {
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
           <div className="flex items-center space-x-8">
-            <Link href="/" className="flex items-center space-x-2">
+            <Link href="/home" className="flex items-center space-x-2">
               <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
                 <span className="text-primary-foreground font-bold text-sm">KT</span>
               </div>
-              <span className="font-bold text-xl">KudiTask</span>
+              <span className="font-semibold text-lg">KudiTask</span>
             </Link>
 
             <div className="hidden md:flex items-center space-x-6">
@@ -134,22 +124,20 @@ export function Navbar() {
             </div>
           </div>
 
+      {/* Wallet */}
           <div className="flex items-center space-x-4">
-            {user.role !== "admin" && (
               <div className="hidden sm:flex items-center space-x-2 bg-muted px-3 py-1 rounded-full">
                 <Wallet className="h-4 w-4" />
                 <span className="text-sm font-medium">{formatCurrency(user.walletBalance)}</span>
               </div>
-            )}
 
             {/* Show different buttons based on advertiser status */}
-            {!user.isAdvertiser && user.role !== "admin" && (
+            {!user.isAdvertiser && (
               <Dialog open={advertiserDialogOpen} onOpenChange={setAdvertiserDialogOpen}>
                 <DialogTrigger asChild>
                   <Button className="hidden sm:flex items-center space-x-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white border-0 shadow-lg">
-                    <Briefcase className="h-4 w-4" />
+                    <Stars className="h-4 w-4" />
                     <span className="font-medium">Become Advertiser</span>
-                    <div className="bg-white/20 px-2 py-0.5 rounded-full text-xs">New</div>
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-md">
@@ -219,19 +207,24 @@ export function Navbar() {
                     >
                       Maybe Later
                     </Button>
-                    <Button
+                   {user.isAdvertiserRequestPending ?
+                   <Button variant={"secondary"}  className="bg-yellow-200 text-yellow-800 w-full sm:w-auto">
+                    < Clock className="h-4 w-4" />
+                    Awaiting Approval
+                   </Button> : <Button
                       onClick={handleAdvertiserRequest}
                       disabled={advertiserRequestMutation.isPending}
                       className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 w-full sm:w-auto"
                     >
                       {advertiserRequestMutation.isPending ? "Setting up your account..." : "Become Advertiser"}
                     </Button>
+                    }
                   </DialogFooter>
                 </DialogContent>
               </Dialog>
             )}
 
-            {user.isAdvertiser && user.role !== "admin" && (
+            {user.isAdvertiser && (
               <Link href="/advertisers">
                 <Button className="hidden sm:flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white border-0 shadow-lg">
                   <BarChart3 className="h-4 w-4" />

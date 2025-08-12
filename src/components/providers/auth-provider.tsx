@@ -11,13 +11,15 @@ interface User {
   role: "admin" | "tasker"
   walletBalance: number
   isAdvertiser: boolean
+  isKycVerified: boolean
+  isAdvertiserRequestPending: boolean
   completedTasks: number
   rating: number
   joinedAt: string
 }
 
 interface AuthContextType {
-  user: User | null
+  user: User
   login: (email: string, password: string) => Promise<void>
   register: (name: string, email: string, password: string) => Promise<void>
   logout: () => void
@@ -28,28 +30,23 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null)
+  const [user, setUser] = useState<User>({
+    id: "user-1",
+    name: "John Doe",
+    email: "john@email.com",
+    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=john",
+    role: "tasker",
+    walletBalance: 15750,
+    isAdvertiser: false,
+    isKycVerified: true,
+    completedTasks: 47,
+    rating: 4.8,
+    joinedAt: "2023-06-15T00:00:00Z",
+    isAdvertiserRequestPending: true,
+  })
   const [isLoading, setIsLoading] = useState(true)
   const router = useRouter()
 
-  useEffect(() => {
-    // Simulate checking for existing session
-    const checkAuth = async () => {
-      try {
-        // In a real app, this would check for a valid token
-        const savedUser = localStorage.getItem("user")
-        if (savedUser) {
-          setUser(JSON.parse(savedUser))
-        }
-      } catch (error) {
-        console.error("Auth check failed:", error)
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    checkAuth()
-  }, [])
 
   const login = async (email: string, password: string) => {
     setIsLoading(true)
@@ -69,9 +66,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           role: "admin",
           walletBalance: 0,
           isAdvertiser: false,
+          isKycVerified: true,
           completedTasks: 0,
           rating: 5.0,
           joinedAt: "2023-01-01T00:00:00Z",
+          isAdvertiserRequestPending: false,
         }
       } else {
         mockUser = {
@@ -82,9 +81,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           role: "tasker",
           walletBalance: 15750,
           isAdvertiser: false,
+          isKycVerified: true,
           completedTasks: 47,
           rating: 4.8,
           joinedAt: "2023-06-15T00:00:00Z",
+          isAdvertiserRequestPending: false,
         }
       }
 
@@ -118,9 +119,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         role: "tasker",
         walletBalance: 0,
         isAdvertiser: false,
+        isKycVerified: false,
         completedTasks: 0,
         rating: 0,
         joinedAt: new Date().toISOString(),
+        isAdvertiserRequestPending: false,
       }
 
       setUser(mockUser)
@@ -134,7 +137,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   const logout = () => {
-    setUser(null)
     localStorage.removeItem("user")
     router.push("/login")
   }
@@ -148,7 +150,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, login, register, logout, updateUser, isLoading }}>
+    <AuthContext.Provider value={{ user: user as User, login, register, logout, updateUser, isLoading }}>
       {children}
     </AuthContext.Provider>
   )
