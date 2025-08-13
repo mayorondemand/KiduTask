@@ -13,7 +13,7 @@ import {
   sendVerificationEmail,
 } from "@/lib/auth/auth-client";
 
-import type { User, Session } from "@/lib/auth/auth-client";
+import type { UserSession, Session } from "@/lib/auth/auth-client";
 import { errorHandler } from "@/lib/error-handler";
 import { toast } from "sonner";
 
@@ -47,7 +47,7 @@ type GoogleAuthMutation = {
 };
 
 type AuthContextType = {
-  user: User | null;
+  user: UserSession | null;
   session: Session | null;
   loading: boolean;
   loginMutation: LoginMutation;
@@ -65,7 +65,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
 
-  const user = session?.user || null;
+  const user = session?.user as UserSession;
   console.log("[AuthProvider] user:", user);
 
   // Redirect logic
@@ -150,7 +150,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         },
         {
           onError: (error) => {
-            ersrorHandler.handleQueryError(error.error.message);
+            errorHandler.handleQueryError(error.error.message);
           },
           onSuccess: () => {
             toast.success("Verification Email Sent");

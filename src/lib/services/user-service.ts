@@ -6,13 +6,13 @@ import { eq, sql } from "drizzle-orm";
 import { getTableColumns } from "drizzle-orm";
 import type { NextRequest } from "next/server";
 
-type User = typeof user.$inferSelect;
-export type UserDetails = User & {
+type UserDb = typeof user.$inferSelect;
+export type UserDetails = UserDb & {
   isKycVerified: boolean;
 };
 
 class UserService {
-  async validateUser(request: NextRequest): Promise<User> {
+  async validateUser(request: NextRequest): Promise<UserDb> {
     const session = await auth.api.getSession({
       headers: request.headers,
     });

@@ -23,4 +23,6 @@ export const {
 } = authClient;
 
 export type Session = typeof auth.$Infer.Session;
-export type User = Session["user"];
+export type UserSession = Session["user"] & {
+  isKycVerified: boolean;
+};
