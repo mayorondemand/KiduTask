@@ -1,21 +1,16 @@
+import { db } from "@/lib/db";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { openAPI } from "better-auth/plugins";
-import { db } from "@/lib/db";
-import { bearer } from "better-auth/plugins";
-import * as schema from "@/lib/db/schema";
-// import { emailService } from "@/lib/services/email-service";
+import { bearer, openAPI } from "better-auth/plugins";
+import { emailService } from "@/lib/services/email-service";
+
+if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
+  throw new Error("GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET is not set");
+}
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
     provider: "pg",
-    schema: {
-      ...schema,
-      users: schema.user,
-      session: schema.session,
-      account: schema.account,
-      verification: schema.verification,
-    },
   }),
   emailAndPassword: {
     enabled: true,
@@ -23,8 +18,13 @@ export const auth = betterAuth({
   },
   socialProviders: {
     google: {
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      clientId: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    },
+  },
+  emailVerification: {
+    sendVerificationEmail: async ({ user, url }) => {
+      await emailService.sendVerifyEmail(user.email, user.name, url);
     },
   },
   plugins: [openAPI(), bearer()],
