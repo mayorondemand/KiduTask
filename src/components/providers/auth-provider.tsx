@@ -1,165 +1,226 @@
-"use client"
+"use client";
 
-import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
-import { useRouter } from "next/navigation"
+import type React from "react";
+import { createContext, useContext, useEffect } from "react";
+import { useRouter, usePathname } from "next/navigation";
+import { useMutation } from "@tanstack/react-query";
+import {
+  useSession,
+  signIn,
+  signUp,
+  signOut,
+  forgetPassword,
+} from "@/lib/auth/auth-client";
 
-interface User {
-  id: string
-  name: string
-  email: string
-  avatar?: string
-  role: "admin" | "tasker"
-  walletBalance: number
-  isAdvertiser: boolean
-  isKycVerified: boolean
-  isAdvertiserRequestPending: boolean
-  completedTasks: number
-  rating: number
-  joinedAt: string
-}
+import type { User, Session } from "@/lib/auth/auth-config";
+import { errorHandler } from "@/lib/error-handler";
+import { toast } from "sonner";
 
-interface AuthContextType {
-  user: User
-  login: (email: string, password: string) => Promise<void>
-  register: (name: string, email: string, password: string) => Promise<void>
-  logout: () => void
-  updateUser: (updates: Partial<User>) => void
-  isLoading: boolean
-}
+type LoginMutation = {
+  mutate: (variables: { email: string; password: string }) => void;
+  isPending: boolean;
+};
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined)
+type SignupMutation = {
+  mutate: (variables: {
+    name: string;
+    email: string;
+    password: string;
+  }) => void;
+  isPending: boolean;
+};
 
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User>({
-    id: "user-1",
-    name: "John Doe",
-    email: "john@email.com",
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=john",
-    role: "tasker",
-    walletBalance: 15750,
-    isAdvertiser: false,
-    isKycVerified: true,
-    completedTasks: 47,
-    rating: 4.8,
-    joinedAt: "2023-06-15T00:00:00Z",
-    isAdvertiserRequestPending: true,
-  })
-  const [isLoading, setIsLoading] = useState(true)
-  const router = useRouter()
+type LogoutMutation = {
+  mutate: () => void;
+  isPending: boolean;
+};
 
+type ResetPasswordMutation = {
+  mutate: (variables: { email: string }) => void;
+  isPending: boolean;
+};
 
-  const login = async (email: string, password: string) => {
-    setIsLoading(true)
-    try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+type GoogleAuthMutation = {
+  mutate: () => void;
+  isPending: boolean;
+};
 
-      // Mock user data based on email
-      let mockUser: User
+type AuthContextType = {
+  user: User | null;
+  session: Session | null;
+  loading: boolean;
+  loginMutation: LoginMutation;
+  signupMutation: SignupMutation;
+  logoutMutation: LogoutMutation;
+  resetPasswordMutation: ResetPasswordMutation;
+  googleAuthMutation: GoogleAuthMutation;
+};
 
-      if (email === "admin@kuditask.com") {
-        mockUser = {
-          id: "admin-1",
-          name: "Admin User",
-          email: "admin@kuditask.com",
-          avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=admin",
-          role: "admin",
-          walletBalance: 0,
-          isAdvertiser: false,
-          isKycVerified: true,
-          completedTasks: 0,
-          rating: 5.0,
-          joinedAt: "2023-01-01T00:00:00Z",
-          isAdvertiserRequestPending: false,
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const { data, isPending: loading } = useSession();
+  const session = data as Session | null;
+  const router = useRouter();
+  const pathname = usePathname();
+
+  const user = session?.user || null;
+
+  // Redirect logic
+  useEffect(() => {
+    if (loading) {
+      return;
+    }
+    const publicPaths = [
+      "/",
+      "/login",
+      "/signup",
+      "/forgot-password",
+      "/reset-password",
+    ];
+    const isPublicPath = publicPaths.includes(pathname);
+
+    if (!user && !isPublicPath) {
+      router.push("/login");
+    }
+
+    if (user && pathname === "/login") {
+      router.push("/home");
+    }
+  }, [user, loading, pathname, router]);
+
+  const loginMutation: LoginMutation = useMutation({
+    mutationFn: async ({
+      email,
+      password,
+    }: {
+      email: string;
+      password: string;
+    }) => {
+      return signIn.email(
+        {
+          email,
+          password,
+        },
+        {
+          onError: (error) => {
+            errorHandler.handleQueryError(error.error.message);
+          },
+          onSuccess: () => {
+            toast.success("Login successful");
+          },
         }
-      } else {
-        mockUser = {
-          id: "user-1",
-          name: "John Doe",
-          email: email,
-          avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=john",
-          role: "tasker",
-          walletBalance: 15750,
-          isAdvertiser: false,
-          isKycVerified: true,
-          completedTasks: 47,
-          rating: 4.8,
-          joinedAt: "2023-06-15T00:00:00Z",
-          isAdvertiserRequestPending: false,
+      );
+    },
+  });
+
+  const signupMutation: SignupMutation = useMutation({
+    mutationFn: async ({
+      name,
+      email,
+      password,
+    }: {
+      name: string;
+      email: string;
+      password: string;
+    }) => {
+      return signUp.email(
+        {
+          email,
+          password,
+          name,
+        },
+        {
+          onError(error) {
+            errorHandler.handleQueryError(error.error.message);
+          },
+          onSuccess: () => {
+            toast.success("Account created successfully");
+          },
         }
-      }
+      );
+    },
+  });
 
-      setUser(mockUser)
-      localStorage.setItem("user", JSON.stringify(mockUser))
+  const logoutMutation: LogoutMutation = useMutation({
+    mutationFn: async () => {
+      return signOut(
+        {},
+        {
+          onError: (error) => {
+            errorHandler.handleQueryError(error.error.message);
+          },
+          onSuccess: () => {
+            toast.success("Logged out successfully");
+          },
+        }
+      );
+    },
+    onSuccess: () => {
+      router.push("/login");
+    },
+  });
 
-      // Redirect based on role
-      if (mockUser.role === "admin") {
-        router.push("/admin")
-      } else {
-        router.push("/home")
-      }
-    } catch (error) {
-      throw new Error("Login failed")
-    } finally {
-      setIsLoading(false)
-    }
-  }
+  const resetPasswordMutation: ResetPasswordMutation = useMutation({
+    mutationFn: async ({ email }: { email: string }) => {
+      return forgetPassword(
+        {
+          email,
+          redirectTo: `${window.location.origin}/reset-password`,
+        },
+        {
+          onError: (error) => {
+            errorHandler.handleQueryError(error.error.message);
+          },
+          onSuccess: () => {
+            toast.success("Password reset successful");
+          },
+        }
+      );
+    },
+  });
 
-  const register = async (name: string, email: string, password: string) => {
-    setIsLoading(true)
-    try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-
-      const mockUser: User = {
-        id: `user-${Date.now()}`,
-        name,
-        email,
-        avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${name}`,
-        role: "tasker",
-        walletBalance: 0,
-        isAdvertiser: false,
-        isKycVerified: false,
-        completedTasks: 0,
-        rating: 0,
-        joinedAt: new Date().toISOString(),
-        isAdvertiserRequestPending: false,
-      }
-
-      setUser(mockUser)
-      localStorage.setItem("user", JSON.stringify(mockUser))
-      router.push("/home")
-    } catch (error) {
-      throw new Error("Registration failed")
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  const logout = () => {
-    localStorage.removeItem("user")
-    router.push("/login")
-  }
-
-  const updateUser = (updates: Partial<User>) => {
-    if (user) {
-      const updatedUser = { ...user, ...updates }
-      setUser(updatedUser)
-      localStorage.setItem("user", JSON.stringify(updatedUser))
-    }
-  }
+  const googleAuthMutation: GoogleAuthMutation = useMutation({
+    mutationFn: async () => {
+      return signIn.social(
+        {
+          provider: "google",
+          callbackURL: "/home",
+        },
+        {
+          onError: (error) => {
+            errorHandler.handleQueryError(error.error.message);
+          },
+          onSuccess: () => {
+            toast.success("Logged in successfully");
+          },
+        }
+      );
+    },
+  });
 
   return (
-    <AuthContext.Provider value={{ user: user as User, login, register, logout, updateUser, isLoading }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        session,
+        loading,
+        loginMutation,
+        signupMutation,
+        logoutMutation,
+        resetPasswordMutation,
+        googleAuthMutation,
+      }}
+    >
       {children}
     </AuthContext.Provider>
-  )
+  );
 }
 
 export function useAuth() {
-  const context = useContext(AuthContext)
+  const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error("useAuth must be used within an AuthProvider")
+    throw new Error("useAuth must be used within an AuthProvider");
   }
-  return context
+  return context;
 }
