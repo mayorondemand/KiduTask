@@ -6,9 +6,9 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { admin, bearer, customSession, openAPI } from "better-auth/plugins";
 import * as schema from "@/lib/db/schema";
 
-// if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
-//   throw new Error("GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET is not set");
-// }
+if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
+  throw new Error("GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET is not set");
+}
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
@@ -21,12 +21,12 @@ export const auth = betterAuth({
     enabled: true,
     requireEmailVerification: true,
   },
-  // socialProviders: {
-  //   google: {
-  //     clientId: process.env.GOOGLE_CLIENT_ID,
-  //     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-  //   },
-  // },
+  socialProviders: {
+    google: {
+      clientId: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    },
+  },
   emailVerification: {
     sendVerificationEmail: async ({ user, url }) => {
       await emailService.sendVerifyEmail(user.email, user.name, url);

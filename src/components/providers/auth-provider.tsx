@@ -209,9 +209,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           onError: (error) => {
             errorHandler.handleQueryError(error.error.message);
           },
-          onSuccess: () => {
-            toast.success("Logged in successfully");
-          },
         },
       );
     },
