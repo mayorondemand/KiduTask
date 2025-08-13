@@ -158,8 +158,8 @@ export default function TaskerDashboard() {
           <div className="relative overflow-hidden">
             <div className="flex transition-transform duration-300 ease-in-out gap-6">
               {isLoading ? (
-                // biome-ignore lint/suspicious/noArrayIndexKey: <Array has no data to create a key>
                 Array.from({ length: 6 }).map((_, i) => (
+                  // biome-ignore lint/suspicious/noArrayIndexKey: <Array has no data to create a key>
                   <TrendingCampaignSkeleton key={i} />
                 ))
               ) : (
@@ -206,8 +206,8 @@ export default function TaskerDashboard() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {isLoading
-              ? // biome-ignore lint/suspicious/noArrayIndexKey: <Array has no data to create a key>
-                Array.from({ length: 2 }).map((_, i) => (
+              ? Array.from({ length: 2 }).map((_, i) => (
+                  // biome-ignore lint/suspicious/noArrayIndexKey: <Array has no data to create a key>
                   <CampaignSkeleton key={i} />
                 ))
               : data?.activeCampaigns.map((campaign) => (
