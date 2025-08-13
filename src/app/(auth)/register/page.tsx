@@ -1,18 +1,15 @@
 "use client"
 
-import { useState } from "react"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { z } from "zod"
 import { useAuth } from "@/components/providers/auth-provider"
 import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Loader2, Mail, Lock, User } from "lucide-react"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { Loader2, Lock, Mail, User } from "lucide-react"
 import Link from "next/link"
+import { useForm } from "react-hook-form"
+import { z } from "zod"
 
 const registerSchema = z
   .object({
@@ -20,9 +17,6 @@ const registerSchema = z
     password: z.string().min(6, "Password must be at least 6 characters"),
     confirmPassword: z.string(),
     name: z.string().min(2, "Name must be at least 2 characters"),
-    role: z.enum(["tasker", "advertiser"], {
-      required_error: "Please select a role",
-    }),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords don't match",
@@ -32,49 +26,25 @@ const registerSchema = z
 type RegisterForm = z.infer<typeof registerSchema>
 
 export default function RegisterPage() {
-  const { register: registerUser, isLoading } = useAuth()
-  const [error, setError] = useState("")
-  const [success, setSuccess] = useState(false)
+  const { signupMutation } = useAuth()
 
   const {
+    reset,
     register,
-    handleSubmit,
+    handleSubmit, 
     formState: { errors, isSubmitting },
-    watch,
   } = useForm<RegisterForm>({
     resolver: zodResolver(registerSchema),
   })
 
-  const selectedRole = watch("role")
-
   const onSubmit = async (data: RegisterForm) => {
-    try {
-      setError("")
-      await registerUser({
+     await signupMutation.mutate({
         email: data.email,
         password: data.password,
         name: data.name,
-        role: data.role,
       })
-      setSuccess(true)
-    } catch (err) {
-      setError("Registration failed. Please try again.")
-    }
-  }
 
-  if (success) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4">
-        <Card className="max-w-md w-full">
-          <CardHeader className="text-center">
-            <CardTitle className="text-green-600">Registration Successful!</CardTitle>
-            <CardDescription>
-              Your account has been created successfully. You will be redirected to your dashboard.
-            </CardDescription>
-          </CardHeader>
-        </Card>
-      </div>
-    )
+      reset()
   }
 
   return (
@@ -98,12 +68,6 @@ export default function RegisterPage() {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-              {error && (
-                <Alert variant="destructive">
-                  <AlertDescription>{error}</AlertDescription>
-                </Alert>
-              )}
-
               <div className="space-y-2">
                 <Label htmlFor="name">Full Name</Label>
                 <div className="relative">
@@ -164,37 +128,9 @@ export default function RegisterPage() {
                 {errors.confirmPassword && <p className="text-sm text-destructive">{errors.confirmPassword.message}</p>}
               </div>
 
-              <div className="space-y-3">
-                <Label>I want to:</Label>
-                <RadioGroup
-                  value={selectedRole}
-                  onValueChange={(value) => register("role").onChange({ target: { value } })}
-                  className="grid grid-cols-1 gap-4"
-                >
-                  <div className="flex items-center space-x-2 border rounded-lg p-4 hover:bg-gray-50">
-                    <RadioGroupItem value="tasker" id="tasker" />
-                    <div className="flex-1">
-                      <Label htmlFor="tasker" className="font-medium">
-                        Complete Tasks
-                      </Label>
-                      <p className="text-sm text-gray-500">Earn money by completing micro-tasks</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-2 border rounded-lg p-4 hover:bg-gray-50">
-                    <RadioGroupItem value="advertiser" id="advertiser" />
-                    <div className="flex-1">
-                      <Label htmlFor="advertiser" className="font-medium">
-                        Create Campaigns
-                      </Label>
-                      <p className="text-sm text-gray-500">Grow your business with targeted campaigns</p>
-                    </div>
-                  </div>
-                </RadioGroup>
-                {errors.role && <p className="text-sm text-destructive">{errors.role.message}</p>}
-              </div>
 
-              <Button type="submit" className="w-full" disabled={isSubmitting || isLoading}>
-                {isSubmitting || isLoading ? (
+              <Button type="submit" className="w-full" disabled={isSubmitting || signupMutation.isPending}>
+                {isSubmitting || signupMutation.isPending ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Creating account...

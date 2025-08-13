@@ -29,7 +29,7 @@ import { toast } from "sonner"
 import { useAdvertiserRequest } from "@/lib/client"
 
 export function Navbar() {
-  const { user, logout, updateUser } = useAuth()
+  const { user, logoutMutation } = useAuth()
   const [isOpen, setIsOpen] = useState(false)
   const [advertiserDialogOpen, setAdvertiserDialogOpen] = useState(false)
   
@@ -39,16 +39,8 @@ export function Navbar() {
   const handleAdvertiserRequest = () => {
     advertiserRequestMutation.mutate(undefined,{
       onSuccess: () => {
-        updateUser( {isAdvertiser: true})
-        toast.success("Welcome to Advertiser! 🎉", {
-          description: "You now have access to create and manage campaigns. Redirecting to your dashboard...",
-        })
+        toast.success("Your request has been sent to the admin for approval")
         setAdvertiserDialogOpen(false)
-  
-        // Redirect to advertiser dashboard after a short delay
-        setTimeout(() => {
-          window.location.href = "/advertisers"
-        }, 2000)
       },
       onError: () => {
         toast.error("Request Failed",{
@@ -289,7 +281,7 @@ export function Navbar() {
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={logout}>
+                <DropdownMenuItem onClick={logoutMutation.mutate}>
                   <LogOut className="mr-2 h-4 w-4" />
                   Log out
                 </DropdownMenuItem>
