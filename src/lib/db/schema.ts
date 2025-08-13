@@ -111,10 +111,10 @@ export const advertiser = pgTable("advertiser", {
   userId: text("user_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
-  brandName: text("brand_name").notNull(),
-  brandWebsite: text("brand_website").notNull(),
-  brandLogo: text("brand_logo").notNull(),
-  brandDescription: text("brand_description").notNull(),
+  brandName: text("brand_name"),
+  brandWebsite: text("brand_website"),
+  brandLogo: text("brand_logo"),
+  brandDescription: text("brand_description"),
   status: statusEnum("status").notNull().default("pending"),
   statusUpdatedAt: timestamp("status_updated_at"),
   statusUpdatedBy: text("status_updated_by").references(() => user.id),
