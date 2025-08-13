@@ -40,11 +40,11 @@ class EmailService {
 				return await resend.emails.send({
 					from: onboardingEmail,
 					to: email,
-					subject: "Welcome to MediConsult AI",
+					subject: "Verify KudiTask Account",
 					react: VerifyEmail({ name, verificationLink }),
 				});
 			},
-			"Welcome email",
+			"Verify KudiTask Account",
 			email,
 		);
 	}

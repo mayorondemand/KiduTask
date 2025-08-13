@@ -1,33 +1,52 @@
 import { db } from "@/lib/db";
+import { emailService } from "@/lib/services/email-service";
+import { userService } from "@/lib/services/user-service";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { bearer, openAPI } from "better-auth/plugins";
-import { emailService } from "@/lib/services/email-service";
+import { admin, bearer, customSession, openAPI } from "better-auth/plugins";
+import * as schema from "@/lib/db/schema";
 
-if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
-  throw new Error("GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET is not set");
-}
+// if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
+//   throw new Error("GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET is not set");
+// }
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
     provider: "pg",
+    schema: {
+      ...schema,
+    },
   }),
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: true,
   },
-  socialProviders: {
-    google: {
-      clientId: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    },
-  },
+  // socialProviders: {
+  //   google: {
+  //     clientId: process.env.GOOGLE_CLIENT_ID,
+  //     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+  //   },
+  // },
   emailVerification: {
     sendVerificationEmail: async ({ user, url }) => {
       await emailService.sendVerifyEmail(user.email, user.name, url);
     },
   },
-  plugins: [openAPI(), bearer()],
+  plugins: [
+    openAPI(),
+    bearer(),
+    admin(),
+    customSession(async ({ user, session }) => {
+      const userDetails = await userService.getUser(session.userId);
+      return {
+        user: {
+          ...user,
+          isKycVerified: userDetails?.isKycVerified,
+        },
+        session,
+      };
+    }),
+  ],
   session: {
     expiresIn: 60 * 60 * 24 * 7, // 7 days
     updateAge: 60 * 60 * 24, // 1 day
@@ -41,10 +60,9 @@ export const auth = betterAuth({
     //   },
     // },
   },
+
   user: {
     additionalFields: {},
   },
 });
 
-export type Session = typeof auth.$Infer.Session;
-export type User = Session["user"];

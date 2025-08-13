@@ -10,9 +10,10 @@ import {
   signUp,
   signOut,
   forgetPassword,
+  sendVerificationEmail,
 } from "@/lib/auth/auth-client";
 
-import type { User, Session } from "@/lib/auth/auth-config";
+import type { User, Session } from "@/lib/auth/auth-client";
 import { errorHandler } from "@/lib/error-handler";
 import { toast } from "sonner";
 
@@ -65,6 +66,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
   const user = session?.user || null;
+  console.log("[AuthProvider] user:", user);
 
   // Redirect logic
   useEffect(() => {
@@ -74,7 +76,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const publicPaths = [
       "/",
       "/login",
-      "/signup",
+      "/register",
       "/forgot-password",
       "/reset-password",
     ];
@@ -103,13 +105,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           password,
         },
         {
-          onError: (error) => {
-            errorHandler.handleQueryError(error.error.message);
+          onError: async (error) => {
+            if (error.error.status === 403) {
+              sendVerificationEmail({
+                email,
+                callbackURL: "/login?emailverified=true",
+              })
+                .then(() => {
+                  toast.error("Email not verified", {
+                    description: "A new verification email has been sent",
+                  });
+                })
+                .catch((error) => {
+                  errorHandler.handleQueryError(error.error.message);
+                });
+            } else {
+              errorHandler.handleQueryError(error.error.message);
+            }
           },
           onSuccess: () => {
             toast.success("Login successful");
           },
-        }
+        },
       );
     },
   });
@@ -129,15 +146,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           email,
           password,
           name,
+          callbackURL: "/login?emailverified=true",
         },
         {
-          onError(error) {
-            errorHandler.handleQueryError(error.error.message);
+          onError: (error) => {
+            ersrorHandler.handleQueryError(error.error.message);
           },
           onSuccess: () => {
-            toast.success("Account created successfully");
+            toast.success("Verification Email Sent");
           },
-        }
+        },
       );
     },
   });
@@ -153,7 +171,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           onSuccess: () => {
             toast.success("Logged out successfully");
           },
-        }
+        },
       );
     },
     onSuccess: () => {
@@ -175,7 +193,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           onSuccess: () => {
             toast.success("Password reset successful");
           },
-        }
+        },
       );
     },
   });
@@ -194,7 +212,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           onSuccess: () => {
             toast.success("Logged in successfully");
           },
-        }
+        },
       );
     },
   });
