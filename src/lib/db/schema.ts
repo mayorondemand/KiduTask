@@ -8,11 +8,7 @@ import {
 
 import { pgEnum } from "drizzle-orm/pg-core";
 
-export const kycStatusEnum = pgEnum("kyc_status", [
-  "pending",
-  "verified",
-  "rejected",
-]);
+export const statusEnum = pgEnum("status", ["pending", "approved", "rejected"]);
 
 export const kycTypeEnum = pgEnum("kyc_type", [
   "national_id",
@@ -44,7 +40,7 @@ export const user = pgTable("user", {
 });
 
 export const kyc = pgTable("kyc", {
-  id: text("id").primaryKey(),
+  id: integer("id").generatedByDefaultAsIdentity().primaryKey(),
   userId: text("user_id")
     .notNull()
     .references(() => user.id, { onDelete: "no action" }),
@@ -56,7 +52,7 @@ export const kyc = pgTable("kyc", {
   phoneNumber: text("phone_number").notNull(),
   address: text("address").notNull(),
   country: text("country").notNull(),
-  status: kycStatusEnum("status").notNull(),
+  status: statusEnum("status").notNull().default("pending"),
   createdAt: timestamp("created_at")
     .$defaultFn(() => /* @__PURE__ */ new Date())
     .notNull(),
@@ -108,4 +104,24 @@ export const verification = pgTable("verification", {
   updatedAt: timestamp("updated_at").$defaultFn(
     () => /* @__PURE__ */ new Date(),
   ),
+});
+
+export const advertiser = pgTable("advertiser", {
+  id: integer("id").generatedByDefaultAsIdentity().primaryKey(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  brandName: text("brand_name").notNull(),
+  brandWebsite: text("brand_website").notNull(),
+  brandLogo: text("brand_logo").notNull(),
+  brandDescription: text("brand_description").notNull(),
+  status: statusEnum("status").notNull().default("pending"),
+  statusUpdatedAt: timestamp("status_updated_at"),
+  statusUpdatedBy: text("status_updated_by").references(() => user.id),
+  createdAt: timestamp("created_at")
+    .$defaultFn(() => /* @__PURE__ */ new Date())
+    .notNull(),
+  updatedAt: timestamp("updated_at")
+    .$defaultFn(() => /* @__PURE__ */ new Date())
+    .notNull(),
 });
