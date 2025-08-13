@@ -1,7 +1,7 @@
 import { db } from "@/lib/db";
 import { emailService } from "@/lib/services/email-service";
 import { userService } from "@/lib/services/user-service";
-import { betterAuth } from "better-auth";
+import { betterAuth, url } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { admin, bearer, customSession, openAPI } from "better-auth/plugins";
 import * as schema from "@/lib/db/schema";
@@ -20,6 +20,12 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: true,
+    sendResetPassword: async ({ user, url }) => {
+      await emailService.sendForgotPassEmail(user.email, user.name, url);
+    },
+    onPasswordReset: async ({ user }) => {
+      await emailService.sendResetPasswordEmail(user.email, user.name);
+    },
   },
   socialProviders: {
     google: {

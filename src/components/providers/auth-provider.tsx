@@ -9,8 +9,9 @@ import {
   signIn,
   signUp,
   signOut,
-  forgetPassword,
+  requestPasswordReset,
   sendVerificationEmail,
+  resetPassword,
 } from "@/lib/auth/auth-client";
 
 import type { UserSession, Session } from "@/lib/auth/auth-client";
@@ -36,8 +37,13 @@ type LogoutMutation = {
   isPending: boolean;
 };
 
-type ResetPasswordMutation = {
+type RequestPasswordResetMutation = {
   mutate: (variables: { email: string }) => void;
+  isPending: boolean;
+};
+
+type ResetPasswordMutation = {
+  mutate: (variables: { password: string; token: string }) => void;
   isPending: boolean;
 };
 
@@ -53,6 +59,7 @@ type AuthContextType = {
   loginMutation: LoginMutation;
   signupMutation: SignupMutation;
   logoutMutation: LogoutMutation;
+  requestPasswordResetMutation: RequestPasswordResetMutation;
   resetPasswordMutation: ResetPasswordMutation;
   googleAuthMutation: GoogleAuthMutation;
 };
@@ -179,22 +186,49 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     },
   });
 
+  const requestPasswordResetMutation: RequestPasswordResetMutation =
+    useMutation({
+      mutationFn: async ({ email }: { email: string }) => {
+        return requestPasswordReset(
+          {
+            email,
+            redirectTo: `${window.location.origin}/reset-password`,
+          },
+          {
+            onError: (error) => {
+              errorHandler.handleQueryError(error.error.message);
+            },
+            onSuccess: () => {
+              toast.success("Reset password email sent");
+            },
+          },
+        );
+      },
+    });
+
   const resetPasswordMutation: ResetPasswordMutation = useMutation({
-    mutationFn: async ({ email }: { email: string }) => {
-      return forgetPassword(
+    mutationFn: async ({
+      password,
+      token,
+    }: {
+      password: string;
+      token: string;
+    }) => {
+      return resetPassword(
         {
-          email,
-          redirectTo: `${window.location.origin}/reset-password`,
+          newPassword: password,
+          token,
         },
         {
           onError: (error) => {
             errorHandler.handleQueryError(error.error.message);
           },
-          onSuccess: () => {
-            toast.success("Password reset successful");
-          },
         },
       );
+    },
+    onSuccess: () => {
+      toast.success("Password reset successful");
+      router.push("/login");
     },
   });
 
@@ -223,6 +257,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         loginMutation,
         signupMutation,
         logoutMutation,
+        requestPasswordResetMutation,
         resetPasswordMutation,
         googleAuthMutation,
       }}
