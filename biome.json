@@ -10,12 +10,13 @@
 	},
 	"formatter": {
 		"enabled": true,
-		"indentStyle": "tab"
+		"indentStyle": "space"
 	},
 	"linter": {
 		"enabled": true,
 		"rules": {
 			"recommended": true,
+
 			"nursery": {
 				"useSortedClasses": "off"
 			}
@@ -33,7 +34,7 @@
 		"enabled": true,
 		"actions": {
 			"source": {
-				"organizeImports": "on"
+				"organizeImports": "off"
 			}
 		}
 	}
