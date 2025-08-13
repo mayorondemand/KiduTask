@@ -1,7 +1,7 @@
 import { db } from "@/lib/db";
 import { emailService } from "@/lib/services/email-service";
 import { userService } from "@/lib/services/user-service";
-import { betterAuth, url } from "better-auth";
+import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { admin, bearer, customSession, openAPI } from "better-auth/plugins";
 import * as schema from "@/lib/db/schema";
