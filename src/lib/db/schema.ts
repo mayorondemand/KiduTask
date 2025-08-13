@@ -39,6 +39,8 @@ export const user = pgTable("user", {
   banReason: text("ban_reason"),
   banExpires: timestamp("ban_expires"),
   
+  //Additional fields
+  walletBalance: integer("wallet_balance").notNull().default(0),
 });
 
 export const kyc = pgTable("kyc", {
