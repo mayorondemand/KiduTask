@@ -1,4 +1,7 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
+import { errorHandler } from "@/lib/error-handler";
+import axios from "axios";
+import { toast } from "sonner";
 
 export interface Campaign {
   id: string;
@@ -191,9 +194,12 @@ export const useDashboardData = () => {
 export const useAdvertiserRequest = () => {
   return useMutation({
     mutationFn: async () => {
-      // 5 second loading as requested
-      await new Promise((resolve) => setTimeout(resolve, 5000));
-      return { success: true };
+      const response = await axios.post("/api/advertiser/request");
+      return response.data;
     },
+    onSuccess: () => {
+      toast.success("Your request has been sent to the admin for approval");
+    },
+    onError: errorHandler.handleQueryError,
   });
 };

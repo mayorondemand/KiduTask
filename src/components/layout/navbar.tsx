@@ -1,33 +1,9 @@
 "use client";
 
 import { useAuth } from "@/components/providers/auth-provider";
-import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
-import {
-  Wallet,
-  User,
-  Settings,
-  LogOut,
-  Menu,
-  Briefcase,
-  Star,
-  BarChart3,
-  Users2,
-  Zap,
-  Stars,
-  Clock,
-} from "lucide-react";
-import Link from "next/link";
-import { useState } from "react";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -37,9 +13,32 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useAdvertiserRequest } from "@/lib/client";
+import {
+  BarChart3,
+  Briefcase,
+  Clock,
+  LogOut,
+  Menu,
+  Settings,
+  Star,
+  Stars,
+  User,
+  Users2,
+  Wallet,
+  Zap,
+} from "lucide-react";
+import Link from "next/link";
+import { useState } from "react";
+import { toast } from "sonner";
 
 export function Navbar() {
   const { user, logoutMutation } = useAuth();
@@ -118,7 +117,7 @@ export function Navbar() {
         <Link href="/wallet" className="text-sm font-medium hover:text-primary">
           Wallet
         </Link>
-        {user.isAdvertiser && (
+        {user.advertiserRequestStatus === "approved" && (
           <Link
             href="/advertisers"
             className="text-sm font-medium hover:text-primary"
@@ -159,7 +158,7 @@ export function Navbar() {
             </div>
 
             {/* Show different buttons based on advertiser status */}
-            {!user.isAdvertiser && (
+            {user.advertiserRequestStatus !== "approved" && (
               <Dialog
                 open={advertiserDialogOpen}
                 onOpenChange={setAdvertiserDialogOpen}
@@ -258,7 +257,7 @@ export function Navbar() {
                     >
                       Maybe Later
                     </Button>
-                    {user.isAdvertiserRequestPending ? (
+                    {user.advertiserRequestStatus === "pending" ? (
                       <Button
                         variant={"secondary"}
                         className="bg-yellow-200 text-yellow-800 w-full sm:w-auto"
@@ -282,7 +281,7 @@ export function Navbar() {
               </Dialog>
             )}
 
-            {user.isAdvertiser && (
+            {user.advertiserRequestStatus === "approved" && (
               <Link href="/advertisers">
                 <Button className="hidden sm:flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white border-0 shadow-lg">
                   <BarChart3 className="h-4 w-4" />
@@ -314,7 +313,7 @@ export function Navbar() {
                       <Badge variant="secondary" className="capitalize w-fit">
                         {user.role}
                       </Badge>
-                      {user.isAdvertiser && (
+                      {user.advertiserRequestStatus === "approved" && (
                         <Badge
                           variant="outline"
                           className="w-fit text-purple-600 border-purple-600"
@@ -340,7 +339,7 @@ export function Navbar() {
                     </Link>
                   </DropdownMenuItem>
                 )}
-                {user.isAdvertiser && (
+                {user.advertiserRequestStatus === "approved" && (
                   <DropdownMenuItem asChild>
                     <Link href="/advertisers">
                       <Briefcase className="mr-2 h-4 w-4" />

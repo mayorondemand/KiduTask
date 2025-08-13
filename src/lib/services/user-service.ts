@@ -1,15 +1,14 @@
 import { auth } from "@/lib/auth/auth-config";
 import { db } from "@/lib/db";
-import { advertiser, kyc, user } from "@/lib/db/schema";
+import { advertiser, kyc, type statusEnum, user } from "@/lib/db/schema";
 import { NotAuthorizedError, NotFoundError } from "@/lib/error-handler";
-import { eq, sql } from "drizzle-orm";
-import { getTableColumns } from "drizzle-orm";
+import { eq, getTableColumns, sql } from "drizzle-orm";
 import type { NextRequest } from "next/server";
 
 type UserDb = typeof user.$inferSelect;
 export type UserDetails = UserDb & {
   isKycVerified: boolean;
-  isAdvertiser: boolean;
+  advertiserRequestStatus: (typeof statusEnum.enumValues)[number] | null;
 };
 
 class UserService {
@@ -35,7 +34,7 @@ class UserService {
       .select({
         ...getTableColumns(user),
         isKycVerified: sql<boolean>`CASE WHEN ${kyc.status} = 'approved' THEN true ELSE false END`,
-        isAdvertiser: sql<boolean>`CASE WHEN ${advertiser.status} = 'approved' THEN true ELSE false END`,
+        advertiserRequestStatus: advertiser.status,
       })
       .from(user)
       .leftJoin(kyc, eq(user.id, kyc.userId))
