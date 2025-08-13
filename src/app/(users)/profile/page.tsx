@@ -1,12 +1,18 @@
-"use client"
+"use client";
 
-import { useAuth } from "@/components/providers/auth-provider"
-import { Navbar } from "@/components/layout/navbar"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Separator } from "@/components/ui/separator"
+import { useAuth } from "@/components/providers/auth-provider";
+import { Navbar } from "@/components/layout/navbar";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Separator } from "@/components/ui/separator";
 import {
   Mail,
   Phone,
@@ -23,10 +29,10 @@ import {
   Clock,
   MessageSquare,
   Star,
-} from "lucide-react"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
-import { useEffect } from "react"
+} from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 // Mock user data
 const mockUser = {
@@ -43,7 +49,7 @@ const mockUser = {
     successRate: 92,
     averageRating: 4.7,
   },
-}
+};
 
 // Mock recent activity data
 const mockRecentActivity = [
@@ -82,7 +88,8 @@ const mockRecentActivity = [
     amount: 100,
     submittedAt: "2024-01-18T09:20:00Z",
     reviewedAt: "2024-01-18T15:30:00Z",
-    feedback: "Screenshot did not show the subscription. Please ensure you follow all steps.",
+    feedback:
+      "Screenshot did not show the subscription. Please ensure you follow all steps.",
     advertiserRating: 2,
     userRating: 3,
   },
@@ -112,54 +119,54 @@ const mockRecentActivity = [
     advertiserRating: 5,
     userRating: 4,
   },
-]
+];
 
 export default function ProfilePage() {
-  const { user } = useAuth()
-  const router = useRouter()
+  const { user } = useAuth();
+  const router = useRouter();
 
   useEffect(() => {
     if (!user) {
-      router.push("/login")
+      router.push("/login");
     }
-  }, [user, router])
+  }, [user, router]);
 
   if (!user) {
-    return null
+    return null;
   }
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-NG", {
       style: "currency",
       currency: "NGN",
-    }).format(amount)
-  }
+    }).format(amount);
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
       case "approved":
-        return "bg-green-100 text-green-800 border-green-200"
+        return "bg-green-100 text-green-800 border-green-200";
       case "rejected":
-        return "bg-red-100 text-red-800 border-red-200"
+        return "bg-red-100 text-red-800 border-red-200";
       case "pending":
-        return "bg-yellow-100 text-yellow-800 border-yellow-200"
+        return "bg-yellow-100 text-yellow-800 border-yellow-200";
       default:
-        return "bg-gray-100 text-gray-800 border-gray-200"
+        return "bg-gray-100 text-gray-800 border-gray-200";
     }
-  }
+  };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
       case "approved":
-        return <CheckCircle className="h-4 w-4" />
+        return <CheckCircle className="h-4 w-4" />;
       case "rejected":
-        return <XCircle className="h-4 w-4" />
+        return <XCircle className="h-4 w-4" />;
       case "pending":
-        return <Clock className="h-4 w-4" />
+        return <Clock className="h-4 w-4" />;
       default:
-        return <Activity className="h-4 w-4" />
+        return <Activity className="h-4 w-4" />;
     }
-  }
+  };
 
   const renderStarRating = (rating: number) => {
     return (
@@ -171,8 +178,8 @@ export default function ProfilePage() {
           />
         ))}
       </div>
-    )
-  }
+    );
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -186,10 +193,14 @@ export default function ProfilePage() {
               <CardHeader className="text-center">
                 <Avatar className="w-24 h-24 mx-auto mb-4">
                   <AvatarImage src={mockUser.avatar || "/placeholder.svg"} />
-                  <AvatarFallback className="text-2xl">{mockUser.name.charAt(0)}</AvatarFallback>
+                  <AvatarFallback className="text-2xl">
+                    {mockUser.name.charAt(0)}
+                  </AvatarFallback>
                 </Avatar>
                 <CardTitle className="text-2xl">{mockUser.name}</CardTitle>
-                <CardDescription>Member since {new Date(mockUser.joinedAt).getFullYear()}</CardDescription>
+                <CardDescription>
+                  Member since {new Date(mockUser.joinedAt).getFullYear()}
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center gap-3">
@@ -206,7 +217,9 @@ export default function ProfilePage() {
                 </div>
                 <div className="flex items-center gap-3">
                   <Calendar className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">Joined {new Date(mockUser.joinedAt).toLocaleDateString()}</span>
+                  <span className="text-sm">
+                    Joined {new Date(mockUser.joinedAt).toLocaleDateString()}
+                  </span>
                 </div>
 
                 <Separator />
@@ -231,7 +244,9 @@ export default function ProfilePage() {
                     <DollarSign className="h-4 w-4 text-green-600" />
                     <span className="text-sm">Total Earnings</span>
                   </div>
-                  <span className="font-bold text-green-600">{formatCurrency(mockUser.stats.totalEarnings)}</span>
+                  <span className="font-bold text-green-600">
+                    {formatCurrency(mockUser.stats.totalEarnings)}
+                  </span>
                 </div>
 
                 <div className="flex items-center justify-between">
@@ -239,7 +254,9 @@ export default function ProfilePage() {
                     <CheckCircle className="h-4 w-4 text-blue-600" />
                     <span className="text-sm">Completed Tasks</span>
                   </div>
-                  <span className="font-bold">{mockUser.stats.completedTasks}</span>
+                  <span className="font-bold">
+                    {mockUser.stats.completedTasks}
+                  </span>
                 </div>
 
                 <div className="flex items-center justify-between">
@@ -247,7 +264,9 @@ export default function ProfilePage() {
                     <TrendingUp className="h-4 w-4 text-purple-600" />
                     <span className="text-sm">Success Rate</span>
                   </div>
-                  <span className="font-bold text-purple-600">{mockUser.stats.successRate}%</span>
+                  <span className="font-bold text-purple-600">
+                    {mockUser.stats.successRate}%
+                  </span>
                 </div>
 
                 <div className="flex items-center justify-between">
@@ -256,7 +275,9 @@ export default function ProfilePage() {
                     <span className="text-sm">Average Rating</span>
                   </div>
                   <div className="flex items-center gap-1">
-                    <span className="font-bold">{mockUser.stats.averageRating}</span>
+                    <span className="font-bold">
+                      {mockUser.stats.averageRating}
+                    </span>
                     <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
                   </div>
                 </div>
@@ -272,55 +293,80 @@ export default function ProfilePage() {
                   <Activity className="h-5 w-5" />
                   Recent Activity
                 </CardTitle>
-                <CardDescription>Your latest task submissions and their status</CardDescription>
+                <CardDescription>
+                  Your latest task submissions and their status
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   {mockRecentActivity.map((activity) => (
-                    <Link key={activity.id} href={`/campaign/${activity.campaignId}`}>
+                    <Link
+                      key={activity.id}
+                      href={`/campaign/${activity.campaignId}`}
+                    >
                       <div className="flex items-start gap-4 p-4 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer">
                         <div className="flex-shrink-0">
                           <Badge className={getStatusColor(activity.status)}>
                             <div className="flex items-center gap-1">
                               {getStatusIcon(activity.status)}
-                              {activity.status.charAt(0).toUpperCase() + activity.status.slice(1)}
+                              {activity.status.charAt(0).toUpperCase() +
+                                activity.status.slice(1)}
                             </div>
                           </Badge>
                         </div>
 
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between mb-1">
-                            <h3 className="font-medium truncate">{activity.campaignName}</h3>
+                            <h3 className="font-medium truncate">
+                              {activity.campaignName}
+                            </h3>
                             <div className="flex items-center gap-2">
-                              <span className="font-bold text-green-600">{formatCurrency(activity.amount)}</span>
+                              <span className="font-bold text-green-600">
+                                {formatCurrency(activity.amount)}
+                              </span>
                               <ChevronRight className="h-4 w-4 text-muted-foreground" />
                             </div>
                           </div>
 
                           <p className="text-sm text-muted-foreground mb-2">
-                            Submitted {new Date(activity.submittedAt).toLocaleDateString()}
+                            Submitted{" "}
+                            {new Date(
+                              activity.submittedAt,
+                            ).toLocaleDateString()}
                             {activity.reviewedAt && (
-                              <span> • Reviewed {new Date(activity.reviewedAt).toLocaleDateString()}</span>
+                              <span>
+                                {" "}
+                                • Reviewed{" "}
+                                {new Date(
+                                  activity.reviewedAt,
+                                ).toLocaleDateString()}
+                              </span>
                             )}
                           </p>
 
                           {activity.feedback && (
                             <div className="flex items-start gap-2 mb-2">
                               <MessageSquare className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
-                              <p className="text-sm text-blue-800 bg-blue-50 rounded p-2 flex-1">{activity.feedback}</p>
+                              <p className="text-sm text-blue-800 bg-blue-50 rounded p-2 flex-1">
+                                {activity.feedback}
+                              </p>
                             </div>
                           )}
 
                           <div className="flex items-center gap-4 text-sm">
                             {activity.advertiserRating > 0 && (
                               <div className="flex items-center gap-1">
-                                <span className="text-muted-foreground">Their rating:</span>
+                                <span className="text-muted-foreground">
+                                  Their rating:
+                                </span>
                                 {renderStarRating(activity.advertiserRating)}
                               </div>
                             )}
                             {activity.userRating > 0 && (
                               <div className="flex items-center gap-1">
-                                <span className="text-muted-foreground">Your rating:</span>
+                                <span className="text-muted-foreground">
+                                  Your rating:
+                                </span>
                                 {renderStarRating(activity.userRating)}
                               </div>
                             )}
@@ -335,7 +381,9 @@ export default function ProfilePage() {
                   <div className="text-center py-8">
                     <Activity className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                     <h3 className="font-medium mb-2">No Recent Activity</h3>
-                    <p className="text-muted-foreground mb-4">Start completing tasks to see your activity here.</p>
+                    <p className="text-muted-foreground mb-4">
+                      Start completing tasks to see your activity here.
+                    </p>
                     <Link href="/campaigns">
                       <Button>Browse Campaigns</Button>
                     </Link>
@@ -347,5 +395,5 @@ export default function ProfilePage() {
         </div>
       </div>
     </div>
-  )
+  );
 }

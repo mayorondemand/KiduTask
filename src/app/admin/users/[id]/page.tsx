@@ -1,17 +1,30 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { useAuth } from "@/components/providers/auth-provider"
-import { Navbar } from "@/components/layout/navbar"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
+import { useState, useEffect } from "react";
+import { useAuth } from "@/components/providers/auth-provider";
+import { Navbar } from "@/components/layout/navbar";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
   DialogContent,
@@ -20,7 +33,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog"
+} from "@/components/ui/dialog";
 import {
   ArrowLeft,
   User,
@@ -38,35 +51,35 @@ import {
   Mail,
   MapPin,
   FileText,
-} from "lucide-react"
-import { toast } from "sonner"
-import { useRouter } from "next/navigation"
-import Link from "next/link"
+} from "lucide-react";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function UserDetailPage({ params }) {
-  const { user } = useAuth()
-  const router = useRouter()
-  
-  const [selectedUser, setSelectedUser] = useState(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [actionLoading, setActionLoading] = useState(false)
-  const [editDialog, setEditDialog] = useState(false)
-  const [walletDialog, setWalletDialog] = useState(false)
-  const [walletAction, setWalletAction] = useState("credit")
-  const [walletAmount, setWalletAmount] = useState("")
-  const [walletReason, setWalletReason] = useState("")
+  const { user } = useAuth();
+  const router = useRouter();
+
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState(false);
+  const [editDialog, setEditDialog] = useState(false);
+  const [walletDialog, setWalletDialog] = useState(false);
+  const [walletAction, setWalletAction] = useState("credit");
+  const [walletAmount, setWalletAmount] = useState("");
+  const [walletReason, setWalletReason] = useState("");
 
   useEffect(() => {
     if (!user || user.role !== "admin") {
-      router.push("/login")
+      router.push("/login");
     }
-  }, [user, router])
+  }, [user, router]);
 
   useEffect(() => {
     // Simulate fetching user data
     const fetchUser = async () => {
-      setIsLoading(true)
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+      setIsLoading(true);
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
       // Mock user data
       setSelectedUser({
@@ -150,20 +163,20 @@ export default function UserDetailPage({ params }) {
             date: "2024-01-14T16:20:00Z",
           },
         ],
-      })
-      setIsLoading(false)
-    }
+      });
+      setIsLoading(false);
+    };
 
-    fetchUser()
-  }, [params.id])
+    fetchUser();
+  }, [params.id]);
 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat("en-NG", {
       style: "currency",
       currency: "NGN",
       minimumFractionDigits: 0,
-    }).format(amount)
-  }
+    }).format(amount);
+  };
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString("en-US", {
@@ -172,23 +185,39 @@ export default function UserDetailPage({ params }) {
       day: "numeric",
       hour: "2-digit",
       minute: "2-digit",
-    })
-  }
+    });
+  };
 
   const getStatusBadge = (status) => {
     switch (status) {
       case "active":
-        return <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Active</Badge>
+        return (
+          <Badge className="bg-green-100 text-green-800 hover:bg-green-100">
+            Active
+          </Badge>
+        );
       case "suspended":
-        return <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100">Suspended</Badge>
+        return (
+          <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100">
+            Suspended
+          </Badge>
+        );
       case "pending":
-        return <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100">Pending</Badge>
+        return (
+          <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100">
+            Pending
+          </Badge>
+        );
       case "banned":
-        return <Badge className="bg-red-100 text-red-800 hover:bg-red-100">Banned</Badge>
+        return (
+          <Badge className="bg-red-100 text-red-800 hover:bg-red-100">
+            Banned
+          </Badge>
+        );
       default:
-        return <Badge variant="secondary">{status}</Badge>
+        return <Badge variant="secondary">{status}</Badge>;
     }
-  }
+  };
 
   const getKYCBadge = (status) => {
     switch (status) {
@@ -198,57 +227,69 @@ export default function UserDetailPage({ params }) {
             <CheckCircle className="w-3 h-3 mr-1" />
             Verified
           </Badge>
-        )
+        );
       case "pending":
         return (
           <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100">
             <Clock className="w-3 h-3 mr-1" />
             Pending
           </Badge>
-        )
+        );
       case "rejected":
         return (
           <Badge className="bg-red-100 text-red-800 hover:bg-red-100">
             <XCircle className="w-3 h-3 mr-1" />
             Rejected
           </Badge>
-        )
+        );
       default:
-        return <Badge variant="secondary">{status}</Badge>
+        return <Badge variant="secondary">{status}</Badge>;
     }
-  }
+  };
 
   const getUserTypeBadge = (type) => {
     switch (type) {
       case "tasker":
-        return <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100">Tasker</Badge>
+        return (
+          <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100">
+            Tasker
+          </Badge>
+        );
       case "advertiser":
-        return <Badge className="bg-purple-100 text-purple-800 hover:bg-purple-100">Advertiser</Badge>
+        return (
+          <Badge className="bg-purple-100 text-purple-800 hover:bg-purple-100">
+            Advertiser
+          </Badge>
+        );
       case "both":
-        return <Badge className="bg-orange-100 text-orange-800 hover:bg-orange-100">Both</Badge>
+        return (
+          <Badge className="bg-orange-100 text-orange-800 hover:bg-orange-100">
+            Both
+          </Badge>
+        );
       default:
-        return <Badge variant="secondary">{type}</Badge>
+        return <Badge variant="secondary">{type}</Badge>;
     }
-  }
+  };
 
   const handleUserAction = async (action) => {
-    setActionLoading(true)
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    setActionLoading(true);
+    await new Promise((resolve) => setTimeout(resolve, 1000));
 
     const actionMessages = {
       suspend: "User has been suspended",
       activate: "User has been activated",
       ban: "User has been banned",
       verify_kyc: "User KYC has been verified",
-    }
+    };
 
     toast({
       title: "Action Completed",
       description: actionMessages[action] || "Action completed successfully",
-    })
+    });
 
-    setActionLoading(false)
-  }
+    setActionLoading(false);
+  };
 
   const handleWalletAction = async () => {
     if (!walletAmount || !walletReason) {
@@ -256,26 +297,26 @@ export default function UserDetailPage({ params }) {
         title: "Missing Information",
         description: "Please enter amount and reason",
         variant: "destructive",
-      })
-      return
+      });
+      return;
     }
 
-    setActionLoading(true)
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    setActionLoading(true);
+    await new Promise((resolve) => setTimeout(resolve, 1000));
 
     toast({
       title: "Wallet Updated",
       description: `User wallet has been ${walletAction === "credit" ? "credited" : "debited"} with ${formatCurrency(Number.parseFloat(walletAmount))}`,
-    })
+    });
 
-    setWalletAmount("")
-    setWalletReason("")
-    setWalletDialog(false)
-    setActionLoading(false)
-  }
+    setWalletAmount("");
+    setWalletReason("");
+    setWalletDialog(false);
+    setActionLoading(false);
+  };
 
   if (!user || user.role !== "admin") {
-    return null
+    return null;
   }
 
   if (isLoading) {
@@ -290,7 +331,7 @@ export default function UserDetailPage({ params }) {
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -316,11 +357,18 @@ export default function UserDetailPage({ params }) {
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-6">
                 <Avatar className="h-20 w-20">
-                  <AvatarImage src={selectedUser?.avatar || "/placeholder.svg"} alt={selectedUser?.name} />
-                  <AvatarFallback className="text-xl">{selectedUser?.name?.charAt(0)}</AvatarFallback>
+                  <AvatarImage
+                    src={selectedUser?.avatar || "/placeholder.svg"}
+                    alt={selectedUser?.name}
+                  />
+                  <AvatarFallback className="text-xl">
+                    {selectedUser?.name?.charAt(0)}
+                  </AvatarFallback>
                 </Avatar>
                 <div>
-                  <h2 className="text-2xl font-bold text-gray-900">{selectedUser?.name}</h2>
+                  <h2 className="text-2xl font-bold text-gray-900">
+                    {selectedUser?.name}
+                  </h2>
                   <p className="text-gray-600 mb-2">{selectedUser?.email}</p>
                   <div className="flex space-x-2">
                     {getStatusBadge(selectedUser?.status)}
@@ -340,21 +388,27 @@ export default function UserDetailPage({ params }) {
                   <DialogContent>
                     <DialogHeader>
                       <DialogTitle>Manage User Wallet</DialogTitle>
-                      <DialogDescription>Credit or debit the user's wallet balance</DialogDescription>
+                      <DialogDescription>
+                        Credit or debit the user's wallet balance
+                      </DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4">
                       <div>
                         <Label>Action</Label>
                         <div className="flex space-x-2 mt-2">
                           <Button
-                            variant={walletAction === "credit" ? "default" : "outline"}
+                            variant={
+                              walletAction === "credit" ? "default" : "outline"
+                            }
                             onClick={() => setWalletAction("credit")}
                             className="flex-1"
                           >
                             Credit
                           </Button>
                           <Button
-                            variant={walletAction === "debit" ? "default" : "outline"}
+                            variant={
+                              walletAction === "debit" ? "default" : "outline"
+                            }
                             onClick={() => setWalletAction("debit")}
                             className="flex-1"
                           >
@@ -383,11 +437,19 @@ export default function UserDetailPage({ params }) {
                       </div>
                     </div>
                     <DialogFooter>
-                      <Button variant="outline" onClick={() => setWalletDialog(false)}>
+                      <Button
+                        variant="outline"
+                        onClick={() => setWalletDialog(false)}
+                      >
                         Cancel
                       </Button>
-                      <Button onClick={handleWalletAction} disabled={actionLoading}>
-                        {actionLoading ? "Processing..." : `${walletAction === "credit" ? "Credit" : "Debit"} Wallet`}
+                      <Button
+                        onClick={handleWalletAction}
+                        disabled={actionLoading}
+                      >
+                        {actionLoading
+                          ? "Processing..."
+                          : `${walletAction === "credit" ? "Credit" : "Debit"} Wallet`}
                       </Button>
                     </DialogFooter>
                   </DialogContent>
@@ -436,8 +498,12 @@ export default function UserDetailPage({ params }) {
               <div className="flex items-center">
                 <Wallet className="h-8 w-8 text-green-600" />
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Wallet Balance</p>
-                  <p className="text-2xl font-bold text-gray-900">{formatCurrency(selectedUser?.walletBalance)}</p>
+                  <p className="text-sm font-medium text-gray-600">
+                    Wallet Balance
+                  </p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {formatCurrency(selectedUser?.walletBalance)}
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -448,8 +514,12 @@ export default function UserDetailPage({ params }) {
               <div className="flex items-center">
                 <TrendingUp className="h-8 w-8 text-blue-600" />
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Total Earnings</p>
-                  <p className="text-2xl font-bold text-gray-900">{formatCurrency(selectedUser?.totalEarnings)}</p>
+                  <p className="text-sm font-medium text-gray-600">
+                    Total Earnings
+                  </p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {formatCurrency(selectedUser?.totalEarnings)}
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -460,8 +530,12 @@ export default function UserDetailPage({ params }) {
               <div className="flex items-center">
                 <DollarSign className="h-8 w-8 text-purple-600" />
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Total Spent</p>
-                  <p className="text-2xl font-bold text-gray-900">{formatCurrency(selectedUser?.totalSpent)}</p>
+                  <p className="text-sm font-medium text-gray-600">
+                    Total Spent
+                  </p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {formatCurrency(selectedUser?.totalSpent)}
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -472,8 +546,12 @@ export default function UserDetailPage({ params }) {
               <div className="flex items-center">
                 <Activity className="h-8 w-8 text-orange-600" />
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Tasks Completed</p>
-                  <p className="text-2xl font-bold text-gray-900">{selectedUser?.completedTasks}</p>
+                  <p className="text-sm font-medium text-gray-600">
+                    Tasks Completed
+                  </p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {selectedUser?.completedTasks}
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -493,7 +571,9 @@ export default function UserDetailPage({ params }) {
             <Card>
               <CardHeader>
                 <CardTitle>Profile Information</CardTitle>
-                <CardDescription>User's personal and contact information</CardDescription>
+                <CardDescription>
+                  User's personal and contact information
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -501,21 +581,27 @@ export default function UserDetailPage({ params }) {
                     <div className="flex items-center space-x-3">
                       <User className="h-5 w-5 text-gray-400" />
                       <div>
-                        <p className="text-sm font-medium text-gray-600">Full Name</p>
+                        <p className="text-sm font-medium text-gray-600">
+                          Full Name
+                        </p>
                         <p className="text-gray-900">{selectedUser?.name}</p>
                       </div>
                     </div>
                     <div className="flex items-center space-x-3">
                       <Mail className="h-5 w-5 text-gray-400" />
                       <div>
-                        <p className="text-sm font-medium text-gray-600">Email Address</p>
+                        <p className="text-sm font-medium text-gray-600">
+                          Email Address
+                        </p>
                         <p className="text-gray-900">{selectedUser?.email}</p>
                       </div>
                     </div>
                     <div className="flex items-center space-x-3">
                       <Phone className="h-5 w-5 text-gray-400" />
                       <div>
-                        <p className="text-sm font-medium text-gray-600">Phone Number</p>
+                        <p className="text-sm font-medium text-gray-600">
+                          Phone Number
+                        </p>
                         <p className="text-gray-900">{selectedUser?.phone}</p>
                       </div>
                     </div>
@@ -524,22 +610,34 @@ export default function UserDetailPage({ params }) {
                     <div className="flex items-center space-x-3">
                       <MapPin className="h-5 w-5 text-gray-400" />
                       <div>
-                        <p className="text-sm font-medium text-gray-600">Location</p>
-                        <p className="text-gray-900">{selectedUser?.location}</p>
+                        <p className="text-sm font-medium text-gray-600">
+                          Location
+                        </p>
+                        <p className="text-gray-900">
+                          {selectedUser?.location}
+                        </p>
                       </div>
                     </div>
                     <div className="flex items-center space-x-3">
                       <Calendar className="h-5 w-5 text-gray-400" />
                       <div>
-                        <p className="text-sm font-medium text-gray-600">Joined Date</p>
-                        <p className="text-gray-900">{formatDate(selectedUser?.joinedAt)}</p>
+                        <p className="text-sm font-medium text-gray-600">
+                          Joined Date
+                        </p>
+                        <p className="text-gray-900">
+                          {formatDate(selectedUser?.joinedAt)}
+                        </p>
                       </div>
                     </div>
                     <div className="flex items-center space-x-3">
                       <Activity className="h-5 w-5 text-gray-400" />
                       <div>
-                        <p className="text-sm font-medium text-gray-600">Last Active</p>
-                        <p className="text-gray-900">{formatDate(selectedUser?.lastActive)}</p>
+                        <p className="text-sm font-medium text-gray-600">
+                          Last Active
+                        </p>
+                        <p className="text-gray-900">
+                          {formatDate(selectedUser?.lastActive)}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -552,7 +650,9 @@ export default function UserDetailPage({ params }) {
             <Card>
               <CardHeader>
                 <CardTitle>Recent Transactions</CardTitle>
-                <CardDescription>User's recent wallet transactions</CardDescription>
+                <CardDescription>
+                  User's recent wallet transactions
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <Table>
@@ -568,17 +668,23 @@ export default function UserDetailPage({ params }) {
                   <TableBody>
                     {selectedUser?.recentTransactions.map((transaction) => (
                       <TableRow key={transaction.id}>
-                        <TableCell className="capitalize">{transaction.type.replace("_", " ")}</TableCell>
+                        <TableCell className="capitalize">
+                          {transaction.type.replace("_", " ")}
+                        </TableCell>
                         <TableCell>{transaction.description}</TableCell>
                         <TableCell>
                           <span
                             className={
-                              transaction.type === "earning" || transaction.type === "deposit"
+                              transaction.type === "earning" ||
+                              transaction.type === "deposit"
                                 ? "text-green-600"
                                 : "text-red-600"
                             }
                           >
-                            {transaction.type === "earning" || transaction.type === "deposit" ? "+" : "-"}
+                            {transaction.type === "earning" ||
+                            transaction.type === "deposit"
+                              ? "+"
+                              : "-"}
                             {formatCurrency(transaction.amount)}
                           </span>
                         </TableCell>
@@ -606,18 +712,25 @@ export default function UserDetailPage({ params }) {
             <Card>
               <CardHeader>
                 <CardTitle>Recent Activity</CardTitle>
-                <CardDescription>User's recent platform activities</CardDescription>
+                <CardDescription>
+                  User's recent platform activities
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   {selectedUser?.recentActivities.map((activity) => (
-                    <div key={activity.id} className="flex items-center space-x-4 p-4 border rounded-lg">
+                    <div
+                      key={activity.id}
+                      className="flex items-center space-x-4 p-4 border rounded-lg"
+                    >
                       <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
                         <Activity className="h-5 w-5 text-blue-600" />
                       </div>
                       <div className="flex-1">
                         <p className="font-medium">{activity.description}</p>
-                        <p className="text-sm text-muted-foreground">{formatDate(activity.date)}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {formatDate(activity.date)}
+                        </p>
                       </div>
                     </div>
                   ))}
@@ -631,14 +744,18 @@ export default function UserDetailPage({ params }) {
               <Card>
                 <CardHeader>
                   <CardTitle>KYC Verification</CardTitle>
-                  <CardDescription>User's identity verification status and documents</CardDescription>
+                  <CardDescription>
+                    User's identity verification status and documents
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <div>
                         <h4 className="font-medium">KYC Status</h4>
-                        <p className="text-sm text-muted-foreground">Identity verification status</p>
+                        <p className="text-sm text-muted-foreground">
+                          Identity verification status
+                        </p>
                       </div>
                       {getKYCBadge(selectedUser?.kycStatus)}
                     </div>
@@ -646,12 +763,17 @@ export default function UserDetailPage({ params }) {
                       <h4 className="font-medium mb-3">Uploaded Documents</h4>
                       <div className="space-y-2">
                         {selectedUser?.kycDocuments.map((doc, index) => (
-                          <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+                          <div
+                            key={index}
+                            className="flex items-center justify-between p-3 border rounded-lg"
+                          >
                             <div className="flex items-center space-x-3">
                               <FileText className="h-5 w-5 text-gray-400" />
                               <div>
                                 <p className="font-medium">{doc.type}</p>
-                                <p className="text-sm text-muted-foreground">Uploaded {formatDate(doc.uploadedAt)}</p>
+                                <p className="text-sm text-muted-foreground">
+                                  Uploaded {formatDate(doc.uploadedAt)}
+                                </p>
                               </div>
                             </div>
                             <Badge
@@ -674,14 +796,18 @@ export default function UserDetailPage({ params }) {
               <Card>
                 <CardHeader>
                   <CardTitle>Banking Information</CardTitle>
-                  <CardDescription>User's bank account details for withdrawals</CardDescription>
+                  <CardDescription>
+                    User's bank account details for withdrawals
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <div>
                         <h4 className="font-medium">Bank Account</h4>
-                        <p className="text-sm text-muted-foreground">Withdrawal account details</p>
+                        <p className="text-sm text-muted-foreground">
+                          Withdrawal account details
+                        </p>
                       </div>
                       {selectedUser?.bankAccount?.isVerified ? (
                         <Badge className="bg-green-100 text-green-800 hover:bg-green-100">
@@ -698,16 +824,28 @@ export default function UserDetailPage({ params }) {
                     <div className="bg-gray-50 p-4 rounded-lg">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                          <p className="text-sm font-medium text-gray-600">Account Name</p>
-                          <p className="text-gray-900">{selectedUser?.bankAccount?.accountName}</p>
+                          <p className="text-sm font-medium text-gray-600">
+                            Account Name
+                          </p>
+                          <p className="text-gray-900">
+                            {selectedUser?.bankAccount?.accountName}
+                          </p>
                         </div>
                         <div>
-                          <p className="text-sm font-medium text-gray-600">Account Number</p>
-                          <p className="text-gray-900">{selectedUser?.bankAccount?.accountNumber}</p>
+                          <p className="text-sm font-medium text-gray-600">
+                            Account Number
+                          </p>
+                          <p className="text-gray-900">
+                            {selectedUser?.bankAccount?.accountNumber}
+                          </p>
                         </div>
                         <div>
-                          <p className="text-sm font-medium text-gray-600">Bank Name</p>
-                          <p className="text-gray-900">{selectedUser?.bankAccount?.bankName}</p>
+                          <p className="text-sm font-medium text-gray-600">
+                            Bank Name
+                          </p>
+                          <p className="text-gray-900">
+                            {selectedUser?.bankAccount?.bankName}
+                          </p>
                         </div>
                       </div>
                     </div>
@@ -719,5 +857,5 @@ export default function UserDetailPage({ params }) {
         </Tabs>
       </div>
     </div>
-  )
+  );
 }

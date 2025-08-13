@@ -1,12 +1,31 @@
-"use client"
+"use client";
 
-import { useAuth } from "@/components/providers/auth-provider"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useAuth } from "@/components/providers/auth-provider";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,7 +33,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from "@/components/ui/dropdown-menu";
 import {
   CreditCard,
   Search,
@@ -26,27 +45,27 @@ import {
   Copy,
   DollarSign,
   Download,
-} from "lucide-react"
-import { useRouter } from "next/navigation"
-import { useEffect, useState } from "react"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { toast } from "sonner"
+} from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { toast } from "sonner";
 
 export default function AdminPayouts() {
-  const { user } = useAuth()
-  const router = useRouter()
-  
-  const [searchTerm, setSearchTerm] = useState("")
-  const [statusFilter, setStatusFilter] = useState("all")
+  const { user } = useAuth();
+  const router = useRouter();
+
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
 
   useEffect(() => {
     if (!user || user.role !== "admin") {
-      router.push("/login")
+      router.push("/login");
     }
-  }, [user, router])
+  }, [user, router]);
 
   if (!user || user.role !== "admin") {
-    return null
+    return null;
   }
 
   // Mock payout requests data
@@ -164,34 +183,39 @@ export default function AdminPayouts() {
       reference: "WTH-005-2024",
       reason: "Task earnings withdrawal",
     },
-  ]
+  ];
 
   const filteredPayouts = payouts.filter((payout) => {
     const matchesSearch =
       payout.user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       payout.user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
       payout.reference.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      payout.bankDetails.accountNumber.includes(searchTerm)
-    const matchesStatus = statusFilter === "all" || payout.status === statusFilter
-    return matchesSearch && matchesStatus
-  })
+      payout.bankDetails.accountNumber.includes(searchTerm);
+    const matchesStatus =
+      statusFilter === "all" || payout.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
 
   const stats = {
     total: payouts.length,
     pending: payouts.filter((p) => p.status === "pending").length,
     approved: payouts.filter((p) => p.status === "approved").length,
     rejected: payouts.filter((p) => p.status === "rejected").length,
-    totalAmount: payouts.filter((p) => p.status === "pending").reduce((sum, p) => sum + p.amount, 0),
-    totalFees: payouts.filter((p) => p.status === "approved").reduce((sum, p) => sum + p.fee, 0),
-  }
+    totalAmount: payouts
+      .filter((p) => p.status === "pending")
+      .reduce((sum, p) => sum + p.amount, 0),
+    totalFees: payouts
+      .filter((p) => p.status === "approved")
+      .reduce((sum, p) => sum + p.fee, 0),
+  };
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-NG", {
       style: "currency",
       currency: "NGN",
       minimumFractionDigits: 0,
-    }).format(amount)
-  }
+    }).format(amount);
+  };
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
@@ -200,64 +224,81 @@ export default function AdminPayouts() {
       day: "numeric",
       hour: "2-digit",
       minute: "2-digit",
-    })
-  }
+    });
+  };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "pending":
-        return <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100">Pending</Badge>
+        return (
+          <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100">
+            Pending
+          </Badge>
+        );
       case "approved":
-        return <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Approved</Badge>
+        return (
+          <Badge className="bg-green-100 text-green-800 hover:bg-green-100">
+            Approved
+          </Badge>
+        );
       case "rejected":
-        return <Badge className="bg-red-100 text-red-800 hover:bg-red-100">Rejected</Badge>
+        return (
+          <Badge className="bg-red-100 text-red-800 hover:bg-red-100">
+            Rejected
+          </Badge>
+        );
       default:
-        return <Badge variant="secondary">{status}</Badge>
+        return <Badge variant="secondary">{status}</Badge>;
     }
-  }
+  };
 
   const handlePayoutAction = (payoutId: string, action: string) => {
-    const payout = payouts.find((p) => p.id === payoutId)
-    if (!payout) return
+    const payout = payouts.find((p) => p.id === payoutId);
+    if (!payout) return;
 
     switch (action) {
       case "approve":
         toast({
           title: "Payout Approved",
           description: `${formatCurrency(payout.netAmount)} payout to ${payout.user.name} has been approved`,
-        })
-        break
+        });
+        break;
       case "reject":
         toast({
           title: "Payout Rejected",
           description: `Payout request from ${payout.user.name} has been rejected`,
           variant: "destructive",
-        })
-        break
+        });
+        break;
     }
-  }
+  };
 
   const handleCopyAccountNumber = (accountNumber: string) => {
-    navigator.clipboard.writeText(accountNumber)
+    navigator.clipboard.writeText(accountNumber);
     toast({
       title: "Copied",
       description: "Account number copied to clipboard",
-    })
-  }
+    });
+  };
 
   const handleExportPayouts = () => {
     toast({
       title: "Export Started",
-      description: "Payout data export has been initiated. You'll receive an email when ready.",
-    })
-  }
+      description:
+        "Payout data export has been initiated. You'll receive an email when ready.",
+    });
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Payout Management</h1>
-          <p className="text-gray-600 mt-2">Review and process withdrawal requests</p>
+          <h1 className="text-3xl font-bold text-gray-900">
+            Payout Management
+          </h1>
+          <p className="text-gray-600 mt-2">
+            Review and process withdrawal requests
+          </p>
         </div>
 
         {/* Stats Cards */}
@@ -266,7 +307,9 @@ export default function AdminPayouts() {
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Total Requests</p>
+                  <p className="text-sm text-muted-foreground">
+                    Total Requests
+                  </p>
                   <p className="text-2xl font-bold">{stats.total}</p>
                 </div>
                 <CreditCard className="h-8 w-8 text-blue-600" />
@@ -278,7 +321,9 @@ export default function AdminPayouts() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Pending</p>
-                  <p className="text-2xl font-bold text-yellow-600">{stats.pending}</p>
+                  <p className="text-2xl font-bold text-yellow-600">
+                    {stats.pending}
+                  </p>
                 </div>
                 <Clock className="h-8 w-8 text-yellow-600" />
               </div>
@@ -289,7 +334,9 @@ export default function AdminPayouts() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Approved</p>
-                  <p className="text-2xl font-bold text-green-600">{stats.approved}</p>
+                  <p className="text-2xl font-bold text-green-600">
+                    {stats.approved}
+                  </p>
                 </div>
                 <CheckCircle className="h-8 w-8 text-green-600" />
               </div>
@@ -300,7 +347,9 @@ export default function AdminPayouts() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Rejected</p>
-                  <p className="text-2xl font-bold text-red-600">{stats.rejected}</p>
+                  <p className="text-2xl font-bold text-red-600">
+                    {stats.rejected}
+                  </p>
                 </div>
                 <XCircle className="h-8 w-8 text-red-600" />
               </div>
@@ -310,8 +359,12 @@ export default function AdminPayouts() {
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Pending Amount</p>
-                  <p className="text-xl font-bold text-purple-600">{formatCurrency(stats.totalAmount)}</p>
+                  <p className="text-sm text-muted-foreground">
+                    Pending Amount
+                  </p>
+                  <p className="text-xl font-bold text-purple-600">
+                    {formatCurrency(stats.totalAmount)}
+                  </p>
                 </div>
                 <DollarSign className="h-8 w-8 text-purple-600" />
               </div>
@@ -325,7 +378,9 @@ export default function AdminPayouts() {
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
                 <CardTitle>Withdrawal Requests</CardTitle>
-                <CardDescription>Review and process user withdrawal requests</CardDescription>
+                <CardDescription>
+                  Review and process user withdrawal requests
+                </CardDescription>
               </div>
               <Button onClick={handleExportPayouts}>
                 <Download className="h-4 w-4 mr-2" />
@@ -376,25 +431,42 @@ export default function AdminPayouts() {
                       <TableCell>
                         <div className="flex items-center space-x-3">
                           <Avatar className="h-8 w-8">
-                            <AvatarImage src={payout.user.avatar || "/placeholder.svg"} alt={payout.user.name} />
-                            <AvatarFallback>{payout.user.name.charAt(0)}</AvatarFallback>
+                            <AvatarImage
+                              src={payout.user.avatar || "/placeholder.svg"}
+                              alt={payout.user.name}
+                            />
+                            <AvatarFallback>
+                              {payout.user.name.charAt(0)}
+                            </AvatarFallback>
                           </Avatar>
                           <div>
-                            <div className="font-medium">{payout.user.name}</div>
-                            <div className="text-sm text-muted-foreground">{payout.user.email}</div>
+                            <div className="font-medium">
+                              {payout.user.name}
+                            </div>
+                            <div className="text-sm text-muted-foreground">
+                              {payout.user.email}
+                            </div>
                           </div>
                         </div>
                       </TableCell>
                       <TableCell>
                         <div className="text-sm">
-                          <div className="font-medium">{formatCurrency(payout.amount)}</div>
-                          <div className="text-muted-foreground">Fee: {formatCurrency(payout.fee)}</div>
-                          <div className="text-green-600 font-medium">Net: {formatCurrency(payout.netAmount)}</div>
+                          <div className="font-medium">
+                            {formatCurrency(payout.amount)}
+                          </div>
+                          <div className="text-muted-foreground">
+                            Fee: {formatCurrency(payout.fee)}
+                          </div>
+                          <div className="text-green-600 font-medium">
+                            Net: {formatCurrency(payout.netAmount)}
+                          </div>
                         </div>
                       </TableCell>
                       <TableCell>
                         <div className="text-sm">
-                          <div className="font-medium">{payout.bankDetails.accountName}</div>
+                          <div className="font-medium">
+                            {payout.bankDetails.accountName}
+                          </div>
                           <div className="flex items-center space-x-2">
                             <code className="text-xs bg-gray-100 px-2 py-1 rounded">
                               {payout.bankDetails.accountNumber}
@@ -402,24 +474,34 @@ export default function AdminPayouts() {
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => handleCopyAccountNumber(payout.bankDetails.accountNumber)}
+                              onClick={() =>
+                                handleCopyAccountNumber(
+                                  payout.bankDetails.accountNumber,
+                                )
+                              }
                               className="h-6 w-6 p-0"
                             >
                               <Copy className="h-3 w-3" />
                             </Button>
                           </div>
-                          <div className="text-muted-foreground">{payout.bankDetails.bankName}</div>
+                          <div className="text-muted-foreground">
+                            {payout.bankDetails.bankName}
+                          </div>
                         </div>
                       </TableCell>
                       <TableCell>{getStatusBadge(payout.status)}</TableCell>
                       <TableCell>
-                        <code className="text-xs bg-gray-100 px-2 py-1 rounded">{payout.reference}</code>
+                        <code className="text-xs bg-gray-100 px-2 py-1 rounded">
+                          {payout.reference}
+                        </code>
                       </TableCell>
                       <TableCell>
                         <div className="text-sm">
                           <div>{formatDate(payout.requestedAt)}</div>
                           {payout.processedAt && (
-                            <div className="text-muted-foreground">Processed: {formatDate(payout.processedAt)}</div>
+                            <div className="text-muted-foreground">
+                              Processed: {formatDate(payout.processedAt)}
+                            </div>
                           )}
                         </div>
                       </TableCell>
@@ -440,14 +522,18 @@ export default function AdminPayouts() {
                             {payout.status === "pending" && (
                               <>
                                 <DropdownMenuItem
-                                  onClick={() => handlePayoutAction(payout.id, "approve")}
+                                  onClick={() =>
+                                    handlePayoutAction(payout.id, "approve")
+                                  }
                                   className="text-green-600"
                                 >
                                   <CheckCircle className="h-4 w-4 mr-2" />
                                   Approve Payout
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
-                                  onClick={() => handlePayoutAction(payout.id, "reject")}
+                                  onClick={() =>
+                                    handlePayoutAction(payout.id, "reject")
+                                  }
                                   className="text-red-600"
                                 >
                                   <XCircle className="h-4 w-4 mr-2" />
@@ -467,13 +553,17 @@ export default function AdminPayouts() {
             {filteredPayouts.length === 0 && (
               <div className="text-center py-8">
                 <CreditCard className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No payout requests found</h3>
-                <p className="text-gray-600">Try adjusting your search or filter criteria.</p>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  No payout requests found
+                </h3>
+                <p className="text-gray-600">
+                  Try adjusting your search or filter criteria.
+                </p>
               </div>
             )}
           </CardContent>
         </Card>
       </div>
     </div>
-  )
+  );
 }

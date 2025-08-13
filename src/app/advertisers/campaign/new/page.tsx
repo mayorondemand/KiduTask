@@ -1,27 +1,43 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useAuth } from "@/components/providers/auth-provider"
-import { Navbar } from "@/components/layout/navbar"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { ArrowLeft, Upload, DollarSign, Users, Clock, Calculator, Eye, AlertCircle, Plus, X } from "lucide-react"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
-import { useEffect, useState } from "react"
-import { toast } from "sonner"
-import { Alert, AlertDescription } from "@/components/ui/alert"
+import { useAuth } from "@/components/providers/auth-provider";
+import { Navbar } from "@/components/layout/navbar";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  ArrowLeft,
+  Upload,
+  DollarSign,
+  Users,
+  Clock,
+  Calculator,
+  Eye,
+  AlertCircle,
+  Plus,
+  X,
+} from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
-const PLATFORM_FEE = 10500 // Fixed platform fee in Naira
+const PLATFORM_FEE = 10500; // Fixed platform fee in Naira
 
 export default function NewCampaignPage() {
-  const { user } = useAuth()
-  const router = useRouter()
-  
+  const { user } = useAuth();
+  const router = useRouter();
 
   const [formData, setFormData] = useState({
     name: "",
@@ -33,132 +49,137 @@ export default function NewCampaignPage() {
     expiryDate: "",
     estimatedTimeMinutes: 5,
     bannerImage: null as File | null,
-  })
+  });
 
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [dragActive, setDragActive] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [dragActive, setDragActive] = useState(false);
 
   useEffect(() => {
     if (!user?.isAdvertiser) {
-      router.push("/home")
+      router.push("/home");
     }
-  }, [user, router])
+  }, [user, router]);
 
   if (!user?.isAdvertiser) {
-    return null
+    return null;
   }
 
   const handleInputChange = (field: string, value: any) => {
-    setFormData((prev) => ({ ...prev, [field]: value }))
-  }
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
 
   const addInstruction = () => {
     setFormData((prev) => ({
       ...prev,
       instructions: [...prev.instructions, ""],
-    }))
-  }
+    }));
+  };
 
   const removeInstruction = (index: number) => {
     setFormData((prev) => ({
       ...prev,
       instructions: prev.instructions.filter((_, i) => i !== index),
-    }))
-  }
+    }));
+  };
 
   const updateInstruction = (index: number, value: string) => {
     setFormData((prev) => ({
       ...prev,
-      instructions: prev.instructions.map((inst, i) => (i === index ? value : inst)),
-    }))
-  }
+      instructions: prev.instructions.map((inst, i) =>
+        i === index ? value : inst,
+      ),
+    }));
+  };
 
   const addRequirement = () => {
     setFormData((prev) => ({
       ...prev,
       requirements: [...prev.requirements, ""],
-    }))
-  }
+    }));
+  };
 
   const removeRequirement = (index: number) => {
     setFormData((prev) => ({
       ...prev,
       requirements: prev.requirements.filter((_, i) => i !== index),
-    }))
-  }
+    }));
+  };
 
   const updateRequirement = (index: number, value: string) => {
     setFormData((prev) => ({
       ...prev,
-      requirements: prev.requirements.map((req, i) => (i === index ? value : req)),
-    }))
-  }
+      requirements: prev.requirements.map((req, i) =>
+        i === index ? value : req,
+      ),
+    }));
+  };
 
   const handleDrag = (e: React.DragEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
+    e.preventDefault();
+    e.stopPropagation();
     if (e.type === "dragenter" || e.type === "dragover") {
-      setDragActive(true)
+      setDragActive(true);
     } else if (e.type === "dragleave") {
-      setDragActive(false)
+      setDragActive(false);
     }
-  }
+  };
 
   const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    setDragActive(false)
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
 
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      const file = e.dataTransfer.files[0]
+      const file = e.dataTransfer.files[0];
       if (file.type.startsWith("image/")) {
-        setFormData((prev) => ({ ...prev, bannerImage: file }))
+        setFormData((prev) => ({ ...prev, bannerImage: file }));
       }
     }
-  }
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setFormData((prev) => ({ ...prev, bannerImage: e.target.files![0] }))
+      setFormData((prev) => ({ ...prev, bannerImage: e.target.files![0] }));
     }
-  }
+  };
 
   const calculateTotalCost = () => {
-    const subtotal = formData.payoutPerUser * formData.maxUsers
-    return subtotal + PLATFORM_FEE
-  }
+    const subtotal = formData.payoutPerUser * formData.maxUsers;
+    return subtotal + PLATFORM_FEE;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsSubmitting(true)
+    e.preventDefault();
+    setIsSubmitting(true);
 
     try {
       // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 2000))
+      await new Promise((resolve) => setTimeout(resolve, 2000));
 
       toast({
         title: "Campaign Created! 🎉",
-        description: "Your campaign has been submitted for approval and will be live soon.",
-      })
+        description:
+          "Your campaign has been submitted for approval and will be live soon.",
+      });
 
-      router.push("/advertisers/campaigns")
+      router.push("/advertisers/campaigns");
     } catch (error) {
       toast({
         title: "Error",
         description: "Failed to create campaign. Please try again.",
         variant: "destructive",
-      })
+      });
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-NG", {
       style: "currency",
       currency: "NGN",
-    }).format(amount)
-  }
+    }).format(amount);
+  };
 
   const isFormValid =
     formData.name &&
@@ -166,12 +187,12 @@ export default function NewCampaignPage() {
     formData.instructions.some((inst) => inst.trim()) &&
     formData.payoutPerUser > 0 &&
     formData.maxUsers > 0 &&
-    formData.expiryDate
+    formData.expiryDate;
 
   // Get tomorrow's date as minimum date
-  const tomorrow = new Date()
-  tomorrow.setDate(tomorrow.getDate() + 1)
-  const minDate = tomorrow.toISOString().split("T")[0]
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const minDate = tomorrow.toISOString().split("T")[0];
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -188,7 +209,9 @@ export default function NewCampaignPage() {
           </Link>
           <div>
             <h1 className="text-3xl font-bold">Create New Campaign</h1>
-            <p className="text-muted-foreground mt-1">Set up your campaign to reach thousands of potential customers</p>
+            <p className="text-muted-foreground mt-1">
+              Set up your campaign to reach thousands of potential customers
+            </p>
           </div>
         </div>
 
@@ -200,7 +223,9 @@ export default function NewCampaignPage() {
               <Card>
                 <CardHeader>
                   <CardTitle>Basic Information</CardTitle>
-                  <CardDescription>Provide the essential details about your campaign</CardDescription>
+                  <CardDescription>
+                    Provide the essential details about your campaign
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
@@ -209,7 +234,9 @@ export default function NewCampaignPage() {
                       id="name"
                       placeholder="e.g., Instagram Follow Campaign"
                       value={formData.name}
-                      onChange={(e) => handleInputChange("name", e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("name", e.target.value)
+                      }
                       required
                     />
                   </div>
@@ -220,7 +247,9 @@ export default function NewCampaignPage() {
                       id="description"
                       placeholder="Describe what users need to do and why..."
                       value={formData.description}
-                      onChange={(e) => handleInputChange("description", e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("description", e.target.value)
+                      }
                       rows={3}
                       required
                     />
@@ -232,13 +261,20 @@ export default function NewCampaignPage() {
               <Card>
                 <CardHeader>
                   <CardTitle>Task Details</CardTitle>
-                  <CardDescription>Specify the requirements and instructions for taskers</CardDescription>
+                  <CardDescription>
+                    Specify the requirements and instructions for taskers
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
                     <div className="flex items-center justify-between mb-2">
                       <Label>Step-by-Step Instructions *</Label>
-                      <Button type="button" variant="outline" size="sm" onClick={addInstruction}>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={addInstruction}
+                      >
                         <Plus className="h-4 w-4 mr-1" />
                         Add Step
                       </Button>
@@ -252,11 +288,18 @@ export default function NewCampaignPage() {
                           <Input
                             placeholder={`Step ${index + 1} instruction...`}
                             value={instruction}
-                            onChange={(e) => updateInstruction(index, e.target.value)}
+                            onChange={(e) =>
+                              updateInstruction(index, e.target.value)
+                            }
                             className="flex-1"
                           />
                           {formData.instructions.length > 1 && (
-                            <Button type="button" variant="outline" size="sm" onClick={() => removeInstruction(index)}>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => removeInstruction(index)}
+                            >
                               <X className="h-4 w-4" />
                             </Button>
                           )}
@@ -268,7 +311,12 @@ export default function NewCampaignPage() {
                   <div>
                     <div className="flex items-center justify-between mb-2">
                       <Label>Additional Requirements</Label>
-                      <Button type="button" variant="outline" size="sm" onClick={addRequirement}>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={addRequirement}
+                      >
                         <Plus className="h-4 w-4 mr-1" />
                         Add Requirement
                       </Button>
@@ -279,11 +327,18 @@ export default function NewCampaignPage() {
                           <Input
                             placeholder={`Requirement ${index + 1}...`}
                             value={requirement}
-                            onChange={(e) => updateRequirement(index, e.target.value)}
+                            onChange={(e) =>
+                              updateRequirement(index, e.target.value)
+                            }
                             className="flex-1"
                           />
                           {formData.requirements.length > 1 && (
-                            <Button type="button" variant="outline" size="sm" onClick={() => removeRequirement(index)}>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => removeRequirement(index)}
+                            >
                               <X className="h-4 w-4" />
                             </Button>
                           )}
@@ -294,7 +349,9 @@ export default function NewCampaignPage() {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="estimatedTime">Estimated Time (minutes)</Label>
+                      <Label htmlFor="estimatedTime">
+                        Estimated Time (minutes)
+                      </Label>
                       <Input
                         id="estimatedTime"
                         type="number"
@@ -302,7 +359,10 @@ export default function NewCampaignPage() {
                         max="120"
                         value={formData.estimatedTimeMinutes}
                         onChange={(e) =>
-                          handleInputChange("estimatedTimeMinutes", Number.parseInt(e.target.value) || 0)
+                          handleInputChange(
+                            "estimatedTimeMinutes",
+                            Number.parseInt(e.target.value) || 0,
+                          )
                         }
                       />
                     </div>
@@ -313,7 +373,9 @@ export default function NewCampaignPage() {
                         type="date"
                         min={minDate}
                         value={formData.expiryDate}
-                        onChange={(e) => handleInputChange("expiryDate", e.target.value)}
+                        onChange={(e) =>
+                          handleInputChange("expiryDate", e.target.value)
+                        }
                         required
                       />
                     </div>
@@ -325,19 +387,28 @@ export default function NewCampaignPage() {
               <Card>
                 <CardHeader>
                   <CardTitle>Budget & Targeting</CardTitle>
-                  <CardDescription>Set your budget and target audience size</CardDescription>
+                  <CardDescription>
+                    Set your budget and target audience size
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="payoutPerUser">Payout Per User (₦) *</Label>
+                      <Label htmlFor="payoutPerUser">
+                        Payout Per User (₦) *
+                      </Label>
                       <Input
                         id="payoutPerUser"
                         type="number"
                         min="10"
                         step="10"
                         value={formData.payoutPerUser}
-                        onChange={(e) => handleInputChange("payoutPerUser", Number.parseInt(e.target.value) || 0)}
+                        onChange={(e) =>
+                          handleInputChange(
+                            "payoutPerUser",
+                            Number.parseInt(e.target.value) || 0,
+                          )
+                        }
                         required
                       />
                     </div>
@@ -349,7 +420,12 @@ export default function NewCampaignPage() {
                         min="1"
                         max="10000"
                         value={formData.maxUsers}
-                        onChange={(e) => handleInputChange("maxUsers", Number.parseInt(e.target.value) || 0)}
+                        onChange={(e) =>
+                          handleInputChange(
+                            "maxUsers",
+                            Number.parseInt(e.target.value) || 0,
+                          )
+                        }
                         required
                       />
                     </div>
@@ -362,7 +438,11 @@ export default function NewCampaignPage() {
                         <div className="space-y-1">
                           <div className="flex justify-between">
                             <span>Subtotal:</span>
-                            <span>{formatCurrency(formData.payoutPerUser * formData.maxUsers)}</span>
+                            <span>
+                              {formatCurrency(
+                                formData.payoutPerUser * formData.maxUsers,
+                              )}
+                            </span>
                           </div>
                           <div className="flex justify-between">
                             <span>Platform Fee:</span>
@@ -383,12 +463,17 @@ export default function NewCampaignPage() {
               <Card>
                 <CardHeader>
                   <CardTitle>Campaign Banner (Optional)</CardTitle>
-                  <CardDescription>Upload an attractive banner image to make your campaign stand out</CardDescription>
+                  <CardDescription>
+                    Upload an attractive banner image to make your campaign
+                    stand out
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div
                     className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
-                      dragActive ? "border-primary bg-primary/5" : "border-muted-foreground/25"
+                      dragActive
+                        ? "border-primary bg-primary/5"
+                        : "border-muted-foreground/25"
                     }`}
                     onDragEnter={handleDrag}
                     onDragLeave={handleDrag}
@@ -398,17 +483,24 @@ export default function NewCampaignPage() {
                     {formData.bannerImage ? (
                       <div className="space-y-4">
                         <img
-                          src={URL.createObjectURL(formData.bannerImage) || "/placeholder.svg"}
+                          src={
+                            URL.createObjectURL(formData.bannerImage) ||
+                            "/placeholder.svg"
+                          }
                           alt="Campaign banner preview"
                           className="max-h-48 mx-auto rounded-lg"
                         />
                         <div className="flex items-center justify-center gap-2">
-                          <span className="text-sm text-muted-foreground">{formData.bannerImage.name}</span>
+                          <span className="text-sm text-muted-foreground">
+                            {formData.bannerImage.name}
+                          </span>
                           <Button
                             type="button"
                             variant="outline"
                             size="sm"
-                            onClick={() => handleInputChange("bannerImage", null)}
+                            onClick={() =>
+                              handleInputChange("bannerImage", null)
+                            }
                           >
                             Remove
                           </Button>
@@ -418,8 +510,12 @@ export default function NewCampaignPage() {
                       <div className="space-y-4">
                         <Upload className="h-12 w-12 mx-auto text-muted-foreground" />
                         <div>
-                          <p className="text-lg font-medium">Drop your banner image here</p>
-                          <p className="text-sm text-muted-foreground">or click to browse (PNG, JPG up to 5MB)</p>
+                          <p className="text-lg font-medium">
+                            Drop your banner image here
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            or click to browse (PNG, JPG up to 5MB)
+                          </p>
                         </div>
                         <input
                           type="file"
@@ -466,34 +562,46 @@ export default function NewCampaignPage() {
                     <Eye className="h-5 w-5" />
                     Live Preview
                   </CardTitle>
-                  <CardDescription>How your campaign will appear to taskers</CardDescription>
+                  <CardDescription>
+                    How your campaign will appear to taskers
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {formData.bannerImage && (
                     <img
-                      src={URL.createObjectURL(formData.bannerImage) || "/placeholder.svg"}
+                      src={
+                        URL.createObjectURL(formData.bannerImage) ||
+                        "/placeholder.svg"
+                      }
                       alt="Campaign banner"
                       className="w-full h-32 object-cover rounded-lg"
                     />
                   )}
 
                   <div>
-                    <h3 className="font-semibold text-lg">{formData.name || "Campaign Name"}</h3>
+                    <h3 className="font-semibold text-lg">
+                      {formData.name || "Campaign Name"}
+                    </h3>
                   </div>
 
                   <p className="text-sm text-muted-foreground">
-                    {formData.description || "Campaign description will appear here..."}
+                    {formData.description ||
+                      "Campaign description will appear here..."}
                   </p>
 
                   {formData.instructions.some((inst) => inst.trim()) && (
                     <div>
-                      <h4 className="font-medium text-sm mb-2">Instructions:</h4>
+                      <h4 className="font-medium text-sm mb-2">
+                        Instructions:
+                      </h4>
                       <ol className="text-sm space-y-1">
                         {formData.instructions
                           .filter((inst) => inst.trim())
                           .map((instruction, index) => (
                             <li key={index} className="flex gap-2">
-                              <span className="text-muted-foreground">{index + 1}.</span>
+                              <span className="text-muted-foreground">
+                                {index + 1}.
+                              </span>
                               <span>{instruction}</span>
                             </li>
                           ))}
@@ -505,7 +613,9 @@ export default function NewCampaignPage() {
                     <div className="flex items-center gap-1">
                       <DollarSign className="h-4 w-4" />
                       <span className="font-medium">
-                        {formData.payoutPerUser > 0 ? formatCurrency(formData.payoutPerUser) : "₦0"}
+                        {formData.payoutPerUser > 0
+                          ? formatCurrency(formData.payoutPerUser)
+                          : "₦0"}
                       </span>
                     </div>
                     <div className="flex items-center gap-1">
@@ -520,8 +630,12 @@ export default function NewCampaignPage() {
 
                   {formData.payoutPerUser > 0 && formData.maxUsers > 0 && (
                     <div className="bg-muted p-3 rounded-lg">
-                      <div className="text-sm font-medium mb-1">Total Budget</div>
-                      <div className="text-lg font-bold text-primary">{formatCurrency(calculateTotalCost())}</div>
+                      <div className="text-sm font-medium mb-1">
+                        Total Budget
+                      </div>
+                      <div className="text-lg font-bold text-primary">
+                        {formatCurrency(calculateTotalCost())}
+                      </div>
                       <div className="text-xs text-muted-foreground">
                         Including ₦{PLATFORM_FEE.toLocaleString()} platform fee
                       </div>
@@ -532,7 +646,8 @@ export default function NewCampaignPage() {
                     <Alert>
                       <AlertCircle className="h-4 w-4" />
                       <AlertDescription>
-                        Please fill in all required fields to see the complete preview.
+                        Please fill in all required fields to see the complete
+                        preview.
                       </AlertDescription>
                     </Alert>
                   )}
@@ -543,5 +658,5 @@ export default function NewCampaignPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }

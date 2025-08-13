@@ -1,10 +1,16 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Skeleton } from "@/components/ui/skeleton"
-import type { Campaign } from "@/lib/client"
-import { formatCurrency } from "@/lib/utils"
-import { Clock, Users } from "lucide-react"
-import Image from "next/image"
-import Link from "next/link"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import type { Campaign } from "@/lib/client";
+import { formatCurrency } from "@/lib/utils";
+import { Clock, Users } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
 
 export function CampaignCard({ campaign }: { campaign: Campaign }) {
   return (

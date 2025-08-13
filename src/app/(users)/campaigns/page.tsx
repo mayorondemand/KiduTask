@@ -1,42 +1,55 @@
-"use client"
+"use client";
 
-import { useAuth } from "@/components/providers/auth-provider"
-import { useQuery } from "@tanstack/react-query"
-import { Navbar } from "@/components/layout/navbar"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Skeleton } from "@/components/ui/skeleton"
-import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Search, Filter, Eye, Users, Clock, Star } from "lucide-react"
-import Link from "next/link"
-import { useState } from "react"
+import { useAuth } from "@/components/providers/auth-provider";
+import { useQuery } from "@tanstack/react-query";
+import { Navbar } from "@/components/layout/navbar";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Search, Filter, Eye, Users, Clock, Star } from "lucide-react";
+import Link from "next/link";
+import { useState } from "react";
 
 interface Campaign {
-  id: string
-  title: string
-  description: string
-  payout: number
-  remainingSlots: number
-  totalSlots: number
-  category: string
-  thumbnail: string
-  advertiser: string
-  difficulty: "easy" | "medium" | "hard"
-  estimatedTime: string
-  rating: number
-  isCompleted?: boolean
+  id: string;
+  title: string;
+  description: string;
+  payout: number;
+  remainingSlots: number;
+  totalSlots: number;
+  category: string;
+  thumbnail: string;
+  advertiser: string;
+  difficulty: "easy" | "medium" | "hard";
+  estimatedTime: string;
+  rating: number;
+  isCompleted?: boolean;
 }
 
 const fetchCampaigns = async (filters: any) => {
-  await new Promise((resolve) => setTimeout(resolve, 5000))
+  await new Promise((resolve) => setTimeout(resolve, 5000));
 
   const allCampaigns: Campaign[] = [
     {
       id: "1",
       title: "Follow @TechStartup on Instagram",
-      description: "Follow our Instagram account and like the latest post. Help us grow our social media presence.",
+      description:
+        "Follow our Instagram account and like the latest post. Help us grow our social media presence.",
       payout: 150,
       remainingSlots: 45,
       totalSlots: 100,
@@ -50,7 +63,8 @@ const fetchCampaigns = async (filters: any) => {
     {
       id: "2",
       title: "Write App Review on Play Store",
-      description: "Download our productivity app and write a genuine 5-star review based on your experience.",
+      description:
+        "Download our productivity app and write a genuine 5-star review based on your experience.",
       payout: 500,
       remainingSlots: 12,
       totalSlots: 50,
@@ -64,7 +78,8 @@ const fetchCampaigns = async (filters: any) => {
     {
       id: "3",
       title: "Share Facebook Post",
-      description: "Share our promotional post on your Facebook timeline and tag 2 friends who might be interested.",
+      description:
+        "Share our promotional post on your Facebook timeline and tag 2 friends who might be interested.",
       payout: 200,
       remainingSlots: 78,
       totalSlots: 200,
@@ -78,7 +93,8 @@ const fetchCampaigns = async (filters: any) => {
     {
       id: "4",
       title: "YouTube Video Like & Subscribe",
-      description: "Like our latest video tutorial and subscribe to our educational channel.",
+      description:
+        "Like our latest video tutorial and subscribe to our educational channel.",
       payout: 300,
       remainingSlots: 25,
       totalSlots: 75,
@@ -92,7 +108,8 @@ const fetchCampaigns = async (filters: any) => {
     {
       id: "5",
       title: "Twitter Retweet Campaign",
-      description: "Retweet our product announcement and add your own comment about why you're excited.",
+      description:
+        "Retweet our product announcement and add your own comment about why you're excited.",
       payout: 250,
       remainingSlots: 60,
       totalSlots: 150,
@@ -106,7 +123,8 @@ const fetchCampaigns = async (filters: any) => {
     {
       id: "6",
       title: "TikTok Video Creation",
-      description: "Create a 30-second TikTok video showcasing our product in a creative way.",
+      description:
+        "Create a 30-second TikTok video showcasing our product in a creative way.",
       payout: 800,
       remainingSlots: 8,
       totalSlots: 20,
@@ -117,34 +135,34 @@ const fetchCampaigns = async (filters: any) => {
       estimatedTime: "30 mins",
       rating: 4.4,
     },
-  ]
+  ];
 
   return {
     campaigns: allCampaigns,
     totalCount: allCampaigns.length,
-  }
-}
+  };
+};
 
 function CampaignCard({ campaign }: { campaign: Campaign }) {
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-NG", {
       style: "currency",
       currency: "NGN",
-    }).format(amount)
-  }
+    }).format(amount);
+  };
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
       case "easy":
-        return "bg-green-100 text-green-800"
+        return "bg-green-100 text-green-800";
       case "medium":
-        return "bg-yellow-100 text-yellow-800"
+        return "bg-yellow-100 text-yellow-800";
       case "hard":
-        return "bg-red-100 text-red-800"
+        return "bg-red-100 text-red-800";
       default:
-        return "bg-gray-100 text-gray-800"
+        return "bg-gray-100 text-gray-800";
     }
-  }
+  };
 
   return (
     <Card className="hover:shadow-lg transition-shadow">
@@ -155,7 +173,9 @@ function CampaignCard({ campaign }: { campaign: Campaign }) {
           className="w-full h-full object-cover"
         />
         <div className="absolute top-2 right-2">
-          <Badge className={getDifficultyColor(campaign.difficulty)}>{campaign.difficulty}</Badge>
+          <Badge className={getDifficultyColor(campaign.difficulty)}>
+            {campaign.difficulty}
+          </Badge>
         </div>
         <div className="absolute top-2 left-2">
           <div className="flex items-center bg-white/90 rounded-full px-2 py-1 text-xs">
@@ -167,17 +187,25 @@ function CampaignCard({ campaign }: { campaign: Campaign }) {
       <CardHeader className="pb-2">
         <div className="flex items-start justify-between">
           <div className="flex-1">
-            <CardTitle className="text-lg line-clamp-2">{campaign.title}</CardTitle>
-            <CardDescription className="text-sm text-muted-foreground">by {campaign.advertiser}</CardDescription>
+            <CardTitle className="text-lg line-clamp-2">
+              {campaign.title}
+            </CardTitle>
+            <CardDescription className="text-sm text-muted-foreground">
+              by {campaign.advertiser}
+            </CardDescription>
           </div>
           <div className="text-right">
-            <div className="text-lg font-bold text-green-600">{formatCurrency(campaign.payout)}</div>
+            <div className="text-lg font-bold text-green-600">
+              {formatCurrency(campaign.payout)}
+            </div>
             <div className="text-xs text-muted-foreground">per task</div>
           </div>
         </div>
       </CardHeader>
       <CardContent className="pt-0">
-        <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{campaign.description}</p>
+        <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
+          {campaign.description}
+        </p>
 
         <div className="flex items-center justify-between text-sm text-muted-foreground mb-4">
           <div className="flex items-center gap-1">
@@ -201,7 +229,7 @@ function CampaignCard({ campaign }: { campaign: Campaign }) {
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }
 
 function CampaignSkeleton() {
@@ -229,21 +257,22 @@ function CampaignSkeleton() {
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }
 
 export default function CampaignsPage() {
-  const { user } = useAuth()
-  const [searchQuery, setSearchQuery] = useState("")
-  const [categoryFilter, setCategoryFilter] = useState("all")
-  const [payoutFilter, setPayoutFilter] = useState("all")
+  const { user } = useAuth();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("all");
+  const [payoutFilter, setPayoutFilter] = useState("all");
 
   const { data, isLoading } = useQuery({
     queryKey: ["campaigns", { searchQuery, categoryFilter, payoutFilter }],
-    queryFn: () => fetchCampaigns({ searchQuery, categoryFilter, payoutFilter }),
-  })
+    queryFn: () =>
+      fetchCampaigns({ searchQuery, categoryFilter, payoutFilter }),
+  });
 
-  if (!user) return null
+  if (!user) return null;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -252,8 +281,12 @@ export default function CampaignsPage() {
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">All Campaigns</h1>
-          <p className="text-gray-600">Discover and complete tasks to earn money</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            All Campaigns
+          </h1>
+          <p className="text-gray-600">
+            Discover and complete tasks to earn money
+          </p>
         </div>
 
         {/* Filters */}
@@ -306,15 +339,23 @@ export default function CampaignsPage() {
         {/* Results */}
         <div className="flex items-center justify-between mb-6">
           <div className="text-sm text-gray-600">
-            {isLoading ? <Skeleton className="h-4 w-32" /> : `Showing ${data?.campaigns.length || 0} campaigns`}
+            {isLoading ? (
+              <Skeleton className="h-4 w-32" />
+            ) : (
+              `Showing ${data?.campaigns.length || 0} campaigns`
+            )}
           </div>
         </div>
 
         {/* Campaigns Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {isLoading
-            ? Array.from({ length: 6 }).map((_, i) => <CampaignSkeleton key={i} />)
-            : data?.campaigns.map((campaign) => <CampaignCard key={campaign.id} campaign={campaign} />)}
+            ? Array.from({ length: 6 }).map((_, i) => (
+                <CampaignSkeleton key={i} />
+              ))
+            : data?.campaigns.map((campaign) => (
+                <CampaignCard key={campaign.id} campaign={campaign} />
+              ))}
         </div>
 
         {/* Empty State */}
@@ -323,11 +364,15 @@ export default function CampaignsPage() {
             <div className="text-gray-400 mb-4">
               <Search className="h-16 w-16 mx-auto" />
             </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No campaigns found</h3>
-            <p className="text-gray-600">Try adjusting your search or filter criteria</p>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">
+              No campaigns found
+            </h3>
+            <p className="text-gray-600">
+              Try adjusting your search or filter criteria
+            </p>
           </div>
         )}
       </div>
     </div>
-  )
+  );
 }

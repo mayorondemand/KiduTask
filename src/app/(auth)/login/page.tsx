@@ -1,41 +1,46 @@
-"use client"
+"use client";
 
-import { useAuth } from "@/components/providers/auth-provider"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { Loader2, Lock, Mail } from "lucide-react"
-import Link from "next/link"
-import { useSearchParams } from "next/navigation"
-import { useEffect } from "react"
-import { useForm } from "react-hook-form"
-import { toast } from "sonner"
-import { z } from "zod"
+import { useAuth } from "@/components/providers/auth-provider";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Loader2, Lock, Mail } from "lucide-react";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import { z } from "zod";
 
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
-})
+});
 
-type LoginForm = z.infer<typeof loginSchema>
+type LoginForm = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
-  const { loginMutation } = useAuth()
-  const searchParams = useSearchParams()
-  
-  useEffect(() => {
+  const { loginMutation } = useAuth();
+  const searchParams = useSearchParams();
 
-    const emailVerified = searchParams.get("emailverified")
-    const error = searchParams.get("error")
+  useEffect(() => {
+    const emailVerified = searchParams.get("emailverified");
+    const error = searchParams.get("error");
     if (error) {
-      toast.error("Verification failed, try again")
+      toast.error("Verification failed, try again");
     }
     if (emailVerified === "true") {
-      toast.success("Email verified successfully")
+      toast.success("Email verified successfully");
     }
-  }, [searchParams])
+  }, [searchParams]);
 
   const {
     register,
@@ -43,14 +48,14 @@ export default function LoginPage() {
     formState: { errors, isSubmitting },
   } = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
-  })
+  });
 
   const onSubmit = async (data: LoginForm) => {
-      loginMutation.mutate({
-        email: data.email,
-        password: data.password,
-      })
-  }
+    loginMutation.mutate({
+      email: data.email,
+      password: data.password,
+    });
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -63,17 +68,20 @@ export default function LoginPage() {
             <span className="font-bold text-2xl">KudiTask</span>
           </div>
           <h2 className="text-3xl font-bold text-gray-900">Welcome back</h2>
-          <p className="mt-2 text-sm text-gray-600">Sign in to your account to continue</p>
+          <p className="mt-2 text-sm text-gray-600">
+            Sign in to your account to continue
+          </p>
         </div>
 
         <Card>
           <CardHeader>
             <CardTitle>Sign In</CardTitle>
-            <CardDescription>Enter your credentials to access your account</CardDescription>
+            <CardDescription>
+              Enter your credentials to access your account
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <div className="relative">
@@ -86,7 +94,11 @@ export default function LoginPage() {
                     {...register("email")}
                   />
                 </div>
-                {errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
+                {errors.email && (
+                  <p className="text-sm text-destructive">
+                    {errors.email.message}
+                  </p>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -101,16 +113,27 @@ export default function LoginPage() {
                     {...register("password")}
                   />
                 </div>
-                {errors.password && <p className="text-sm text-destructive">{errors.password.message}</p>}
+                {errors.password && (
+                  <p className="text-sm text-destructive">
+                    {errors.password.message}
+                  </p>
+                )}
               </div>
 
               <div className="flex items-center justify-between">
-                <Link href="/forgot-password" className="text-sm text-primary hover:underline">
+                <Link
+                  href="/forgot-password"
+                  className="text-sm text-primary hover:underline"
+                >
                   Forgot password?
                 </Link>
               </div>
 
-              <Button type="submit" className="w-full" disabled={isSubmitting || loginMutation.isPending}>
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={isSubmitting || loginMutation.isPending}
+              >
                 {isSubmitting || loginMutation.isPending ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -126,12 +149,23 @@ export default function LoginPage() {
                   <span className="w-full border-t" />
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
+                  <span className="bg-background px-2 text-muted-foreground">
+                    Or continue with
+                  </span>
                 </div>
               </div>
 
-              <Button variant="outline" className="w-full bg-transparent" type="button">
-                <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24" aria-label="Google" role="img">
+              <Button
+                variant="outline"
+                className="w-full bg-transparent"
+                type="button"
+              >
+                <svg
+                  className="mr-2 h-4 w-4"
+                  viewBox="0 0 24 24"
+                  aria-label="Google"
+                  role="img"
+                >
                   <title>Google</title>
                   <path
                     d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -164,8 +198,7 @@ export default function LoginPage() {
             </div>
           </CardContent>
         </Card>
-
       </div>
     </div>
-  )
+  );
 }

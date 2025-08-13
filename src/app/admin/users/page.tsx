@@ -1,14 +1,33 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { useAuth } from "@/components/providers/auth-provider"
-import { Navbar } from "@/components/layout/navbar"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useState, useEffect } from "react";
+import { useAuth } from "@/components/providers/auth-provider";
+import { Navbar } from "@/components/layout/navbar";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -16,8 +35,8 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+} from "@/components/ui/dialog";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Users,
   Search,
@@ -33,21 +52,22 @@ import {
   UserX,
   Wallet,
   AlertTriangle,
-} from "lucide-react"
-import { toast } from "sonner"
-import { useRouter } from "next/navigation"
-import Link from "next/link"
+} from "lucide-react";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 // Generate mock user data
 const generateMockUsers = () => {
-  const statuses = ["active", "suspended", "pending", "banned"]
-  const userTypes = ["tasker", "advertiser", "both"]
-  const users = []
+  const statuses = ["active", "suspended", "pending", "banned"];
+  const userTypes = ["tasker", "advertiser", "both"];
+  const users = [];
 
   for (let i = 1; i <= 127; i++) {
-    const userType = userTypes[i % 3]
-    const status = statuses[i % 4]
-    const kycStatus = i % 5 === 0 ? "pending" : i % 7 === 0 ? "rejected" : "verified"
+    const userType = userTypes[i % 3];
+    const status = statuses[i % 4];
+    const kycStatus =
+      i % 5 === 0 ? "pending" : i % 7 === 0 ? "rejected" : "verified";
 
     users.push({
       id: `user-${i}`,
@@ -60,41 +80,50 @@ const generateMockUsers = () => {
       walletBalance: Math.floor(Math.random() * 50000),
       totalEarnings: Math.floor(Math.random() * 100000),
       completedTasks: Math.floor(Math.random() * 50),
-      createdCampaigns: userType === "advertiser" || userType === "both" ? Math.floor(Math.random() * 10) : 0,
-      joinedAt: new Date(Date.now() - Math.random() * 365 * 24 * 60 * 60 * 1000).toISOString(),
-      lastActive: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString(),
+      createdCampaigns:
+        userType === "advertiser" || userType === "both"
+          ? Math.floor(Math.random() * 10)
+          : 0,
+      joinedAt: new Date(
+        Date.now() - Math.random() * 365 * 24 * 60 * 60 * 1000,
+      ).toISOString(),
+      lastActive: new Date(
+        Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000,
+      ).toISOString(),
       phone: `+234${Math.floor(Math.random() * 9000000000) + 1000000000}`,
-      location: ["Lagos", "Abuja", "Port Harcourt", "Kano", "Ibadan"][Math.floor(Math.random() * 5)],
-    })
+      location: ["Lagos", "Abuja", "Port Harcourt", "Kano", "Ibadan"][
+        Math.floor(Math.random() * 5)
+      ],
+    });
   }
 
-  return users
-}
+  return users;
+};
 
 export default function AdminUsersPage() {
-  const { user } = useAuth()
-  const router = useRouter()
-  
-  const [allUsers] = useState(generateMockUsers())
-  const [filteredUsers, setFilteredUsers] = useState(allUsers)
-  const [currentPage, setCurrentPage] = useState(1)
-  const [itemsPerPage] = useState(10)
-  const [searchTerm, setSearchTerm] = useState("")
-  const [statusFilter, setStatusFilter] = useState("all")
-  const [userTypeFilter, setUserTypeFilter] = useState("all")
-  const [selectedUser, setSelectedUser] = useState(null)
-  const [userDetailsDialog, setUserDetailsDialog] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
+  const { user } = useAuth();
+  const router = useRouter();
+
+  const [allUsers] = useState(generateMockUsers());
+  const [filteredUsers, setFilteredUsers] = useState(allUsers);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [userTypeFilter, setUserTypeFilter] = useState("all");
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [userDetailsDialog, setUserDetailsDialog] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     if (!user || user.role !== "admin") {
-      router.push("/login")
+      router.push("/login");
     }
-  }, [user, router])
+  }, [user, router]);
 
   // Filter users based on search and filters
   useEffect(() => {
-    let filtered = allUsers
+    let filtered = allUsers;
 
     // Search filter
     if (searchTerm) {
@@ -102,63 +131,79 @@ export default function AdminUsersPage() {
         (user) =>
           user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
           user.email.toLowerCase().includes(searchTerm.toLowerCase()),
-      )
+      );
     }
 
     // Status filter
     if (statusFilter !== "all") {
-      filtered = filtered.filter((user) => user.status === statusFilter)
+      filtered = filtered.filter((user) => user.status === statusFilter);
     }
 
     // User type filter
     if (userTypeFilter !== "all") {
-      filtered = filtered.filter((user) => user.userType === userTypeFilter)
+      filtered = filtered.filter((user) => user.userType === userTypeFilter);
     }
 
-    setFilteredUsers(filtered)
-    setCurrentPage(1) // Reset to first page when filters change
-  }, [searchTerm, statusFilter, userTypeFilter, allUsers])
+    setFilteredUsers(filtered);
+    setCurrentPage(1); // Reset to first page when filters change
+  }, [searchTerm, statusFilter, userTypeFilter, allUsers]);
 
   // Pagination logic
-  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage)
-  const startIndex = (currentPage - 1) * itemsPerPage
-  const endIndex = startIndex + itemsPerPage
-  const currentUsers = filteredUsers.slice(startIndex, endIndex)
+  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentUsers = filteredUsers.slice(startIndex, endIndex);
 
   const handlePageChange = (page) => {
-    setCurrentPage(page)
-  }
+    setCurrentPage(page);
+  };
 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat("en-NG", {
       style: "currency",
       currency: "NGN",
       minimumFractionDigits: 0,
-    }).format(amount)
-  }
+    }).format(amount);
+  };
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString("en-US", {
       year: "numeric",
       month: "short",
       day: "numeric",
-    })
-  }
+    });
+  };
 
   const getStatusBadge = (status) => {
     switch (status) {
       case "active":
-        return <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Active</Badge>
+        return (
+          <Badge className="bg-green-100 text-green-800 hover:bg-green-100">
+            Active
+          </Badge>
+        );
       case "suspended":
-        return <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100">Suspended</Badge>
+        return (
+          <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100">
+            Suspended
+          </Badge>
+        );
       case "pending":
-        return <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100">Pending</Badge>
+        return (
+          <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100">
+            Pending
+          </Badge>
+        );
       case "banned":
-        return <Badge className="bg-red-100 text-red-800 hover:bg-red-100">Banned</Badge>
+        return (
+          <Badge className="bg-red-100 text-red-800 hover:bg-red-100">
+            Banned
+          </Badge>
+        );
       default:
-        return <Badge variant="secondary">{status}</Badge>
+        return <Badge variant="secondary">{status}</Badge>;
     }
-  }
+  };
 
   const getKYCBadge = (status) => {
     switch (status) {
@@ -168,70 +213,83 @@ export default function AdminUsersPage() {
             <CheckCircle className="w-3 h-3 mr-1" />
             Verified
           </Badge>
-        )
+        );
       case "pending":
         return (
           <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100">
             <Clock className="w-3 h-3 mr-1" />
             Pending
           </Badge>
-        )
+        );
       case "rejected":
         return (
           <Badge className="bg-red-100 text-red-800 hover:bg-red-100">
             <XCircle className="w-3 h-3 mr-1" />
             Rejected
           </Badge>
-        )
+        );
       default:
-        return <Badge variant="secondary">{status}</Badge>
+        return <Badge variant="secondary">{status}</Badge>;
     }
-  }
+  };
 
   const getUserTypeBadge = (type) => {
     switch (type) {
       case "tasker":
-        return <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100">Tasker</Badge>
+        return (
+          <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100">
+            Tasker
+          </Badge>
+        );
       case "advertiser":
-        return <Badge className="bg-purple-100 text-purple-800 hover:bg-purple-100">Advertiser</Badge>
+        return (
+          <Badge className="bg-purple-100 text-purple-800 hover:bg-purple-100">
+            Advertiser
+          </Badge>
+        );
       case "both":
-        return <Badge className="bg-orange-100 text-orange-800 hover:bg-orange-100">Both</Badge>
+        return (
+          <Badge className="bg-orange-100 text-orange-800 hover:bg-orange-100">
+            Both
+          </Badge>
+        );
       default:
-        return <Badge variant="secondary">{type}</Badge>
+        return <Badge variant="secondary">{type}</Badge>;
     }
-  }
+  };
 
   const handleUserAction = async (userId, action) => {
-    setIsLoading(true)
+    setIsLoading(true);
     // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    await new Promise((resolve) => setTimeout(resolve, 1000));
 
     const actionMessages = {
       suspend: "User has been suspended",
       activate: "User has been activated",
       ban: "User has been banned",
       verify: "User KYC has been verified",
-    }
+    };
 
     toast({
       title: "Action Completed",
       description: actionMessages[action] || "Action completed successfully",
-    })
+    });
 
-    setIsLoading(false)
-  }
+    setIsLoading(false);
+  };
 
   const handleExportUsers = () => {
     toast({
       title: "Export Started",
-      description: "User data export has been initiated. You'll receive an email when ready.",
-    })
-  }
+      description:
+        "User data export has been initiated. You'll receive an email when ready.",
+    });
+  };
 
   const handleViewUser = (user) => {
-    setSelectedUser(user)
-    setUserDetailsDialog(true)
-  }
+    setSelectedUser(user);
+    setUserDetailsDialog(true);
+  };
 
   // Statistics
   const stats = {
@@ -240,12 +298,13 @@ export default function AdminUsersPage() {
     suspended: allUsers.filter((u) => u.status === "suspended").length,
     pending: allUsers.filter((u) => u.status === "pending").length,
     banned: allUsers.filter((u) => u.status === "banned").length,
-  }
+  };
 
   const PaginationComponent = () => (
     <div className="flex items-center justify-between px-2 py-4">
       <div className="text-sm text-muted-foreground">
-        Showing {startIndex + 1} to {Math.min(endIndex, filteredUsers.length)} of {filteredUsers.length} entries
+        Showing {startIndex + 1} to {Math.min(endIndex, filteredUsers.length)}{" "}
+        of {filteredUsers.length} entries
       </div>
       <div className="flex items-center space-x-2">
         <Button
@@ -260,15 +319,15 @@ export default function AdminUsersPage() {
 
         <div className="flex items-center space-x-1">
           {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-            let pageNumber
+            let pageNumber;
             if (totalPages <= 5) {
-              pageNumber = i + 1
+              pageNumber = i + 1;
             } else if (currentPage <= 3) {
-              pageNumber = i + 1
+              pageNumber = i + 1;
             } else if (currentPage >= totalPages - 2) {
-              pageNumber = totalPages - 4 + i
+              pageNumber = totalPages - 4 + i;
             } else {
-              pageNumber = currentPage - 2 + i
+              pageNumber = currentPage - 2 + i;
             }
 
             return (
@@ -281,7 +340,7 @@ export default function AdminUsersPage() {
               >
                 {pageNumber}
               </Button>
-            )
+            );
           })}
         </div>
 
@@ -296,10 +355,10 @@ export default function AdminUsersPage() {
         </Button>
       </div>
     </div>
-  )
+  );
 
   if (!user || user.role !== "admin") {
-    return null
+    return null;
   }
 
   return (
@@ -308,7 +367,9 @@ export default function AdminUsersPage() {
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">User Management</h1>
-          <p className="text-gray-600 mt-2">Manage platform users and their activities</p>
+          <p className="text-gray-600 mt-2">
+            Manage platform users and their activities
+          </p>
         </div>
 
         {/* Statistics Cards */}
@@ -318,8 +379,12 @@ export default function AdminUsersPage() {
               <div className="flex items-center">
                 <Users className="h-8 w-8 text-blue-600" />
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Total Users</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
+                  <p className="text-sm font-medium text-gray-600">
+                    Total Users
+                  </p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {stats.total}
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -331,7 +396,9 @@ export default function AdminUsersPage() {
                 <UserCheck className="h-8 w-8 text-green-600" />
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600">Active</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.active}</p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {stats.active}
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -343,7 +410,9 @@ export default function AdminUsersPage() {
                 <Clock className="h-8 w-8 text-blue-600" />
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600">Pending</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.pending}</p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {stats.pending}
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -355,7 +424,9 @@ export default function AdminUsersPage() {
                 <AlertTriangle className="h-8 w-8 text-yellow-600" />
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600">Suspended</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.suspended}</p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {stats.suspended}
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -367,7 +438,9 @@ export default function AdminUsersPage() {
                 <UserX className="h-8 w-8 text-red-600" />
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600">Banned</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.banned}</p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {stats.banned}
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -402,7 +475,10 @@ export default function AdminUsersPage() {
                   </SelectContent>
                 </Select>
 
-                <Select value={userTypeFilter} onValueChange={setUserTypeFilter}>
+                <Select
+                  value={userTypeFilter}
+                  onValueChange={setUserTypeFilter}
+                >
                   <SelectTrigger className="w-40">
                     <SelectValue placeholder="User Type" />
                   </SelectTrigger>
@@ -450,12 +526,19 @@ export default function AdminUsersPage() {
                       <TableCell>
                         <div className="flex items-center space-x-3">
                           <Avatar className="h-8 w-8">
-                            <AvatarImage src={user.avatar || "/placeholder.svg"} alt={user.name} />
-                            <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+                            <AvatarImage
+                              src={user.avatar || "/placeholder.svg"}
+                              alt={user.name}
+                            />
+                            <AvatarFallback>
+                              {user.name.charAt(0)}
+                            </AvatarFallback>
                           </Avatar>
                           <div>
                             <div className="font-medium">{user.name}</div>
-                            <div className="text-sm text-muted-foreground">{user.email}</div>
+                            <div className="text-sm text-muted-foreground">
+                              {user.email}
+                            </div>
                           </div>
                         </div>
                       </TableCell>
@@ -465,21 +548,29 @@ export default function AdminUsersPage() {
                       <TableCell>
                         <div className="flex items-center space-x-1">
                           <Wallet className="h-4 w-4 text-green-600" />
-                          <span className="font-medium">{formatCurrency(user.walletBalance)}</span>
+                          <span className="font-medium">
+                            {formatCurrency(user.walletBalance)}
+                          </span>
                         </div>
                       </TableCell>
                       <TableCell>{formatDate(user.joinedAt)}</TableCell>
                       <TableCell>{formatDate(user.lastActive)}</TableCell>
                       <TableCell>
                         <div className="flex space-x-2">
-                          <Button size="sm" variant="ghost" onClick={() => handleViewUser(user)}>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => handleViewUser(user)}
+                          >
                             <Eye className="h-4 w-4" />
                           </Button>
                           {user.status === "active" ? (
                             <Button
                               size="sm"
                               variant="ghost"
-                              onClick={() => handleUserAction(user.id, "suspend")}
+                              onClick={() =>
+                                handleUserAction(user.id, "suspend")
+                              }
                               disabled={isLoading}
                               className="text-yellow-600 hover:text-yellow-700"
                             >
@@ -489,7 +580,9 @@ export default function AdminUsersPage() {
                             <Button
                               size="sm"
                               variant="ghost"
-                              onClick={() => handleUserAction(user.id, "activate")}
+                              onClick={() =>
+                                handleUserAction(user.id, "activate")
+                              }
                               disabled={isLoading}
                               className="text-green-600 hover:text-green-700"
                             >
@@ -516,8 +609,12 @@ export default function AdminUsersPage() {
             {filteredUsers.length === 0 && (
               <div className="text-center py-8">
                 <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No users found</h3>
-                <p className="text-gray-600">Try adjusting your search or filter criteria.</p>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  No users found
+                </h3>
+                <p className="text-gray-600">
+                  Try adjusting your search or filter criteria.
+                </p>
               </div>
             )}
 
@@ -530,18 +627,29 @@ export default function AdminUsersPage() {
           <DialogContent className="max-w-2xl">
             <DialogHeader>
               <DialogTitle>User Details</DialogTitle>
-              <DialogDescription>Detailed information about the user</DialogDescription>
+              <DialogDescription>
+                Detailed information about the user
+              </DialogDescription>
             </DialogHeader>
             {selectedUser && (
               <div className="space-y-6">
                 <div className="flex items-center space-x-4">
                   <Avatar className="h-16 w-16">
-                    <AvatarImage src={selectedUser.avatar || "/placeholder.svg"} alt={selectedUser.name} />
-                    <AvatarFallback className="text-lg">{selectedUser.name.charAt(0)}</AvatarFallback>
+                    <AvatarImage
+                      src={selectedUser.avatar || "/placeholder.svg"}
+                      alt={selectedUser.name}
+                    />
+                    <AvatarFallback className="text-lg">
+                      {selectedUser.name.charAt(0)}
+                    </AvatarFallback>
                   </Avatar>
                   <div>
-                    <h3 className="text-xl font-semibold">{selectedUser.name}</h3>
-                    <p className="text-muted-foreground">{selectedUser.email}</p>
+                    <h3 className="text-xl font-semibold">
+                      {selectedUser.name}
+                    </h3>
+                    <p className="text-muted-foreground">
+                      {selectedUser.email}
+                    </p>
                     <div className="flex space-x-2 mt-2">
                       {getStatusBadge(selectedUser.status)}
                       {getUserTypeBadge(selectedUser.userType)}
@@ -566,10 +674,12 @@ export default function AdminUsersPage() {
                     <h4 className="font-medium mb-2">Account Information</h4>
                     <div className="space-y-1 text-sm">
                       <p>
-                        <strong>Joined:</strong> {formatDate(selectedUser.joinedAt)}
+                        <strong>Joined:</strong>{" "}
+                        {formatDate(selectedUser.joinedAt)}
                       </p>
                       <p>
-                        <strong>Last Active:</strong> {formatDate(selectedUser.lastActive)}
+                        <strong>Last Active:</strong>{" "}
+                        {formatDate(selectedUser.lastActive)}
                       </p>
                     </div>
                   </div>
@@ -580,10 +690,12 @@ export default function AdminUsersPage() {
                     <h4 className="font-medium mb-2">Financial Summary</h4>
                     <div className="space-y-1 text-sm">
                       <p>
-                        <strong>Wallet Balance:</strong> {formatCurrency(selectedUser.walletBalance)}
+                        <strong>Wallet Balance:</strong>{" "}
+                        {formatCurrency(selectedUser.walletBalance)}
                       </p>
                       <p>
-                        <strong>Total Earnings:</strong> {formatCurrency(selectedUser.totalEarnings)}
+                        <strong>Total Earnings:</strong>{" "}
+                        {formatCurrency(selectedUser.totalEarnings)}
                       </p>
                     </div>
                   </div>
@@ -591,10 +703,12 @@ export default function AdminUsersPage() {
                     <h4 className="font-medium mb-2">Activity Summary</h4>
                     <div className="space-y-1 text-sm">
                       <p>
-                        <strong>Completed Tasks:</strong> {selectedUser.completedTasks}
+                        <strong>Completed Tasks:</strong>{" "}
+                        {selectedUser.completedTasks}
                       </p>
                       <p>
-                        <strong>Created Campaigns:</strong> {selectedUser.createdCampaigns}
+                        <strong>Created Campaigns:</strong>{" "}
+                        {selectedUser.createdCampaigns}
                       </p>
                     </div>
                   </div>
@@ -602,7 +716,10 @@ export default function AdminUsersPage() {
               </div>
             )}
             <DialogFooter>
-              <Button variant="outline" onClick={() => setUserDetailsDialog(false)}>
+              <Button
+                variant="outline"
+                onClick={() => setUserDetailsDialog(false)}
+              >
                 Close
               </Button>
               <Link href={`/admin/users/${selectedUser?.id}`}>
@@ -613,5 +730,5 @@ export default function AdminUsersPage() {
         </Dialog>
       </div>
     </div>
-  )
+  );
 }

@@ -38,7 +38,7 @@ export const user = pgTable("user", {
   banned: boolean("banned"),
   banReason: text("ban_reason"),
   banExpires: timestamp("ban_expires"),
-  
+
   //Additional fields
   walletBalance: integer("wallet_balance").notNull().default(0),
 });

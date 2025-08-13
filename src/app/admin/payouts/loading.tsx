@@ -1,5 +1,5 @@
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import { Skeleton } from "@/components/ui/skeleton"
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function AdminPayoutsLoading() {
   return (
@@ -46,7 +46,10 @@ export default function AdminPayoutsLoading() {
 
             <div className="space-y-4">
               {Array.from({ length: 5 }).map((_, i) => (
-                <div key={i} className="flex items-center space-x-4 p-4 border rounded-lg">
+                <div
+                  key={i}
+                  className="flex items-center space-x-4 p-4 border rounded-lg"
+                >
                   <Skeleton className="h-8 w-8 rounded-full" />
                   <div className="flex-1 space-y-2">
                     <Skeleton className="h-4 w-32" />
@@ -73,5 +76,5 @@ export default function AdminPayoutsLoading() {
         </Card>
       </div>
     </div>
-  )
+  );
 }

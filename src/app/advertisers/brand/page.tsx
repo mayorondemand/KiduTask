@@ -1,22 +1,42 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useAuth } from "@/components/providers/auth-provider"
-import { Navbar } from "@/components/layout/navbar"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
-import { ArrowLeft, Upload, Building, Globe, Star, Calendar, BarChart3 } from "lucide-react"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
-import { useEffect, useState } from "react"
-import { toast } from "sonner"
+import { useAuth } from "@/components/providers/auth-provider";
+import { Navbar } from "@/components/layout/navbar";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import {
+  ArrowLeft,
+  Upload,
+  Building,
+  Globe,
+  Star,
+  Calendar,
+  BarChart3,
+} from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 const industries = [
   "Technology",
@@ -31,12 +51,11 @@ const industries = [
   "Real Estate",
   "Automotive",
   "Other",
-]
+];
 
 export default function BrandSettingsPage() {
-  const { user } = useAuth()
-  const router = useRouter()
-  
+  const { user } = useAuth();
+  const router = useRouter();
 
   const [formData, setFormData] = useState({
     brandName: "TechStartup Inc",
@@ -45,90 +64,90 @@ export default function BrandSettingsPage() {
       "Innovative technology solutions for modern businesses. We specialize in creating cutting-edge software and digital experiences.",
     website: "https://techstartup.com",
     logo: null as File | null,
-  })
+  });
 
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [dragActive, setDragActive] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [dragActive, setDragActive] = useState(false);
 
   useEffect(() => {
     if (!user?.isAdvertiser) {
-      router.push("/home")
+      router.push("/home");
     }
-  }, [user, router])
+  }, [user, router]);
 
   if (!user?.isAdvertiser) {
-    return null
+    return null;
   }
 
   const handleInputChange = (field: string, value: any) => {
-    setFormData((prev) => ({ ...prev, [field]: value }))
-  }
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
 
   const handleDrag = (e: React.DragEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
+    e.preventDefault();
+    e.stopPropagation();
     if (e.type === "dragenter" || e.type === "dragover") {
-      setDragActive(true)
+      setDragActive(true);
     } else if (e.type === "dragleave") {
-      setDragActive(false)
+      setDragActive(false);
     }
-  }
+  };
 
   const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    setDragActive(false)
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
 
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      const file = e.dataTransfer.files[0]
+      const file = e.dataTransfer.files[0];
       if (file.type.startsWith("image/")) {
-        setFormData((prev) => ({ ...prev, logo: file }))
+        setFormData((prev) => ({ ...prev, logo: file }));
       }
     }
-  }
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setFormData((prev) => ({ ...prev, logo: e.target.files![0] }))
+      setFormData((prev) => ({ ...prev, logo: e.target.files![0] }));
     }
-  }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsSubmitting(true)
+    e.preventDefault();
+    setIsSubmitting(true);
 
     try {
       // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 2000))
+      await new Promise((resolve) => setTimeout(resolve, 2000));
 
       toast({
         title: "Brand Settings Updated! ✨",
         description: "Your brand information has been successfully updated.",
-      })
+      });
     } catch (error) {
       toast({
         title: "Error",
         description: "Failed to update brand settings. Please try again.",
         variant: "destructive",
-      })
+      });
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
   const mockStats = {
     memberSince: "January 2024",
     totalCampaigns: 12,
     totalSpent: 127500,
     averageRating: 4.8,
-  }
+  };
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-NG", {
       style: "currency",
       currency: "NGN",
-    }).format(amount)
-  }
+    }).format(amount);
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -145,7 +164,9 @@ export default function BrandSettingsPage() {
           </Link>
           <div>
             <h1 className="text-3xl font-bold">Brand Settings</h1>
-            <p className="text-muted-foreground mt-1">Manage your brand identity and information</p>
+            <p className="text-muted-foreground mt-1">
+              Manage your brand identity and information
+            </p>
           </div>
         </div>
 
@@ -157,7 +178,9 @@ export default function BrandSettingsPage() {
               <Card>
                 <CardHeader>
                   <CardTitle>Brand Identity</CardTitle>
-                  <CardDescription>Your brand's visual identity and basic information</CardDescription>
+                  <CardDescription>
+                    Your brand's visual identity and basic information
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   {/* Logo Upload */}
@@ -165,7 +188,9 @@ export default function BrandSettingsPage() {
                     <Label>Brand Logo</Label>
                     <div
                       className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors mt-2 ${
-                        dragActive ? "border-primary bg-primary/5" : "border-muted-foreground/25"
+                        dragActive
+                          ? "border-primary bg-primary/5"
+                          : "border-muted-foreground/25"
                       }`}
                       onDragEnter={handleDrag}
                       onDragLeave={handleDrag}
@@ -175,12 +200,17 @@ export default function BrandSettingsPage() {
                       {formData.logo ? (
                         <div className="space-y-4">
                           <img
-                            src={URL.createObjectURL(formData.logo) || "/placeholder.svg"}
+                            src={
+                              URL.createObjectURL(formData.logo) ||
+                              "/placeholder.svg"
+                            }
                             alt="Brand logo preview"
                             className="max-h-32 mx-auto rounded-lg"
                           />
                           <div className="flex items-center justify-center gap-2">
-                            <span className="text-sm text-muted-foreground">{formData.logo.name}</span>
+                            <span className="text-sm text-muted-foreground">
+                              {formData.logo.name}
+                            </span>
                             <Button
                               type="button"
                               variant="outline"
@@ -196,7 +226,9 @@ export default function BrandSettingsPage() {
                           <Upload className="h-8 w-8 mx-auto text-muted-foreground" />
                           <div>
                             <p className="font-medium">Drop your logo here</p>
-                            <p className="text-sm text-muted-foreground">or click to browse (PNG, JPG up to 2MB)</p>
+                            <p className="text-sm text-muted-foreground">
+                              or click to browse (PNG, JPG up to 2MB)
+                            </p>
                           </div>
                           <input
                             type="file"
@@ -206,7 +238,12 @@ export default function BrandSettingsPage() {
                             id="logo-upload"
                           />
                           <label htmlFor="logo-upload">
-                            <Button type="button" variant="outline" size="sm" asChild>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              asChild
+                            >
                               <span>Choose File</span>
                             </Button>
                           </label>
@@ -221,13 +258,20 @@ export default function BrandSettingsPage() {
                       <Input
                         id="brandName"
                         value={formData.brandName}
-                        onChange={(e) => handleInputChange("brandName", e.target.value)}
+                        onChange={(e) =>
+                          handleInputChange("brandName", e.target.value)
+                        }
                         required
                       />
                     </div>
                     <div>
                       <Label htmlFor="industry">Industry *</Label>
-                      <Select value={formData.industry} onValueChange={(value) => handleInputChange("industry", value)}>
+                      <Select
+                        value={formData.industry}
+                        onValueChange={(value) =>
+                          handleInputChange("industry", value)
+                        }
+                      >
                         <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
@@ -248,7 +292,9 @@ export default function BrandSettingsPage() {
               <Card>
                 <CardHeader>
                   <CardTitle>Brand Information</CardTitle>
-                  <CardDescription>Tell taskers about your brand and what you do</CardDescription>
+                  <CardDescription>
+                    Tell taskers about your brand and what you do
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
@@ -257,7 +303,9 @@ export default function BrandSettingsPage() {
                       id="description"
                       placeholder="Describe your brand, what you do, and what makes you unique..."
                       value={formData.description}
-                      onChange={(e) => handleInputChange("description", e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("description", e.target.value)
+                      }
                       rows={4}
                       required
                     />
@@ -270,7 +318,9 @@ export default function BrandSettingsPage() {
                       type="url"
                       placeholder="https://yourwebsite.com"
                       value={formData.website}
-                      onChange={(e) => handleInputChange("website", e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("website", e.target.value)
+                      }
                     />
                   </div>
                 </CardContent>
@@ -300,7 +350,9 @@ export default function BrandSettingsPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Brand Preview</CardTitle>
-                <CardDescription>How your brand appears to taskers</CardDescription>
+                <CardDescription>
+                  How your brand appears to taskers
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center gap-3">
@@ -309,7 +361,8 @@ export default function BrandSettingsPage() {
                       src={
                         formData.logo
                           ? URL.createObjectURL(formData.logo)
-                          : "https://api.dicebear.com/7.x/initials/svg?seed=" + formData.brandName
+                          : "https://api.dicebear.com/7.x/initials/svg?seed=" +
+                            formData.brandName
                       }
                       alt={formData.brandName}
                     />
@@ -318,13 +371,16 @@ export default function BrandSettingsPage() {
                     </AvatarFallback>
                   </Avatar>
                   <div>
-                    <h3 className="font-semibold">{formData.brandName || "Brand Name"}</h3>
+                    <h3 className="font-semibold">
+                      {formData.brandName || "Brand Name"}
+                    </h3>
                     <Badge variant="secondary">{formData.industry}</Badge>
                   </div>
                 </div>
 
                 <p className="text-sm text-muted-foreground">
-                  {formData.description || "Brand description will appear here..."}
+                  {formData.description ||
+                    "Brand description will appear here..."}
                 </p>
 
                 {formData.website && (
@@ -363,7 +419,9 @@ export default function BrandSettingsPage() {
                     <BarChart3 className="h-4 w-4 text-muted-foreground" />
                     <span className="text-sm">Total Campaigns</span>
                   </div>
-                  <span className="font-medium">{mockStats.totalCampaigns}</span>
+                  <span className="font-medium">
+                    {mockStats.totalCampaigns}
+                  </span>
                 </div>
 
                 <div className="flex items-center justify-between">
@@ -371,7 +429,9 @@ export default function BrandSettingsPage() {
                     <Building className="h-4 w-4 text-muted-foreground" />
                     <span className="text-sm">Total Spent</span>
                   </div>
-                  <span className="font-medium">{formatCurrency(mockStats.totalSpent)}</span>
+                  <span className="font-medium">
+                    {formatCurrency(mockStats.totalSpent)}
+                  </span>
                 </div>
 
                 <div className="flex items-center justify-between">
@@ -380,7 +440,9 @@ export default function BrandSettingsPage() {
                     <span className="text-sm">Average Rating</span>
                   </div>
                   <div className="flex items-center gap-1">
-                    <span className="font-medium">{mockStats.averageRating}</span>
+                    <span className="font-medium">
+                      {mockStats.averageRating}
+                    </span>
                     <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
                   </div>
                 </div>
@@ -395,17 +457,20 @@ export default function BrandSettingsPage() {
               <CardContent className="space-y-3">
                 <div className="text-sm space-y-2">
                   <p>
-                    • <strong>Professional logo:</strong> Use a clear, high-quality logo for better recognition
+                    • <strong>Professional logo:</strong> Use a clear,
+                    high-quality logo for better recognition
                   </p>
                   <p>
-                    • <strong>Clear description:</strong> Explain what your brand does and why taskers should work with
-                    you
+                    • <strong>Clear description:</strong> Explain what your
+                    brand does and why taskers should work with you
                   </p>
                   <p>
-                    • <strong>Complete profile:</strong> Fill out all fields to build trust with taskers
+                    • <strong>Complete profile:</strong> Fill out all fields to
+                    build trust with taskers
                   </p>
                   <p>
-                    • <strong>Stay active:</strong> Regular campaigns help maintain brand visibility
+                    • <strong>Stay active:</strong> Regular campaigns help
+                    maintain brand visibility
                   </p>
                 </div>
               </CardContent>
@@ -414,5 +479,5 @@ export default function BrandSettingsPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }

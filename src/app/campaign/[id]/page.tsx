@@ -1,11 +1,11 @@
-"use client"
+"use client";
 
-import { useAuth } from "@/components/providers/auth-provider"
-import { Navbar } from "@/components/layout/navbar"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
+import { useAuth } from "@/components/providers/auth-provider";
+import { Navbar } from "@/components/layout/navbar";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 import {
   ArrowLeft,
   Users,
@@ -19,19 +19,20 @@ import {
   XCircle,
   AlertCircle,
   Edit,
-} from "lucide-react"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
-import { useEffect, useState } from "react"
-import { toast } from "sonner"
-import { toast } from "sonner"
+} from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+import { toast } from "sonner";
 
 // Mock campaign data
 const mockCampaign = {
   id: "1",
   name: "Instagram Follow Campaign",
   status: "active",
-  description: "Follow our Instagram account and like our latest posts to help us grow our social media presence.",
+  description:
+    "Follow our Instagram account and like our latest posts to help us grow our social media presence.",
   instructions: [
     "Go to our Instagram page @kuditask_official",
     "Follow our account",
@@ -56,7 +57,7 @@ const mockCampaign = {
   expiresAt: "2024-01-22",
   estimatedTimeMinutes: 5,
   bannerImage: "/instagram-follow-campaign.png",
-}
+};
 
 // Mock user submission data
 const mockUserSubmission = {
@@ -68,30 +69,35 @@ const mockUserSubmission = {
   proofText:
     "I have successfully followed @kuditask_official and liked the latest 3 posts as requested. Screenshot attached showing completion.",
   proofUrl: "/instagram-follow-campaign.png",
-  advertiserFeedback: "Excellent work! All requirements were met perfectly. Thank you for your participation.",
+  advertiserFeedback:
+    "Excellent work! All requirements were met perfectly. Thank you for your participation.",
   advertiserRating: 5,
   userRating: 0, // User's rating of the advertiser (0 means not rated yet)
   reviewedAt: "2024-01-20T16:45:00Z",
   paidAt: null,
-}
+};
 
-export default function CampaignDetailsPage({ params }: { params: { id: string } }) {
-  const { user } = useAuth()
-  const router = useRouter()
-  const {} = useToast()
-  const [campaign] = useState(mockCampaign)
-  const [userSubmission, setUserSubmission] = useState(mockUserSubmission)
-  const [userRating, setUserRating] = useState(0)
-  const [isRatingSubmission, setIsRatingSubmission] = useState(false)
+export default function CampaignDetailsPage({
+  params,
+}: {
+  params: { id: string };
+}) {
+  const { user } = useAuth();
+  const router = useRouter();
+  const {} = useToast();
+  const [campaign] = useState(mockCampaign);
+  const [userSubmission, setUserSubmission] = useState(mockUserSubmission);
+  const [userRating, setUserRating] = useState(0);
+  const [isRatingSubmission, setIsRatingSubmission] = useState(false);
 
   useEffect(() => {
     if (!user) {
-      router.push("/login")
+      router.push("/login");
     }
-  }, [user, router])
+  }, [user, router]);
 
   if (!user) {
-    return null
+    return null;
   }
 
   const formatCurrency = (amount: number) => {
@@ -99,84 +105,93 @@ export default function CampaignDetailsPage({ params }: { params: { id: string }
       style: "currency",
       currency: "NGN",
       minimumFractionDigits: 0,
-    }).format(amount)
-  }
+    }).format(amount);
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
       case "approved":
-        return "bg-green-100 text-green-800 border-green-200"
+        return "bg-green-100 text-green-800 border-green-200";
       case "rejected":
-        return "bg-red-100 text-red-800 border-red-200"
+        return "bg-red-100 text-red-800 border-red-200";
       case "pending":
-        return "bg-yellow-100 text-yellow-800 border-yellow-200"
+        return "bg-yellow-100 text-yellow-800 border-yellow-200";
       case "paid":
-        return "bg-blue-100 text-blue-800 border-blue-200"
+        return "bg-blue-100 text-blue-800 border-blue-200";
       default:
-        return "bg-gray-100 text-gray-800 border-gray-200"
+        return "bg-gray-100 text-gray-800 border-gray-200";
     }
-  }
+  };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
       case "approved":
-        return <CheckCircle className="h-4 w-4" />
+        return <CheckCircle className="h-4 w-4" />;
       case "rejected":
-        return <XCircle className="h-4 w-4" />
+        return <XCircle className="h-4 w-4" />;
       case "pending":
-        return <Clock className="h-4 w-4" />
+        return <Clock className="h-4 w-4" />;
       case "paid":
-        return <DollarSign className="h-4 w-4" />
+        return <DollarSign className="h-4 w-4" />;
       default:
-        return <AlertCircle className="h-4 w-4" />
+        return <AlertCircle className="h-4 w-4" />;
     }
-  }
+  };
 
-  const renderStarRating = (currentRating: number, onRatingChange?: (rating: number) => void, readonly = false) => {
+  const renderStarRating = (
+    currentRating: number,
+    onRatingChange?: (rating: number) => void,
+    readonly = false,
+  ) => {
     return (
       <div className="flex gap-1">
         {[1, 2, 3, 4, 5].map((star) => (
           <Star
             key={star}
             className={`h-5 w-5 transition-colors ${readonly ? "" : "cursor-pointer"} ${
-              star <= currentRating ? "fill-yellow-400 text-yellow-400" : "text-gray-300 hover:text-yellow-400"
+              star <= currentRating
+                ? "fill-yellow-400 text-yellow-400"
+                : "text-gray-300 hover:text-yellow-400"
             }`}
             onClick={() => !readonly && onRatingChange?.(star)}
           />
         ))}
       </div>
-    )
-  }
+    );
+  };
 
   const handleRatingSubmit = async () => {
     if (userRating === 0) {
-      toast.error("Please select a rating before submitting.")
-      return
+      toast.error("Please select a rating before submitting.");
+      return;
     }
 
-    setIsRatingSubmission(true)
+    setIsRatingSubmission(true);
 
     try {
       // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
       setUserSubmission((prev) => ({
         ...prev,
         userRating: userRating,
-      }))
+      }));
 
-      toast.success("Thank you for rating your experience with this advertiser.")
+      toast.success(
+        "Thank you for rating your experience with this advertiser.",
+      );
     } catch (error) {
-      toast.error("Failed to submit rating. Please try again.")
+      toast.error("Failed to submit rating. Please try again.");
     } finally {
-      setIsRatingSubmission(false)
+      setIsRatingSubmission(false);
     }
-  }
+  };
 
   const canRate =
     userSubmission &&
-    (userSubmission.status === "approved" || userSubmission.status === "rejected") &&
-    userSubmission.userRating === 0
+    (userSubmission.status === "approved" ||
+      userSubmission.status === "rejected") &&
+    userSubmission.userRating === 0;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -194,11 +209,13 @@ export default function CampaignDetailsPage({ params }: { params: { id: string }
           <div className="flex-1">
             <div className="flex items-center gap-3 mb-2">
               <h1 className="text-3xl font-bold">{campaign.name}</h1>
-              <Badge className="bg-blue-100 text-blue-800 border-blue-200">{campaign.status}</Badge>
+              <Badge className="bg-blue-100 text-blue-800 border-blue-200">
+                {campaign.status}
+              </Badge>
             </div>
             <p className="text-muted-foreground">
-              Expires {new Date(campaign.expiresAt).toLocaleDateString()} • {formatCurrency(campaign.payoutPerUser)}{" "}
-              payout
+              Expires {new Date(campaign.expiresAt).toLocaleDateString()} •{" "}
+              {formatCurrency(campaign.payoutPerUser)} payout
             </p>
           </div>
         </div>
@@ -223,7 +240,9 @@ export default function CampaignDetailsPage({ params }: { params: { id: string }
                 <div className="space-y-4">
                   <div>
                     <h3 className="font-medium mb-2">Description</h3>
-                    <p className="text-muted-foreground">{campaign.description}</p>
+                    <p className="text-muted-foreground">
+                      {campaign.description}
+                    </p>
                   </div>
 
                   <div>
@@ -260,16 +279,28 @@ export default function CampaignDetailsPage({ params }: { params: { id: string }
 
                   <div className="grid grid-cols-3 gap-4 pt-4">
                     <div className="text-center">
-                      <div className="text-2xl font-bold text-green-600">{formatCurrency(campaign.payoutPerUser)}</div>
-                      <div className="text-sm text-muted-foreground">Payout</div>
+                      <div className="text-2xl font-bold text-green-600">
+                        {formatCurrency(campaign.payoutPerUser)}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        Payout
+                      </div>
                     </div>
                     <div className="text-center">
-                      <div className="text-2xl font-bold">{campaign.estimatedTimeMinutes}min</div>
-                      <div className="text-sm text-muted-foreground">Est. Time</div>
+                      <div className="text-2xl font-bold">
+                        {campaign.estimatedTimeMinutes}min
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        Est. Time
+                      </div>
                     </div>
                     <div className="text-center">
-                      <div className="text-2xl font-bold">{campaign.maxUsers - campaign.currentSubmissions}</div>
-                      <div className="text-sm text-muted-foreground">Spots Left</div>
+                      <div className="text-2xl font-bold">
+                        {campaign.maxUsers - campaign.currentSubmissions}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        Spots Left
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -290,22 +321,27 @@ export default function CampaignDetailsPage({ params }: { params: { id: string }
                     <Badge className={getStatusColor(userSubmission.status)}>
                       <div className="flex items-center gap-1">
                         {getStatusIcon(userSubmission.status)}
-                        {userSubmission.status.charAt(0).toUpperCase() + userSubmission.status.slice(1)}
+                        {userSubmission.status.charAt(0).toUpperCase() +
+                          userSubmission.status.slice(1)}
                       </div>
                     </Badge>
                     <span className="text-sm text-muted-foreground">
-                      Submitted {new Date(userSubmission.submittedAt).toLocaleString()}
+                      Submitted{" "}
+                      {new Date(userSubmission.submittedAt).toLocaleString()}
                     </span>
                     {userSubmission.reviewedAt && (
                       <span className="text-sm text-muted-foreground">
-                        • Reviewed {new Date(userSubmission.reviewedAt).toLocaleString()}
+                        • Reviewed{" "}
+                        {new Date(userSubmission.reviewedAt).toLocaleString()}
                       </span>
                     )}
                   </div>
 
                   <div>
                     <h4 className="font-medium mb-2">Your Submission</h4>
-                    <p className="text-sm text-muted-foreground mb-3">{userSubmission.proofText}</p>
+                    <p className="text-sm text-muted-foreground mb-3">
+                      {userSubmission.proofText}
+                    </p>
 
                     {userSubmission.proofUrl && (
                       <div className="mb-3">
@@ -323,13 +359,23 @@ export default function CampaignDetailsPage({ params }: { params: { id: string }
                       <div className="flex items-start gap-3">
                         <MessageSquare className="h-5 w-5 text-blue-600 mt-0.5" />
                         <div className="flex-1">
-                          <h4 className="font-medium text-blue-900 mb-1">Advertiser Feedback</h4>
-                          <p className="text-sm text-blue-800">{userSubmission.advertiserFeedback}</p>
+                          <h4 className="font-medium text-blue-900 mb-1">
+                            Advertiser Feedback
+                          </h4>
+                          <p className="text-sm text-blue-800">
+                            {userSubmission.advertiserFeedback}
+                          </p>
 
                           {userSubmission.advertiserRating > 0 && (
                             <div className="flex items-center gap-2 mt-2">
-                              <span className="text-sm font-medium text-blue-900">Their Rating:</span>
-                              {renderStarRating(userSubmission.advertiserRating, undefined, true)}
+                              <span className="text-sm font-medium text-blue-900">
+                                Their Rating:
+                              </span>
+                              {renderStarRating(
+                                userSubmission.advertiserRating,
+                                undefined,
+                                true,
+                              )}
                             </div>
                           )}
                         </div>
@@ -342,13 +388,21 @@ export default function CampaignDetailsPage({ params }: { params: { id: string }
                       <div className="flex items-start gap-3">
                         <AlertCircle className="h-5 w-5 text-orange-600 mt-0.5" />
                         <div className="flex-1">
-                          <h4 className="font-medium text-orange-900 mb-1">Submission Rejected</h4>
+                          <h4 className="font-medium text-orange-900 mb-1">
+                            Submission Rejected
+                          </h4>
                           <p className="text-sm text-orange-800 mb-3">
-                            Your submission was rejected, but you can edit and resubmit it. Your previous submission
-                            will be kept for reference.
+                            Your submission was rejected, but you can edit and
+                            resubmit it. Your previous submission will be kept
+                            for reference.
                           </p>
-                          <Link href={`/submit-task/${campaign.id}?edit=${userSubmission.id}`}>
-                            <Button size="sm" className="bg-orange-600 hover:bg-orange-700">
+                          <Link
+                            href={`/submit-task/${campaign.id}?edit=${userSubmission.id}`}
+                          >
+                            <Button
+                              size="sm"
+                              className="bg-orange-600 hover:bg-orange-700"
+                            >
                               <Edit className="h-4 w-4 mr-2" />
                               Edit & Resubmit
                             </Button>
@@ -361,9 +415,12 @@ export default function CampaignDetailsPage({ params }: { params: { id: string }
                   {/* User Rating Section */}
                   {canRate && (
                     <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                      <h4 className="font-medium text-green-900 mb-3">Rate Your Experience</h4>
+                      <h4 className="font-medium text-green-900 mb-3">
+                        Rate Your Experience
+                      </h4>
                       <p className="text-sm text-green-800 mb-3">
-                        How was your experience with this advertiser? Your rating helps improve the platform.
+                        How was your experience with this advertiser? Your
+                        rating helps improve the platform.
                       </p>
 
                       <div className="flex items-center gap-4">
@@ -377,7 +434,9 @@ export default function CampaignDetailsPage({ params }: { params: { id: string }
                           size="sm"
                           className="bg-green-600 hover:bg-green-700"
                         >
-                          {isRatingSubmission ? "Submitting..." : "Submit Rating"}
+                          {isRatingSubmission
+                            ? "Submitting..."
+                            : "Submit Rating"}
                         </Button>
                       </div>
                     </div>
@@ -386,9 +445,17 @@ export default function CampaignDetailsPage({ params }: { params: { id: string }
                   {userSubmission.userRating > 0 && (
                     <div className="bg-gray-50 border rounded-lg p-4">
                       <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium">Your Rating:</span>
-                        {renderStarRating(userSubmission.userRating, undefined, true)}
-                        <span className="text-sm text-muted-foreground">• Thank you for your feedback!</span>
+                        <span className="text-sm font-medium">
+                          Your Rating:
+                        </span>
+                        {renderStarRating(
+                          userSubmission.userRating,
+                          undefined,
+                          true,
+                        )}
+                        <span className="text-sm text-muted-foreground">
+                          • Thank you for your feedback!
+                        </span>
                       </div>
                     </div>
                   )}
@@ -408,10 +475,18 @@ export default function CampaignDetailsPage({ params }: { params: { id: string }
                 <div className="flex items-center justify-between">
                   <span className="text-sm">Completion</span>
                   <span className="text-sm font-medium">
-                    {Math.round((campaign.currentSubmissions / campaign.maxUsers) * 100)}%
+                    {Math.round(
+                      (campaign.currentSubmissions / campaign.maxUsers) * 100,
+                    )}
+                    %
                   </span>
                 </div>
-                <Progress value={(campaign.currentSubmissions / campaign.maxUsers) * 100} className="h-2" />
+                <Progress
+                  value={
+                    (campaign.currentSubmissions / campaign.maxUsers) * 100
+                  }
+                  className="h-2"
+                />
 
                 <div className="space-y-3 pt-4">
                   <div className="flex items-center justify-between">
@@ -429,7 +504,9 @@ export default function CampaignDetailsPage({ params }: { params: { id: string }
                       <CheckCircle className="h-4 w-4 text-green-600" />
                       <span className="text-sm">Approved</span>
                     </div>
-                    <span className="font-medium text-green-600">{campaign.approvedSubmissions}</span>
+                    <span className="font-medium text-green-600">
+                      {campaign.approvedSubmissions}
+                    </span>
                   </div>
 
                   <div className="flex items-center justify-between">
@@ -437,7 +514,9 @@ export default function CampaignDetailsPage({ params }: { params: { id: string }
                       <Clock className="h-4 w-4 text-yellow-600" />
                       <span className="text-sm">Pending</span>
                     </div>
-                    <span className="font-medium text-yellow-600">{campaign.pendingSubmissions}</span>
+                    <span className="font-medium text-yellow-600">
+                      {campaign.pendingSubmissions}
+                    </span>
                   </div>
 
                   <div className="flex items-center justify-between">
@@ -445,7 +524,9 @@ export default function CampaignDetailsPage({ params }: { params: { id: string }
                       <Calendar className="h-4 w-4 text-muted-foreground" />
                       <span className="text-sm">Expires</span>
                     </div>
-                    <span className="font-medium">{new Date(campaign.expiresAt).toLocaleDateString()}</span>
+                    <span className="font-medium">
+                      {new Date(campaign.expiresAt).toLocaleDateString()}
+                    </span>
                   </div>
                 </div>
               </CardContent>
@@ -460,23 +541,30 @@ export default function CampaignDetailsPage({ params }: { params: { id: string }
               </Link>
             )}
 
-            {userSubmission && userSubmission.status === "approved" && !userSubmission.paidAt && (
-              <Card className="bg-green-50 border-green-200">
-                <CardContent className="pt-6">
-                  <div className="text-center">
-                    <CheckCircle className="h-8 w-8 text-green-600 mx-auto mb-2" />
-                    <h3 className="font-medium text-green-900 mb-1">Task Approved!</h3>
-                    <p className="text-sm text-green-800 mb-3">
-                      Your submission has been approved. Payment will be processed within 24 hours.
-                    </p>
-                    <div className="text-lg font-bold text-green-600">{formatCurrency(campaign.payoutPerUser)}</div>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
+            {userSubmission &&
+              userSubmission.status === "approved" &&
+              !userSubmission.paidAt && (
+                <Card className="bg-green-50 border-green-200">
+                  <CardContent className="pt-6">
+                    <div className="text-center">
+                      <CheckCircle className="h-8 w-8 text-green-600 mx-auto mb-2" />
+                      <h3 className="font-medium text-green-900 mb-1">
+                        Task Approved!
+                      </h3>
+                      <p className="text-sm text-green-800 mb-3">
+                        Your submission has been approved. Payment will be
+                        processed within 24 hours.
+                      </p>
+                      <div className="text-lg font-bold text-green-600">
+                        {formatCurrency(campaign.payoutPerUser)}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
           </div>
         </div>
       </div>
     </div>
-  )
+  );
 }

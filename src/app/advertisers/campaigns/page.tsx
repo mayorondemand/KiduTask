@@ -1,18 +1,39 @@
-"use client"
+"use client";
 
-import { useAuth } from "@/components/providers/auth-provider"
-import { Navbar } from "@/components/layout/navbar"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
-import { Input } from "@/components/ui/input"
-import { Plus, Users, DollarSign, Calendar, Search, Eye, Pause, Play, MoreHorizontal } from "lucide-react"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
-import { useEffect, useState } from "react"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useAuth } from "@/components/providers/auth-provider";
+import { Navbar } from "@/components/layout/navbar";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { Input } from "@/components/ui/input";
+import {
+  Plus,
+  Users,
+  DollarSign,
+  Calendar,
+  Search,
+  Eye,
+  Pause,
+  Play,
+  MoreHorizontal,
+} from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 // Mock campaigns data
 const mockCampaigns = [
@@ -94,54 +115,57 @@ const mockCampaigns = [
     createdAt: "2024-01-08",
     pendingSubmissions: 8,
   },
-]
+];
 
 export default function CampaignsPage() {
-  const { user } = useAuth()
-  const router = useRouter()
-  const [searchTerm, setSearchTerm] = useState("")
-  const [statusFilter, setStatusFilter] = useState("all")
-  const [typeFilter, setTypeFilter] = useState("all")
+  const { user } = useAuth();
+  const router = useRouter();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [typeFilter, setTypeFilter] = useState("all");
 
   useEffect(() => {
     if (!user?.isAdvertiser) {
-      router.push("/home")
+      router.push("/home");
     }
-  }, [user, router])
+  }, [user, router]);
 
   if (!user?.isAdvertiser) {
-    return null
+    return null;
   }
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-NG", {
       style: "currency",
       currency: "NGN",
-    }).format(amount)
-  }
+    }).format(amount);
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
       case "active":
-        return "bg-green-100 text-green-800 border-green-200"
+        return "bg-green-100 text-green-800 border-green-200";
       case "completed":
-        return "bg-blue-100 text-blue-800 border-blue-200"
+        return "bg-blue-100 text-blue-800 border-blue-200";
       case "pending":
-        return "bg-yellow-100 text-yellow-800 border-yellow-200"
+        return "bg-yellow-100 text-yellow-800 border-yellow-200";
       case "paused":
-        return "bg-gray-100 text-gray-800 border-gray-200"
+        return "bg-gray-100 text-gray-800 border-gray-200";
       default:
-        return "bg-gray-100 text-gray-800 border-gray-200"
+        return "bg-gray-100 text-gray-800 border-gray-200";
     }
-  }
+  };
 
   // Filter campaigns
   const filteredCampaigns = mockCampaigns.filter((campaign) => {
-    const matchesSearch = campaign.name.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesStatus = statusFilter === "all" || campaign.status === statusFilter
-    const matchesType = typeFilter === "all" || campaign.type === typeFilter
-    return matchesSearch && matchesStatus && matchesType
-  })
+    const matchesSearch = campaign.name
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
+    const matchesStatus =
+      statusFilter === "all" || campaign.status === statusFilter;
+    const matchesType = typeFilter === "all" || campaign.type === typeFilter;
+    return matchesSearch && matchesStatus && matchesType;
+  });
 
   // Get stats
   const stats = {
@@ -149,7 +173,7 @@ export default function CampaignsPage() {
     completed: mockCampaigns.filter((c) => c.status === "completed").length,
     pending: mockCampaigns.filter((c) => c.status === "pending").length,
     paused: mockCampaigns.filter((c) => c.status === "paused").length,
-  }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -160,7 +184,9 @@ export default function CampaignsPage() {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
           <div>
             <h1 className="text-3xl font-bold">My Campaigns</h1>
-            <p className="text-muted-foreground mt-1">Manage and track all your advertising campaigns</p>
+            <p className="text-muted-foreground mt-1">
+              Manage and track all your advertising campaigns
+            </p>
           </div>
           <Link href="/advertisers/campaign/new">
             <Button className="flex items-center gap-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 mt-4 sm:mt-0">
@@ -174,25 +200,33 @@ export default function CampaignsPage() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           <Card>
             <CardContent className="p-4">
-              <div className="text-2xl font-bold text-green-600">{stats.active}</div>
+              <div className="text-2xl font-bold text-green-600">
+                {stats.active}
+              </div>
               <p className="text-sm text-muted-foreground">Active</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
-              <div className="text-2xl font-bold text-blue-600">{stats.completed}</div>
+              <div className="text-2xl font-bold text-blue-600">
+                {stats.completed}
+              </div>
               <p className="text-sm text-muted-foreground">Completed</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
-              <div className="text-2xl font-bold text-yellow-600">{stats.pending}</div>
+              <div className="text-2xl font-bold text-yellow-600">
+                {stats.pending}
+              </div>
               <p className="text-sm text-muted-foreground">Pending</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
-              <div className="text-2xl font-bold text-gray-600">{stats.paused}</div>
+              <div className="text-2xl font-bold text-gray-600">
+                {stats.paused}
+              </div>
               <p className="text-sm text-muted-foreground">Paused</p>
             </CardContent>
           </Card>
@@ -232,7 +266,9 @@ export default function CampaignsPage() {
                   <SelectItem value="Social Media">Social Media</SelectItem>
                   <SelectItem value="App Review">App Review</SelectItem>
                   <SelectItem value="Survey">Survey</SelectItem>
-                  <SelectItem value="Content Creation">Content Creation</SelectItem>
+                  <SelectItem value="Content Creation">
+                    Content Creation
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -242,13 +278,18 @@ export default function CampaignsPage() {
         {/* Campaigns Grid */}
         <div className="grid gap-6">
           {filteredCampaigns.map((campaign) => (
-            <Card key={campaign.id} className="hover:shadow-md transition-shadow">
+            <Card
+              key={campaign.id}
+              className="hover:shadow-md transition-shadow"
+            >
               <CardContent className="p-6">
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
                       <h3 className="text-lg font-semibold">{campaign.name}</h3>
-                      <Badge className={getStatusColor(campaign.status)}>{campaign.status}</Badge>
+                      <Badge className={getStatusColor(campaign.status)}>
+                        {campaign.status}
+                      </Badge>
                       <Badge variant="outline">{campaign.type}</Badge>
                     </div>
 
@@ -259,14 +300,18 @@ export default function CampaignsPage() {
                       </span>
                       <span className="flex items-center gap-1">
                         <DollarSign className="h-4 w-4" />
-                        {formatCurrency(campaign.spent)} / {formatCurrency(campaign.budget)}
+                        {formatCurrency(campaign.spent)} /{" "}
+                        {formatCurrency(campaign.budget)}
                       </span>
                       <span className="flex items-center gap-1">
                         <Calendar className="h-4 w-4" />
-                        Created {new Date(campaign.createdAt).toLocaleDateString()}
+                        Created{" "}
+                        {new Date(campaign.createdAt).toLocaleDateString()}
                       </span>
                       {campaign.pendingSubmissions > 0 && (
-                        <Badge variant="secondary">{campaign.pendingSubmissions} pending review</Badge>
+                        <Badge variant="secondary">
+                          {campaign.pendingSubmissions} pending review
+                        </Badge>
                       )}
                     </div>
 
@@ -322,7 +367,9 @@ export default function CampaignsPage() {
         {filteredCampaigns.length === 0 && (
           <Card>
             <CardContent className="p-12 text-center">
-              <div className="text-muted-foreground mb-4">No campaigns found matching your filters.</div>
+              <div className="text-muted-foreground mb-4">
+                No campaigns found matching your filters.
+              </div>
               <Link href="/advertisers/campaign/new">
                 <Button>Create Your First Campaign</Button>
               </Link>
@@ -331,5 +378,5 @@ export default function CampaignsPage() {
         )}
       </div>
     </div>
-  )
+  );
 }

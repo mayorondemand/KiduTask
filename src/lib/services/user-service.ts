@@ -31,7 +31,7 @@ class UserService {
   async getUser(userId: string): Promise<UserDetails | null> {
     // Get the user
     const userWithKyc = await db
-      .select({     
+      .select({
         ...getTableColumns(user),
         isKycVerified: sql<boolean>`CASE WHEN ${kyc.status} = 'verified' THEN true ELSE false END`,
       })
