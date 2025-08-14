@@ -38,12 +38,13 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { usePathname } from "next/navigation";
 
 export function Navbar() {
   const { user, logoutMutation } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [advertiserDialogOpen, setAdvertiserDialogOpen] = useState(false);
-
+  const pathname = usePathname();
   const advertiserRequestMutation = useAdvertiserRequest();
 
   const handleAdvertiserRequest = () => {
@@ -118,7 +119,7 @@ export function Navbar() {
   };
 
   return (
-    <nav className="sticky top-2 z-50 ">
+    <nav className="fixed w-full top-2 z-50 ">
       <div className="container bg-white rounded-full border border-gray-200 mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
           <div className="flex items-center space-x-8">
@@ -270,7 +271,7 @@ export function Navbar() {
               </Dialog>
             )}
 
-            {user.advertiserRequestStatus === "approved" && (
+            {user.advertiserRequestStatus === "approved" && !pathname.includes("/advertisers") && (
               <Link href="/advertisers">
                 <Button className="hidden sm:flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white border-0 shadow-lg">
                   <BarChart3 className="h-4 w-4" />

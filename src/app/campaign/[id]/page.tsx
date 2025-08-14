@@ -24,7 +24,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { toast } from "sonner";
 
 // Mock campaign data
 const mockCampaign = {
@@ -84,21 +83,10 @@ export default function CampaignDetailsPage({
 }) {
   const { user } = useAuth();
   const router = useRouter();
-  const {} = useToast();
   const [campaign] = useState(mockCampaign);
   const [userSubmission, setUserSubmission] = useState(mockUserSubmission);
   const [userRating, setUserRating] = useState(0);
   const [isRatingSubmission, setIsRatingSubmission] = useState(false);
-
-  useEffect(() => {
-    if (!user) {
-      router.push("/login");
-    }
-  }, [user, router]);
-
-  if (!user) {
-    return null;
-  }
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-NG", {

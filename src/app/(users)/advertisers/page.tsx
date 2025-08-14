@@ -12,6 +12,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { StatsCard } from "@/components/stats-card";
 import {
   BarChart3,
   Plus,
@@ -22,26 +23,14 @@ import {
   Calendar,
   Target,
   CheckCircle,
-  ArrowUpRight,
-  Zap,
   Star,
-  Activity,
+  ArchiveRestore,
+  PercentCircle,
 } from "lucide-react";
 import Link from "next/link";
-
-// Mock data for the dashboard
-const mockStats = {
-  activeCampaigns: 8,
-  totalSpent: 127500,
-  pendingApprovals: 23,
-  totalReach: 45200,
-  thisMonthSpent: 32000,
-  lastMonthSpent: 24500,
-  conversionRate: 4.2,
-  avgCostPerTask: 185,
-  totalCampaigns: 24,
-  approvalRate: 89.5,
-};
+import { formatCurrency, getStatusColor } from "@/lib/utils";
+import { useQuery } from "@tanstack/react-query";
+import { useAdvertiserStats } from "@/lib/client";
 
 const mockRecentCampaigns = [
   {
@@ -85,68 +74,29 @@ const mockRecentCampaigns = [
   },
 ];
 
-const mockQuickStats = [
-  { label: "Today's Submissions", value: "47", change: "+12%", trend: "up" },
-  { label: "Active Users", value: "1,247", change: "+8%", trend: "up" },
-  {
-    label: "Avg. Completion Time",
-    value: "3.2h",
-    change: "-15%",
-    trend: "down",
-  },
-  { label: "Success Rate", value: "94.2%", change: "+2%", trend: "up" },
-];
-
 export default function AdvertiserDashboard() {
   const { user } = useAuth();
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-NG", {
-      style: "currency",
-      currency: "NGN",
-    }).format(amount);
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "active":
-        return "bg-emerald-50 text-emerald-700 border-emerald-200";
-      case "completed":
-        return "bg-blue-50 text-blue-700 border-blue-200";
-      case "pending":
-        return "bg-amber-50 text-amber-700 border-amber-200";
-      case "paused":
-        return "bg-gray-50 text-gray-700 border-gray-200";
-      default:
-        return "bg-gray-50 text-gray-700 border-gray-200";
-    }
-  };
-
-  const growthPercentage = (
-    ((mockStats.thisMonthSpent - mockStats.lastMonthSpent) /
-      mockStats.lastMonthSpent) *
-    100
-  ).toFixed(1);
+  const { data: mockStats } = useAdvertiserStats();
+  console.log(mockStats);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50">
-
+    <div className="min-h-screen pt-20 bg-gradient-to-br from-slate-50 via-white to-slate-50">
       <div className="container mx-auto px-4 py-8">
         {/* Header Section */}
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8">
           <div className="mb-6 lg:mb-0">
-            <div className="flex items-center gap-4 mb-3">
-              <Avatar className="w-12 h-12 ring-2 ring-purple-100">
+            <div className="flex items-center gap-4">
+              <Avatar className="w-12 h-12">
                 <AvatarImage
                   src={user?.image || ""}
                   alt={user?.name || "User"}
                 />
-                <AvatarFallback className="bg-gradient-to-br from-purple-500 to-blue-500 text-white">
+                <AvatarFallback className="bg-gray-200 text-primary">
                   {user?.name.charAt(0)}
                 </AvatarFallback>
               </Avatar>
               <div>
-                <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
+                <h1 className="text-3xl font-bold ">
                   Welcome back, {user?.name.split(" ")[0]}! 👋
                 </h1>
                 <p className="text-gray-600 mt-1">
@@ -166,8 +116,17 @@ export default function AdvertiserDashboard() {
                 Brand Settings
               </Button>
             </Link>
+            <Link href="/advertisers/campaigns">
+              <Button
+                variant="outline"
+                className="flex items-center gap-2 bg-white border-gray-200 hover:bg-gray-50"
+              >
+                <Eye className="h-4 w-4" />
+                View Campaigns
+              </Button>
+            </Link>
             <Link href="/advertisers/campaign/new">
-              <Button className="flex items-center gap-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 shadow-lg">
+              <Button className="flex items-center gap-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700">
                 <Plus className="h-4 w-4" />
                 Create Campaign
               </Button>
@@ -176,7 +135,7 @@ export default function AdvertiserDashboard() {
         </div>
 
         {/* Quick Stats Row */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        {/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           {mockQuickStats.map((stat) => (
             <Card
               key={stat.label}
@@ -206,91 +165,60 @@ export default function AdvertiserDashboard() {
               </CardContent>
             </Card>
           ))}
-        </div>
+        </div> */}
 
         {/* Main Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card className="border-0 shadow-lg bg-gradient-to-br from-purple-500 to-purple-600 text-white">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-purple-100 text-sm mb-1">
-                    Active Campaigns
-                  </p>
-                  <p className="text-3xl font-bold">
-                    {mockStats.activeCampaigns}
-                  </p>
-                  <p className="text-purple-100 text-xs mt-1">
-                    {mockStats.pendingApprovals} pending approval
-                  </p>
-                </div>
-                <div className="p-3 rounded-full bg-white/20">
-                  <BarChart3 className="h-6 w-6" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          <StatsCard
+            className="bg-gradient-to-br from-purple-500 to-purple-600"
+            icon={BarChart3}
+            title="Active Campaigns"
+            value={mockStats?.activeCampaigns}
+            subtitle={mockStats?.pendingApprovals ? `${mockStats?.pendingApprovals} pending approval` : undefined}
+          />
 
-          <Card className="border-0 shadow-lg bg-gradient-to-br from-emerald-500 to-emerald-600 text-white">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-emerald-100 text-sm mb-1">Total Spent</p>
-                  <p className="text-3xl font-bold">
-                    {formatCurrency(mockStats.totalSpent)}
-                  </p>
-                  <p className="text-emerald-100 text-xs mt-1">
-                    +{growthPercentage}% this month
-                  </p>
-                </div>
-                <div className="p-3 rounded-full bg-white/20">
-                  <DollarSign className="h-6 w-6" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <StatsCard
+            className="bg-gradient-to-br from-emerald-500 to-emerald-600"
+            icon={DollarSign}
+            title="Total Spent"
+            value={formatCurrency(mockStats?.totalSpentMonth)}
+            subtitle={`this month`}
+          />
 
-          <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-500 to-blue-600 text-white">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-blue-100 text-sm mb-1">Total Reach</p>
-                  <p className="text-3xl font-bold">
-                    {mockStats.totalReach.toLocaleString()}
-                  </p>
-                  <p className="text-blue-100 text-xs mt-1">
-                    Unique users reached
-                  </p>
-                </div>
-                <div className="p-3 rounded-full bg-white/20">
-                  <Users className="h-6 w-6" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <StatsCard
+            className="bg-gradient-to-br from-blue-500 to-blue-600"
+            icon={Users}
+            title="Total Reach"
+            value={mockStats?.totalReach.toLocaleString()}
+            subtitle="Unique users reached"
+          />
 
-          <Card className="border-0 shadow-lg bg-gradient-to-br from-orange-500 to-orange-600 text-white">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-orange-100 text-sm mb-1">Success Rate</p>
-                  <p className="text-3xl font-bold">
-                    {mockStats.approvalRate}%
-                  </p>
-                  <p className="text-orange-100 text-xs mt-1">
-                    Campaign approval rate
-                  </p>
-                </div>
-                <div className="p-3 rounded-full bg-white/20">
-                  <Target className="h-6 w-6" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <StatsCard
+            className="bg-gradient-to-br from-orange-500 to-orange-600"
+            icon={Target}
+            title="Success Rate"
+            value={mockStats?.approvalRate ? `${mockStats?.approvalRate}%` : undefined}
+            subtitle="Task approval rate"
+          />
+
+          <StatsCard
+            className="bg-gradient-to-br from-yellow-500 to-yellow-600"
+            icon={ArchiveRestore}
+            title="Submissions Today"
+            value={mockStats?.submissionsToday}
+            subtitle="Submissions today"
+          />
+
+          <StatsCard
+            className="bg-gradient-to-br from-green-500 to-green-600"
+            icon={PercentCircle}
+            title="Conversion Rate"
+            value={mockStats?.conversionRate ? `${mockStats?.conversionRate}%` : undefined}
+            subtitle="Conversion rate"
+          />
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-8 mb-8">
-          {/* Quick Actions */}
+        {/* <div className="grid lg:grid-cols-3 gap-8 mb-8">
           <Card className="border-0 shadow-lg bg-white">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center gap-2 text-lg">
@@ -353,7 +281,6 @@ export default function AdvertiserDashboard() {
             </CardContent>
           </Card>
 
-          {/* Performance Insights */}
           <Card className="lg:col-span-2 border-0 shadow-lg bg-white">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center gap-2 text-lg">
@@ -399,7 +326,7 @@ export default function AdvertiserDashboard() {
               </div>
             </CardContent>
           </Card>
-        </div>
+        </div> */}
 
         {/* Recent Campaigns */}
         <Card className="border-0 shadow-lg bg-white">
