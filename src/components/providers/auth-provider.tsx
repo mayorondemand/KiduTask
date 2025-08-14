@@ -90,6 +90,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const isPublicPath = publicPaths.includes(pathname);
 
     if (!user && !isPublicPath) {
+      console.warn(`[AuthProvider] ${pathname} -> Login <Not Public, Not User>`);
       router.push("/login");
     }
 
@@ -98,11 +99,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       user.advertiserRequestStatus !== "approved" &&
       !pathname.includes("/advertisers")
     ) {
+      console.warn(`[AuthProvider] ${pathname} -> Home <User, Not Advertiser>`);
       toast.error("You are not an advertiser");
       router.push("/home");
     }
 
     if (user && pathname === "/login") {
+      console.warn(`[AuthProvider] ${pathname} -> Home <User, Login>`);
       router.push("/home");
     }
   }, [user, loading, pathname, router]);
