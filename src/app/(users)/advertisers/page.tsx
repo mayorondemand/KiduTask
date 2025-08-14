@@ -1,7 +1,6 @@
 "use client";
 
 import { useAuth } from "@/components/providers/auth-provider";
-import { Navbar } from "@/components/layout/navbar";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -29,8 +28,6 @@ import {
   Activity,
 } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
 
 // Mock data for the dashboard
 const mockStats = {
@@ -102,17 +99,6 @@ const mockQuickStats = [
 
 export default function AdvertiserDashboard() {
   const { user } = useAuth();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (!user?.isAdvertiser) {
-      router.push("/home");
-    }
-  }, [user, router]);
-
-  if (!user?.isAdvertiser) {
-    return null;
-  }
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-NG", {
@@ -144,7 +130,6 @@ export default function AdvertiserDashboard() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50">
-      <Navbar />
 
       <div className="container mx-auto px-4 py-8">
         {/* Header Section */}
@@ -153,16 +138,16 @@ export default function AdvertiserDashboard() {
             <div className="flex items-center gap-4 mb-3">
               <Avatar className="w-12 h-12 ring-2 ring-purple-100">
                 <AvatarImage
-                  src={user.avatar || "/placeholder.svg"}
-                  alt={user.name}
+                  src={user?.image || ""}
+                  alt={user?.name || "User"}
                 />
                 <AvatarFallback className="bg-gradient-to-br from-purple-500 to-blue-500 text-white">
-                  {user.name.charAt(0)}
+                  {user?.name.charAt(0)}
                 </AvatarFallback>
               </Avatar>
               <div>
                 <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
-                  Welcome back, {user.name.split(" ")[0]}! 👋
+                  Welcome back, {user?.name.split(" ")[0]}! 👋
                 </h1>
                 <p className="text-gray-600 mt-1">
                   Here's your campaign performance overview
@@ -192,9 +177,9 @@ export default function AdvertiserDashboard() {
 
         {/* Quick Stats Row */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          {mockQuickStats.map((stat, index) => (
+          {mockQuickStats.map((stat) => (
             <Card
-              key={index}
+              key={stat.label}
               className="border-0 shadow-sm bg-white/60 backdrop-blur-sm"
             >
               <CardContent className="p-4">

@@ -93,6 +93,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       router.push("/login");
     }
 
+    if (
+      user &&
+      user.advertiserRequestStatus !== "approved" &&
+      !pathname.includes("/advertisers")
+    ) {
+      toast.error("You are not an advertiser");
+      router.push("/home");
+    }
+
     if (user && pathname === "/login") {
       router.push("/home");
     }
