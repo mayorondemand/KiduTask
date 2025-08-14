@@ -31,17 +31,23 @@ type LoginForm = z.infer<typeof loginSchema>;
 export default function LoginPage() {
   const { loginMutation, googleAuthMutation } = useAuth();
   const searchParams = useSearchParams();
+  const emailVerified = searchParams.get("emailverified");
+  const error = searchParams.get("error");
 
   useEffect(() => {
-    const emailVerified = searchParams.get("emailverified");
-    const error = searchParams.get("error");
     if (error) {
-      toast.error("Verification failed, try again");
+      const timeout = setTimeout(() => {
+        toast.error("Verification failed, try again");
+      }, 1000);
+      return () => clearTimeout(timeout);
     }
-    if (emailVerified === "true") {
-      toast.success("Email verified successfully");
+    if (emailVerified) {
+      const timeout = setTimeout(() => {
+        toast.success("Email verified successfully");
+      }, 1000);
+      return () => clearTimeout(timeout);
     }
-  }, [searchParams]);
+  }, [emailVerified, error]);
 
   const {
     register,
@@ -164,7 +170,9 @@ export default function LoginPage() {
                 onClick={googleAuthMutation.mutate}
               >
                 <Google />
-                {googleAuthMutation.isPending ? "Signing in..." : "Continue with Google"}
+                {googleAuthMutation.isPending
+                  ? "Signing in..."
+                  : "Continue with Google"}
               </Button>
             </form>
 
