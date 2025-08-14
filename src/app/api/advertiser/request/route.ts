@@ -5,7 +5,7 @@ import { advertiserService } from "@/lib/services/advertiser-service";
 
 export async function POST(request: NextRequest) {
   try {
-    const user = await userService.validateUser(request);
+    const user = await userService.validateSession(request);
 
     await advertiserService.requestAdvertiser(user.id);
     return NextResponse.json({

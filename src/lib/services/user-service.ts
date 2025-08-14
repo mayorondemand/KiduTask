@@ -12,6 +12,13 @@ export type UserDetails = UserDb & {
 };
 
 class UserService {
+  async validateSession(request: NextRequest): Promise<UserDetails> {
+    const session = await auth.api.getSession({
+      headers: request.headers,
+    });
+    return session?.user as UserDetails;
+  }
+
   async validateUser(request: NextRequest): Promise<UserDb> {
     const session = await auth.api.getSession({
       headers: request.headers,
