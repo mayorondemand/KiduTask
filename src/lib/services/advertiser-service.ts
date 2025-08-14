@@ -30,12 +30,12 @@ class AdvertiserService {
 
     const [result] = await db
       .select({
-        activeCampaigns: sql<number>`COUNT(DISTINCT ${campaign.id}) FILTER (WHERE ${campaign.activity} = '${ACTIVITY_ENUM.ACTIVE}')`,
-        pendingApprovals: sql<number>`COUNT(DISTINCT ${campaign.id}) FILTER (WHERE ${campaign.status} = '${STATUS_ENUM.PENDING}')`,
+        activeCampaigns: sql<number>`COUNT(DISTINCT ${campaign.id}) FILTER (WHERE ${campaign.activity} = ${sql.param(ACTIVITY_ENUM.ACTIVE)})`,
+        pendingApprovals: sql<number>`COUNT(DISTINCT ${campaign.id}) FILTER (WHERE ${campaign.status} = ${sql.param(STATUS_ENUM.PENDING)})`,
         totalSpentMonth: sql<number>`SUM(CASE WHEN ${campaign.createdAt} >= ${startOfMonth} THEN ${campaign.totalCost} ELSE 0 END)`,
         totalReach: sql<number>`COUNT(${campaignView.id})`,
         submissionsCount: sql<number>`COUNT(${submission.id})`,
-        approvedSubmissions: sql<number>`COUNT(${submission.id}) FILTER (WHERE ${submission.status} = '${STATUS_ENUM.APPROVED}')`,
+        approvedSubmissions: sql<number>`COUNT(${submission.id}) FILTER (WHERE ${submission.status} = ${sql.param(STATUS_ENUM.APPROVED)})`,
         totalCampaigns: sql<number>`COUNT(DISTINCT ${campaign.id})`,
         submissionsToday: sql<number>`COUNT(${submission.id}) FILTER (WHERE ${submission.createdAt} >= ${today})`,
       })

@@ -29,7 +29,6 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { formatCurrency, getStatusColor } from "@/lib/utils";
-import { useQuery } from "@tanstack/react-query";
 import { useAdvertiserStats } from "@/lib/client";
 
 const mockRecentCampaigns = [
@@ -76,7 +75,7 @@ const mockRecentCampaigns = [
 
 export default function AdvertiserDashboard() {
   const { user } = useAuth();
-  const { data: mockStats } = useAdvertiserStats();
+  const { data: mockStats, isLoading: isStatsLoading } = useAdvertiserStats();
   console.log(mockStats);
 
   return (
@@ -173,48 +172,54 @@ export default function AdvertiserDashboard() {
             className="bg-gradient-to-br from-purple-500 to-purple-600"
             icon={BarChart3}
             title="Active Campaigns"
-            value={mockStats?.activeCampaigns}
-            subtitle={mockStats?.pendingApprovals ? `${mockStats?.pendingApprovals} pending approval` : undefined}
+            value={mockStats?.activeCampaigns ?? 0}
+            subtitle={mockStats?.pendingApprovals ? `${mockStats.pendingApprovals} pending approval` : 'No pending approvals'}
+            loading={isStatsLoading}
           />
 
           <StatsCard
             className="bg-gradient-to-br from-emerald-500 to-emerald-600"
             icon={DollarSign}
             title="Total Spent"
-            value={formatCurrency(mockStats?.totalSpentMonth)}
-            subtitle={`this month`}
+            value={mockStats?.totalSpentMonth ? formatCurrency(mockStats.totalSpentMonth) : formatCurrency(0)}
+            subtitle="this month"
+            loading={isStatsLoading}
           />
 
           <StatsCard
             className="bg-gradient-to-br from-blue-500 to-blue-600"
             icon={Users}
             title="Total Reach"
-            value={mockStats?.totalReach.toLocaleString()}
+            value={mockStats?.totalReach ?? 0}
             subtitle="Unique users reached"
+            loading={isStatsLoading}
           />
 
           <StatsCard
             className="bg-gradient-to-br from-orange-500 to-orange-600"
             icon={Target}
             title="Success Rate"
-            value={mockStats?.approvalRate ? `${mockStats?.approvalRate}%` : undefined}
+            value={mockStats?.approvalRate ? `${mockStats.approvalRate}%` : '0%'}
             subtitle="Task approval rate"
+            loading={isStatsLoading}
           />
 
           <StatsCard
             className="bg-gradient-to-br from-yellow-500 to-yellow-600"
             icon={ArchiveRestore}
             title="Submissions Today"
-            value={mockStats?.submissionsToday}
+            value={mockStats?.submissionsToday ?? 0}
             subtitle="Submissions today"
+            loading={isStatsLoading}
           />
 
           <StatsCard
             className="bg-gradient-to-br from-green-500 to-green-600"
             icon={PercentCircle}
             title="Conversion Rate"
-            value={mockStats?.conversionRate ? `${mockStats?.conversionRate}%` : undefined}
+            value={mockStats?.conversionRate ? `${mockStats.conversionRate}%` : '0%'}
             subtitle="Conversion rate"
+            loading={isStatsLoading}
           />
         </div>
 

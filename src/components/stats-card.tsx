@@ -9,6 +9,7 @@ interface StatsCardProps {
   title: string;
   value?: string | number;
   subtitle?: string;
+  loading?: boolean;
 }
 
 export function StatsCard({
@@ -17,6 +18,7 @@ export function StatsCard({
   title,
   value,
   subtitle,
+  loading = false,
 }: StatsCardProps) {
   return (
     <Card className={cn("border-0 shadow-lg text-white", className)}>
@@ -24,15 +26,15 @@ export function StatsCard({
         <div className="flex items-center justify-between">
           <div>
             <p className="text-white/80 text-sm mb-1">{title}</p>
-            {value ? (
-              <p className="text-3xl font-bold">{value}</p>
+            {loading ? (
+              <Skeleton className="opacity-90 my-3 h-10 w-20 bg-white/20" />
             ) : (
-              <Skeleton className="opacity-90 my-3 h-10 w-20" />
+              <p className="text-3xl font-bold">{value ?? '—'}</p>
             )}
-            {subtitle ? (
-              <p className="text-white/80 text-xs mt-1">{subtitle}</p>
+            {loading ? (
+              <Skeleton className="opacity-90 h-4 w-20 bg-white/20" />
             ) : (
-              <Skeleton className="opacity-90  h-4 w-20" />
+              <p className="text-white/80 text-xs mt-1">{subtitle ?? ''}</p>
             )}
           </div>
           <div className="p-3 rounded-full bg-white/20">
