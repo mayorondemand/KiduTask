@@ -38,7 +38,6 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
-import { toast } from "sonner";
 
 export function Navbar() {
   const { user, logoutMutation } = useAuth();
@@ -48,18 +47,7 @@ export function Navbar() {
   const advertiserRequestMutation = useAdvertiserRequest();
 
   const handleAdvertiserRequest = () => {
-    advertiserRequestMutation.mutate(undefined, {
-      onSuccess: () => {
-        toast.success("Your request has been sent to the admin for approval");
-        setAdvertiserDialogOpen(false);
-      },
-      onError: () => {
-        toast.error("Request Failed", {
-          description:
-            "There was an error processing your request. Please try again.",
-        });
-      },
-    });
+    advertiserRequestMutation.mutate();
   };
 
   if (!user) return null;
