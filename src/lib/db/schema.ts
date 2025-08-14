@@ -9,6 +9,17 @@ import {
 import { pgEnum } from "drizzle-orm/pg-core";
 
 export const statusEnum = pgEnum("status", ["pending", "approved", "rejected"]);
+export const STATUS_ENUM = {
+  APPROVED: statusEnum.enumValues.find((value) => value === "approved"),
+  PENDING: statusEnum.enumValues.find((value) => value === "pending"),
+  REJECTED: statusEnum.enumValues.find((value) => value === "rejected"),
+};
+export const activityEnum = pgEnum("activity", ["active", "paused", "ended"]);
+export const ACTIVITY_ENUM = {
+  ACTIVE: activityEnum.enumValues.find((value) => value === "active"),
+  PAUSED: activityEnum.enumValues.find((value) => value === "paused"),
+  ENDED: activityEnum.enumValues.find((value) => value === "ended"),
+};
 
 export const kycTypeEnum = pgEnum("kyc_type", [
   "national_id",
@@ -109,8 +120,9 @@ export const verification = pgTable("verification", {
 export const advertiser = pgTable("advertiser", {
   id: integer("id").generatedByDefaultAsIdentity().primaryKey(),
   userId: text("user_id")
+    .unique()
     .notNull()
-    .references(() => user.id, { onDelete: "cascade" }),
+    .references(() => user.id),
   brandName: text("brand_name"),
   brandWebsite: text("brand_website"),
   brandLogo: text("brand_logo"),
@@ -118,6 +130,93 @@ export const advertiser = pgTable("advertiser", {
   status: statusEnum("status").notNull().default("pending"),
   statusUpdatedAt: timestamp("status_updated_at"),
   statusUpdatedBy: text("status_updated_by").references(() => user.id),
+  createdAt: timestamp("created_at")
+    .$defaultFn(() => /* @__PURE__ */ new Date())
+    .notNull(),
+  updatedAt: timestamp("updated_at")
+    .$defaultFn(() => /* @__PURE__ */ new Date())
+    .notNull(),
+});
+
+export const campaign = pgTable("campaign", {
+  id: integer("id").generatedByDefaultAsIdentity().primaryKey(),
+  createdBy: text("created_by")
+    .notNull()
+    .references(() => advertiser.userId),
+  title: text("title").notNull(),
+  description: text("description").notNull(),
+  steps: text("steps").array().notNull(),
+  requirements: text("requirements").array().notNull(),
+  payoutPerUser: integer("payout_per_user").notNull(),
+  totalCost: integer("total_cost").notNull(),
+  totalSlots: integer("total_slots").notNull(),
+  image: text("image"),
+  estimatedTime: text("estimated_time").notNull(),
+  status: statusEnum("status").notNull().default("pending"),
+  activity: activityEnum("activity").notNull().default("active"),
+  statusUpdatedAt: timestamp("status_updated_at"),
+  statusUpdatedBy: text("status_updated_by").references(() => user.id),
+  createdAt: timestamp("created_at")
+    .$defaultFn(() => /* @__PURE__ */ new Date())
+    .notNull(),
+  updatedAt: timestamp("updated_at")
+    .$defaultFn(() => /* @__PURE__ */ new Date())
+    .notNull(),
+});
+
+export const campaignView = pgTable("campaign_view", {
+  id: integer("id").generatedByDefaultAsIdentity().primaryKey(),
+  campaignId: integer("campaign_id")
+    .notNull()
+    .references(() => campaign.id),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id),
+  advertiserId: text("advertiser_id")
+    .notNull()
+    .references(() => advertiser.userId),
+  createdAt: timestamp("created_at")
+    .$defaultFn(() => /* @__PURE__ */ new Date())
+    .notNull(),
+  updatedAt: timestamp("updated_at")
+    .$defaultFn(() => /* @__PURE__ */ new Date())
+    .notNull(),
+});
+
+export const campaignRating = pgTable("campaign_rating", {
+  id: integer("id").generatedByDefaultAsIdentity().primaryKey(),
+  campaignId: integer("campaign_id")
+    .notNull()
+    .references(() => campaign.id),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id),
+  rating: integer("rating").notNull(),
+  createdAt: timestamp("created_at")
+    .$defaultFn(() => /* @__PURE__ */ new Date())
+    .notNull(),
+  updatedAt: timestamp("updated_at")
+    .$defaultFn(() => /* @__PURE__ */ new Date())
+    .notNull(),
+});
+
+export const submission = pgTable("submission", {
+  id: integer("id").generatedByDefaultAsIdentity().primaryKey(),
+  campaignId: integer("campaign_id")
+    .notNull()
+    .references(() => campaign.id),
+  createdBy: text("created_by")
+    .notNull()
+    .references(() => user.id),
+  status: statusEnum("status").notNull().default("pending"),
+  statusUpdatedAt: timestamp("status_updated_at"),
+  statusUpdatedBy: text("status_updated_by").references(() => user.id),
+  proofType: text("proof_type").notNull(),
+  proofUrl: text("proof_url"),
+  proofText: text("proof_text"),
+  notes: text("notes"),
+  advertiserFeedback: text("advertiser_feedback"),
+  advertiserRating: integer("advertiser_rating"),
   createdAt: timestamp("created_at")
     .$defaultFn(() => /* @__PURE__ */ new Date())
     .notNull(),
