@@ -208,19 +208,8 @@ export const useAdvertiserStats = () => {
   return useQuery({
     queryKey: ["advertiser-stats"],
     queryFn: async () => {
-      await new Promise((resolve) => setTimeout(resolve, 5000));
-      // Mock data for the dashboard
-      const mockStats = {
-        activeCampaigns: 8,
-        pendingApprovals: 23,
-        totalSpentMonth: 127500,
-        totalReach: 45200,
-        conversionRate: 4.2,
-        totalCampaigns: 24,
-        submissionsToday: 47,
-        approvalRate: 47,
-      };
-      return mockStats;
+      const response = await axios.get("/api/advertiser/stats");
+      return response.data;
     },
   });
 };
