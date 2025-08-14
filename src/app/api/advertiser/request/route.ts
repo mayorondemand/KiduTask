@@ -8,7 +8,6 @@ export async function POST(request: NextRequest) {
     const user = await userService.validateUser(request);
 
     await advertiserService.requestAdvertiser(user.id);
-
     return NextResponse.json({
       message: "Advertiser request sent successfully",
     });

@@ -257,7 +257,8 @@ export function Navbar() {
                     >
                       Maybe Later
                     </Button>
-                    {user.advertiserRequestStatus === "pending" ? (
+                    {user.advertiserRequestStatus === "pending" ||
+                    advertiserRequestMutation.isSuccess ? (
                       <Button
                         variant={"secondary"}
                         className="bg-yellow-200 text-yellow-800 w-full sm:w-auto"
