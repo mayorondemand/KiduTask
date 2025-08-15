@@ -1,5 +1,6 @@
 import { toast } from "sonner";
 import { NextResponse } from "next/server";
+import { ZodError } from "zod";
 
 // Base error class
 export class AppError extends Error {
@@ -114,6 +115,22 @@ export const errorHandler = {
           },
         },
         { status: error.statusCode || 500 },
+      );
+    }
+
+    if (error instanceof ZodError) {
+      return NextResponse.json(
+        {
+          error: {
+            message: (error as ZodError).issues
+              .map((issue) => {
+                return `-> ${issue.path.join(">")}: ${issue.message}`;
+              })
+              .join(", "),
+            code: "VALIDATION_ERROR",
+          },
+        },
+        { status: 400 },
       );
     }
 
