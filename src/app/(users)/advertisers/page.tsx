@@ -22,61 +22,22 @@ import {
   Settings,
   Calendar,
   Target,
-  CheckCircle,
-  Star,
   ArchiveRestore,
   PercentCircle,
+  Loader2,
+  Check,
 } from "lucide-react";
 import Link from "next/link";
 import { formatCurrency, getStatusColor } from "@/lib/utils";
-import { useAdvertiserStats } from "@/lib/client";
-
-const mockRecentCampaigns = [
-  {
-    id: "1",
-    name: "Instagram Follow Campaign",
-    status: "active",
-    progress: 85,
-    submissions: 85,
-    maxUsers: 100,
-    spent: 12750,
-    budget: 15000,
-    type: "Social Media",
-    createdAt: "2024-01-15",
-    approvalRate: 92,
-  },
-  {
-    id: "2",
-    name: "App Store Review Campaign",
-    status: "completed",
-    progress: 100,
-    submissions: 50,
-    maxUsers: 50,
-    spent: 25000,
-    budget: 25000,
-    type: "App Review",
-    createdAt: "2024-01-10",
-    approvalRate: 96,
-  },
-  {
-    id: "3",
-    name: "YouTube Subscribe & Like",
-    status: "active",
-    progress: 60,
-    submissions: 120,
-    maxUsers: 200,
-    spent: 36000,
-    budget: 60000,
-    type: "Social Media",
-    createdAt: "2024-01-20",
-    approvalRate: 88,
-  },
-];
+import { useAdvertiserStats, useCampaigns } from "@/lib/client";
 
 export default function AdvertiserDashboard() {
   const { user } = useAuth();
   const { data: mockStats, isLoading: isStatsLoading } = useAdvertiserStats();
-  console.log(mockStats);
+  const { data: campaigns, isLoading: isCampaignsLoading } = useCampaigns({
+    limit: 5,
+    page: 1,
+  });
 
   return (
     <div className="min-h-screen pt-20 bg-gradient-to-br from-slate-50 via-white to-slate-50">
@@ -173,7 +134,11 @@ export default function AdvertiserDashboard() {
             icon={BarChart3}
             title="Active Campaigns"
             value={mockStats?.activeCampaigns ?? 0}
-            subtitle={mockStats?.pendingApprovals ? `${mockStats.pendingApprovals} pending approval` : 'No pending approvals'}
+            subtitle={
+              mockStats?.pendingApprovals
+                ? `${mockStats.pendingApprovals} pending approval`
+                : "No pending approvals"
+            }
             loading={isStatsLoading}
           />
 
@@ -181,7 +146,11 @@ export default function AdvertiserDashboard() {
             className="bg-gradient-to-br from-emerald-500 to-emerald-600"
             icon={DollarSign}
             title="Total Spent"
-            value={mockStats?.totalSpentMonth ? formatCurrency(mockStats.totalSpentMonth) : formatCurrency(0)}
+            value={
+              mockStats?.totalSpentMonth
+                ? formatCurrency(mockStats.totalSpentMonth)
+                : formatCurrency(0)
+            }
             subtitle="this month"
             loading={isStatsLoading}
           />
@@ -199,7 +168,9 @@ export default function AdvertiserDashboard() {
             className="bg-gradient-to-br from-orange-500 to-orange-600"
             icon={Target}
             title="Success Rate"
-            value={mockStats?.approvalRate ? `${mockStats.approvalRate}%` : '0%'}
+            value={
+              mockStats?.approvalRate ? `${mockStats.approvalRate}%` : "0%"
+            }
             subtitle="Task approval rate"
             loading={isStatsLoading}
           />
@@ -217,7 +188,9 @@ export default function AdvertiserDashboard() {
             className="bg-gradient-to-br from-green-500 to-green-600"
             icon={PercentCircle}
             title="Conversion Rate"
-            value={mockStats?.conversionRate ? `${mockStats.conversionRate}%` : '0%'}
+            value={
+              mockStats?.conversionRate ? `${mockStats.conversionRate}%` : "0%"
+            }
             subtitle="Conversion rate"
             loading={isStatsLoading}
           />
@@ -334,11 +307,10 @@ export default function AdvertiserDashboard() {
         </div> */}
 
         {/* Recent Campaigns */}
-        <Card className="border-0 shadow-lg bg-white">
+        <Card className="border shadow-none border-gray-100 bg-white">
           <CardHeader className="flex flex-row items-center justify-between pb-4">
             <div>
               <CardTitle className="flex items-center gap-2 text-lg">
-                <Star className="h-5 w-5 text-yellow-500" />
                 Recent Campaigns
               </CardTitle>
               <CardDescription>
@@ -353,69 +325,107 @@ export default function AdvertiserDashboard() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {mockRecentCampaigns.map((campaign) => (
-                <div
-                  key={campaign.id}
-                  className="flex items-center justify-between p-4 border border-gray-100 rounded-xl hover:bg-gray-50/50 transition-colors group"
-                >
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-3">
-                      <h3 className="font-semibold text-gray-900 group-hover:text-purple-600 transition-colors">
-                        {campaign.name}
-                      </h3>
-                      <Badge className={getStatusColor(campaign.status)}>
-                        {campaign.status}
-                      </Badge>
-                      <Badge variant="outline" className="text-xs">
-                        {campaign.type}
-                      </Badge>
-                    </div>
-
-                    <div className="flex items-center gap-6 text-sm text-gray-600 mb-3">
-                      <span className="flex items-center gap-1">
-                        <Users className="h-3 w-3" />
-                        {campaign.submissions}/{campaign.maxUsers} submissions
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <DollarSign className="h-3 w-3" />
-                        {formatCurrency(campaign.spent)} spent
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Calendar className="h-3 w-3" />
-                        {new Date(campaign.createdAt).toLocaleDateString()}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <CheckCircle className="h-3 w-3 text-emerald-500" />
-                        {campaign.approvalRate}% approved
-                      </span>
-                    </div>
-
-                    <div className="flex items-center gap-3">
-                      <div className="flex-1">
-                        <div className="flex justify-between text-xs mb-1">
-                          <span className="text-gray-500">Progress</span>
-                          <span className="font-medium text-gray-700">
-                            {campaign.progress}%
-                          </span>
-                        </div>
-                        <Progress value={campaign.progress} className="h-2" />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="ml-6">
-                    <Link href={`/advertisers/campaigns/${campaign.id}`}>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                    </Link>
+              {isCampaignsLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="text-center">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <p className="text-gray-500">Loading campaigns...</p>
                   </div>
                 </div>
-              ))}
+              ) : campaigns && campaigns.length > 0 ? (
+                campaigns.map((campaign) => (
+                  <Link
+                    key={campaign.id}
+                    className="flex items-center justify-between p-4 border border-gray-100 rounded-xl hover:bg-gray-50/50 transition-colors group"
+                    href={`/advertisers/campaigns/${campaign.id}`}
+                  >
+                    <div className="flex-1">
+                      <div className="flex  items-center gap-3 mb-5">
+                        <h3 className="font-semibold text-gray-900 group-hover:text-primary transition-colors">
+                          {campaign.title}
+                        </h3>
+                        <Badge className={getStatusColor(campaign.status)}>
+                          {campaign.status}
+                        </Badge>
+                        <Badge
+                          variant="outline"
+                          className={getStatusColor(campaign.activity)}
+                        >
+                          {campaign.activity}
+                        </Badge>
+                      </div>
+
+                      <div className="flex items-center gap-6 text-sm text-gray-600 mb-5">
+                        <span className="flex items-center gap-1">
+                          <Users className="h-3 w-3" />
+                          {campaign.totalSubmissions}/{campaign.maxUsers}{" "}
+                          submissions
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <DollarSign className="h-3 w-3" />
+                          {formatCurrency(campaign.totalCost)} spent
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Calendar className="h-3 w-3" />
+                          {new Date(campaign.createdAt).toLocaleDateString(
+                            "en-US",
+                            {
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric",
+                            },
+                          )}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Check className="h-3 w-3" />
+                          {campaign.approvedSubmissions}/
+                          {campaign.totalSubmissions} approved
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-3">
+                        <div className="flex-1">
+                          <div className="flex justify-between text-xs mb-1">
+                            <span className="text-gray-500">Progress</span>
+                            <span className="font-medium text-gray-700">
+                              {campaign.approvedSubmissions}/
+                              {campaign.totalSubmissions} approved
+                            </span>
+                          </div>
+                          <Progress
+                            value={
+                              (campaign.approvedSubmissions /
+                                campaign.totalSubmissions) *
+                              100
+                            }
+                            className="h-2"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </Link>
+                ))
+              ) : (
+                <div className="flex flex-col items-center justify-center py-12 text-center">
+                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                    <BarChart3 className="h-8 w-8 text-gray-400" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    No campaigns found
+                  </h3>
+                  <p className="text-gray-500 mb-6 max-w-md">
+                    You haven't created any campaigns yet, or no campaigns match
+                    your current filters. Get started by creating your first
+                    campaign!
+                  </p>
+                  <Link href="/advertisers/campaigns/new">
+                    <Button className="flex items-center gap-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700">
+                      <Plus className="h-4 w-4" />
+                      Create Your First Campaign
+                    </Button>
+                  </Link>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>

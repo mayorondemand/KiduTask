@@ -52,7 +52,6 @@ export async function POST(request: NextRequest) {
         campaignCreationTransaction.id,
       );
 
-    console.log("campaignCreatedTransaction:", campaignCreatedTransaction);
     if (campaignCreatedTransaction.status !== STATUS_ENUM.APPROVED) {
       await transactionService.updateTransaction(
         campaignCreatedTransaction.id,
