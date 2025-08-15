@@ -62,12 +62,13 @@ type AuthContextType = {
   requestPasswordResetMutation: RequestPasswordResetMutation;
   resetPasswordMutation: ResetPasswordMutation;
   googleAuthMutation: GoogleAuthMutation;
+  refetch: () => void;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const { data, isPending: loading } = useSession();
+  const { data, isPending: loading, refetch } = useSession();
   const session = data as Session | null;
   const router = useRouter();
   const pathname = usePathname();
@@ -272,6 +273,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         requestPasswordResetMutation,
         resetPasswordMutation,
         googleAuthMutation,
+        refetch,
       }}
     >
       {children}

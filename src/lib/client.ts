@@ -1,6 +1,11 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+"use client";
+import { useAuth } from "@/components/providers/auth-provider";
 import { errorHandler } from "@/lib/error-handler";
+import type { AdvertiserStats } from "@/lib/services/advertiser-service";
+import type { CreateCampaignData } from "@/lib/types";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import axios from "axios";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 export interface Campaign {
@@ -207,9 +212,50 @@ export const useAdvertiserRequest = () => {
 export const useAdvertiserStats = () => {
   return useQuery({
     queryKey: ["advertiser-stats"],
-    queryFn: async () => {
+    queryFn: async (): Promise<AdvertiserStats> => {
       const response = await axios.get("/api/advertiser/stats");
+      console.log(response.data);
+      return response.data.stats;
+    },
+  });
+};
+
+export interface PlatformSettings {
+  platformFee: number;
+  minimumWithdrawal: number;
+  maximumWithdrawal: number;
+  minimumDeposit: number;
+}
+
+export const usePlatformSettings = () => {
+  return useQuery({
+    queryKey: ["platform-settings"],
+    queryFn: async (): Promise<PlatformSettings> => {
+      await new Promise((resolve) => setTimeout(resolve, 5000));
+      return {
+        platformFee: 10500,
+        minimumWithdrawal: 1000,
+        maximumWithdrawal: 1000000,
+        minimumDeposit: 500,
+      };
+    },
+  });
+};
+
+export const useCreateCampaign = () => {
+  const router = useRouter();
+  const { refetch } = useAuth();
+  return useMutation({
+    mutationFn: async (data: CreateCampaignData) => {
+      const response = await axios.post("/api/campaigns/new", data);
+
       return response.data;
     },
+    onSuccess: (data) => {
+      toast.success("Campaign created successfully");
+      refetch();
+      router.push(`/advertisers/campaigns/${data.campaignId}`);
+    },
+    onError: errorHandler.handleQueryError,
   });
 };

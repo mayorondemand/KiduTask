@@ -124,7 +124,7 @@ export default function AdvertiserDashboard() {
                 View Campaigns
               </Button>
             </Link>
-            <Link href="/advertisers/campaign/new">
+            <Link href="/advertisers/campaigns/new">
               <Button className="flex items-center gap-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700">
                 <Plus className="h-4 w-4" />
                 Create Campaign

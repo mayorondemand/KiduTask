@@ -1,8 +1,8 @@
 "use client";
 
-import type React from "react";
-
+import { BreadcrumbResponsive } from "@/components/layout/breadcrumbresponsive";
 import { useAuth } from "@/components/providers/auth-provider";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -11,145 +11,126 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { ImageUploader } from "@/components/ui/image-uploader";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { useCreateCampaign, usePlatformSettings } from "@/lib/client";
+import { createCampaignSchema, type CreateCampaignData } from "@/lib/types";
+import { DndContext } from "@dnd-kit/core";
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import {
-  ArrowLeft,
-  Upload,
-  DollarSign,
-  Users,
-  Clock,
-  Calculator,
-  Eye,
   AlertCircle,
+  Calculator,
+  Clock,
+  DollarSign,
+  Eye,
+  Plus,
+  Users,
+  X,
 } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-
-const taskTypes = [
-  { value: "social_follow", label: "Social Media Follow", basePrice: 50 },
-  { value: "social_like", label: "Social Media Like/Share", basePrice: 30 },
-  { value: "app_review", label: "App Store Review", basePrice: 150 },
-  { value: "survey", label: "Survey/Questionnaire", basePrice: 100 },
-  { value: "content_creation", label: "Content Creation", basePrice: 300 },
-  { value: "website_visit", label: "Website Visit/Signup", basePrice: 80 },
-  { value: "video_watch", label: "Video Watch/Subscribe", basePrice: 60 },
-  { value: "other", label: "Other", basePrice: 100 },
-];
 
 export default function NewCampaignPage() {
   const { user } = useAuth();
-  const router = useRouter();
-
-  const [formData, setFormData] = useState({
-    name: "",
-    taskType: "",
-    description: "",
-    instructions: "",
-    payoutPerUser: 0,
-    maxUsers: 0,
-    expiresInDays: 7,
-    estimatedTimeMinutes: 5,
-    requirements: "",
-    bannerImage: null as File | null,
+  const [bannerImageUrl, setBannerImageUrl] = useState<string | null>(null);
+  const [showTransactionDialog, setShowTransactionDialog] = useState(false);
+  const { data: platformSettings, isLoading: isPlatformSettingsLoading } =
+    usePlatformSettings();
+  const createCampaignMutation = useCreateCampaign();
+  const {
+    control,
+    handleSubmit,
+    watch,
+    setValue,
+    formState: { isValid, errors },
+  } = useForm<CreateCampaignData>({
+    resolver: zodResolver(createCampaignSchema),
+    defaultValues: {
+      title: "",
+      description: "",
+      instructions: [{ instruction: "" }],
+      requirements: [{ requirement: "" }],
+      payoutPerUser: 0,
+      maxUsers: 0,
+      expiryDate: "",
+      estimatedTimeMinutes: 0,
+      bannerImageUrl: "",
+    },
+    mode: "onChange",
   });
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [dragActive, setDragActive] = useState(false);
+  const {
+    fields: instructionFields,
+    append: appendInstruction,
+    remove: removeInstruction,
+  } = useFieldArray({
+    control,
+    name: "instructions",
+  });
 
-  useEffect(() => {
-    if (!user?.isAdvertiser) {
-      router.push("/home");
-    }
-  }, [user, router]);
+  const {
+    fields: requirementFields,
+    append: appendRequirement,
+    remove: removeRequirement,
+  } = useFieldArray({
+    control,
+    name: "requirements",
+  });
 
-  if (!user?.isAdvertiser) {
-    return null;
-  }
+  const watchedValues = watch();
 
-  const handleInputChange = (field: string, value: any) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-
-    // Auto-set payout when task type changes
-    if (field === "taskType") {
-      const taskType = taskTypes.find((t) => t.value === value);
-      if (taskType) {
-        setFormData((prev) => ({ ...prev, payoutPerUser: taskType.basePrice }));
-      }
-    }
+  const handleUploadSuccess = (url: string) => {
+    setBannerImageUrl(url);
+    setValue("bannerImageUrl", url);
   };
 
-  const handleDrag = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (e.type === "dragenter" || e.type === "dragover") {
-      setDragActive(true);
-    } else if (e.type === "dragleave") {
-      setDragActive(false);
-    }
+  const handleUploadError = (error: string) => {
+    console.error("Upload error:", error);
   };
 
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragActive(false);
-
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      const file = e.dataTransfer.files[0];
-      if (file.type.startsWith("image/")) {
-        setFormData((prev) => ({ ...prev, bannerImage: file }));
-      }
-    }
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setFormData((prev) => ({ ...prev, bannerImage: e.target.files![0] }));
-    }
+  const handleRemoveBanner = () => {
+    setBannerImageUrl(null);
+    setValue("bannerImageUrl", "");
   };
 
   const calculateTotalCost = () => {
-    const subtotal = formData.payoutPerUser * formData.maxUsers;
-    const platformFee = subtotal * 0.1; // 10% platform fee
-    return subtotal + platformFee;
+    const subtotal = watchedValues.payoutPerUser * watchedValues.maxUsers;
+    if (isPlatformSettingsLoading || !platformSettings) {
+      return subtotal;
+    }
+    return subtotal + platformSettings.platformFee;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
+  const onSubmit = (_data: CreateCampaignData) => {
+    const totalCost = calculateTotalCost();
 
-    try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-
-      toast({
-        title: "Campaign Created! 🎉",
-        description:
-          "Your campaign has been submitted for approval and will be live soon.",
+    // Check if user has sufficient balance
+    if (!user?.walletBalance || user.walletBalance < totalCost) {
+      toast.error("Insufficient wallet balance", {
+        description: `You need ${formatCurrency(totalCost)} but only have ${formatCurrency(user?.walletBalance || 0)}. Please top up your wallet.`,
       });
-
-      router.push("/advertisers/campaigns");
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to create campaign. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSubmitting(false);
+      return;
     }
+
+    // Show transaction confirmation dialog
+    setShowTransactionDialog(true);
+  };
+
+  const handleConfirmTransaction = () => {
+    const formData = watch();
+    createCampaignMutation.mutate(formData);
   };
 
   const formatCurrency = (amount: number) => {
@@ -159,441 +140,587 @@ export default function NewCampaignPage() {
     }).format(amount);
   };
 
-  const isFormValid =
-    formData.name &&
-    formData.taskType &&
-    formData.description &&
-    formData.instructions &&
-    formData.payoutPerUser > 0 &&
-    formData.maxUsers > 0;
+  // Get tomorrow's date as minimum date
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const minDate = tomorrow.toISOString().split("T")[0];
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      {/* Header */}
-      <div className="flex items-center gap-4 mb-8">
-        <Link href="/advertisers/campaigns">
-          <Button variant="outline" size="sm">
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Campaigns
-          </Button>
-        </Link>
-        <div>
-          <h1 className="text-3xl font-bold">Create New Campaign</h1>
-          <p className="text-muted-foreground mt-1">
-            Set up your campaign to reach thousands of potential customers
-          </p>
+    <div className="min-h-screen pt-20">
+      <div className="container mx-auto px-4 py-8">
+        {/* Header */}
+        <div className="flex flex-col gap-6 mb-8">
+          <BreadcrumbResponsive />
+          <div>
+            <h1 className="text-3xl font-bold">Create New Campaign</h1>
+            <p className="text-muted-foreground mt-1">Set up your campaign</p>
+          </div>
         </div>
-      </div>
 
-      <div className="grid lg:grid-cols-3 gap-8">
-        {/* Form */}
-        <div className="lg:col-span-2">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Basic Information */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Basic Information</CardTitle>
-                <CardDescription>
-                  Provide the essential details about your campaign
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <Label htmlFor="name">Campaign Name *</Label>
-                  <Input
-                    id="name"
-                    placeholder="e.g., Instagram Follow Campaign"
-                    value={formData.name}
-                    onChange={(e) => handleInputChange("name", e.target.value)}
-                    required
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="taskType">Task Type *</Label>
-                  <Select
-                    value={formData.taskType}
-                    onValueChange={(value) =>
-                      handleInputChange("taskType", value)
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select task type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {taskTypes.map((type) => (
-                        <SelectItem key={type.value} value={type.value}>
-                          <div className="flex items-center justify-between w-full">
-                            <span>{type.label}</span>
-                            <Badge variant="secondary" className="ml-2">
-                              {formatCurrency(type.basePrice)}
-                            </Badge>
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <Label htmlFor="description">Campaign Description *</Label>
-                  <Textarea
-                    id="description"
-                    placeholder="Describe what users need to do and why..."
-                    value={formData.description}
-                    onChange={(e) =>
-                      handleInputChange("description", e.target.value)
-                    }
-                    rows={3}
-                    required
-                  />
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Task Details */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Task Details</CardTitle>
-                <CardDescription>
-                  Specify the requirements and instructions for taskers
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <Label htmlFor="instructions">
-                    Step-by-Step Instructions *
-                  </Label>
-                  <Textarea
-                    id="instructions"
-                    placeholder="1. Go to our Instagram page @example&#10;2. Follow our account&#10;3. Like our latest post&#10;4. Take a screenshot as proof"
-                    value={formData.instructions}
-                    onChange={(e) =>
-                      handleInputChange("instructions", e.target.value)
-                    }
-                    rows={6}
-                    required
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="requirements">Additional Requirements</Label>
-                  <Textarea
-                    id="requirements"
-                    placeholder="e.g., Must have active social media account, Must be 18+, etc."
-                    value={formData.requirements}
-                    onChange={(e) =>
-                      handleInputChange("requirements", e.target.value)
-                    }
-                    rows={2}
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="estimatedTime">
-                      Estimated Time (minutes)
-                    </Label>
-                    <Input
-                      id="estimatedTime"
-                      type="number"
-                      min="1"
-                      max="120"
-                      value={formData.estimatedTimeMinutes}
-                      onChange={(e) =>
-                        handleInputChange(
-                          "estimatedTimeMinutes",
-                          Number.parseInt(e.target.value) || 0,
-                        )
-                      }
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="expiresIn">Campaign Duration (days)</Label>
-                    <Select
-                      value={formData.expiresInDays.toString()}
-                      onValueChange={(value) =>
-                        handleInputChange(
-                          "expiresInDays",
-                          Number.parseInt(value),
-                        )
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="1">1 day</SelectItem>
-                        <SelectItem value="3">3 days</SelectItem>
-                        <SelectItem value="7">7 days</SelectItem>
-                        <SelectItem value="14">14 days</SelectItem>
-                        <SelectItem value="30">30 days</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Budget & Targeting */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Budget & Targeting</CardTitle>
-                <CardDescription>
-                  Set your budget and target audience size
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="payoutPerUser">Payout Per User (₦) *</Label>
-                    <Input
-                      id="payoutPerUser"
-                      type="number"
-                      min="10"
-                      step="10"
-                      value={formData.payoutPerUser}
-                      onChange={(e) =>
-                        handleInputChange(
-                          "payoutPerUser",
-                          Number.parseInt(e.target.value) || 0,
-                        )
-                      }
-                      required
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="maxUsers">Maximum Users *</Label>
-                    <Input
-                      id="maxUsers"
-                      type="number"
-                      min="1"
-                      max="10000"
-                      value={formData.maxUsers}
-                      onChange={(e) =>
-                        handleInputChange(
-                          "maxUsers",
-                          Number.parseInt(e.target.value) || 0,
-                        )
-                      }
-                      required
-                    />
-                  </div>
-                </div>
-
-                {formData.payoutPerUser > 0 && formData.maxUsers > 0 && (
-                  <Alert>
-                    <Calculator className="h-4 w-4" />
-                    <AlertDescription>
-                      <div className="space-y-1">
-                        <div className="flex justify-between">
-                          <span>Subtotal:</span>
-                          <span>
-                            {formatCurrency(
-                              formData.payoutPerUser * formData.maxUsers,
-                            )}
-                          </span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>Platform Fee (10%):</span>
-                          <span>
-                            {formatCurrency(
-                              formData.payoutPerUser * formData.maxUsers * 0.1,
-                            )}
-                          </span>
-                        </div>
-                        <div className="flex justify-between font-semibold border-t pt-1">
-                          <span>Total Cost:</span>
-                          <span>{formatCurrency(calculateTotalCost())}</span>
-                        </div>
-                      </div>
-                    </AlertDescription>
-                  </Alert>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Banner Image */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Campaign Banner (Optional)</CardTitle>
-                <CardDescription>
-                  Upload an attractive banner image to make your campaign stand
-                  out
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div
-                  className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
-                    dragActive
-                      ? "border-primary bg-primary/5"
-                      : "border-muted-foreground/25"
-                  }`}
-                  onDragEnter={handleDrag}
-                  onDragLeave={handleDrag}
-                  onDragOver={handleDrag}
-                  onDrop={handleDrop}
-                >
-                  {formData.bannerImage ? (
-                    <div className="space-y-4">
-                      <img
-                        src={
-                          URL.createObjectURL(formData.bannerImage) ||
-                          "/placeholder.svg"
-                        }
-                        alt="Campaign banner preview"
-                        className="max-h-48 mx-auto rounded-lg"
+        <div className="grid lg:grid-cols-3 gap-8">
+          {/* Form */}
+          <div className="lg:col-span-2">
+            <DndContext>
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+                {/* Basic Information */}
+                <Card className="shadow-none rounded-sm">
+                  <CardHeader>
+                    <CardTitle>Basic Information</CardTitle>
+                    <CardDescription>
+                      Provide the essential details about your campaign
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div>
+                      <Label htmlFor="name" className="pb-2 ">
+                        Campaign Name
+                      </Label>
+                      <Controller
+                        name="title"
+                        control={control}
+                        render={({ field }) => (
+                          <Input
+                            {...field}
+                            id="title"
+                            placeholder="e.g., Instagram Follow Campaign"
+                          />
+                        )}
                       />
-                      <div className="flex items-center justify-center gap-2">
-                        <span className="text-sm text-muted-foreground">
-                          {formData.bannerImage.name}
-                        </span>
+                      {errors.title && (
+                        <p className="text-sm text-red-500">
+                          {errors.title.message}
+                        </p>
+                      )}
+                    </div>
+
+                    <div>
+                      <Label htmlFor="description" className="pb-2">
+                        Campaign Description
+                      </Label>
+                      <Controller
+                        name="description"
+                        control={control}
+                        render={({ field }) => (
+                          <Textarea
+                            {...field}
+                            id="description"
+                            placeholder="Describe what users need to do and why..."
+                            rows={3}
+                          />
+                        )}
+                      />
+                      {errors.description && (
+                        <p className="text-sm text-red-500">
+                          {errors.description.message}
+                        </p>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Banner Image */}
+                <Card className="shadow-none rounded-sm">
+                  <CardHeader>
+                    <CardTitle>Campaign Banner</CardTitle>
+                    <CardDescription>
+                      Upload an attractive banner image to make your campaign
+                      stand out
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <ImageUploader
+                      onUploadSuccess={handleUploadSuccess}
+                      onUploadError={handleUploadError}
+                      currentImageUrl={bannerImageUrl || undefined}
+                      onRemove={handleRemoveBanner}
+                      accept="image/*"
+                      maxSize={5}
+                      nameToUse={`campaign-banner-${Date.now()}-${watchedValues.title}`}
+                      folderToUse="/kuditask/campaigns/banners"
+                    />
+                    {errors.bannerImageUrl && (
+                      <p className="text-sm text-red-500">
+                        {errors.bannerImageUrl.message}
+                      </p>
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* Task Details */}
+                <Card className="shadow-none rounded-sm">
+                  <CardHeader>
+                    <CardTitle>Task Details</CardTitle>
+                    <CardDescription>
+                      Specify the requirements and instructions for taskers
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-8">
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <Label>Step-by-Step Instructions</Label>
+                        <Button
+                          type="button"
+                          size="sm"
+                          onClick={() => {
+                            console.log(instructionFields);
+                            appendInstruction({ instruction: "" });
+                          }}
+                        >
+                          <Plus className="h-4 w-4 " />
+                          Add Step
+                        </Button>
+                      </div>
+                      <div className="space-y-2">
+                        {instructionFields.map((field, index) => (
+                          <div
+                            key={`instruction-${field.id}`}
+                            className="flex items-center gap-2"
+                          >
+                            <div className="flex-shrink-0 w-8 h-10 bg-primary text-primary-foreground rounded flex items-center justify-center text-sm font-medium">
+                              {index + 1}
+                            </div>
+                            <Controller
+                              name={`instructions.${index}.instruction`}
+                              control={control}
+                              render={({ field }) => (
+                                <Input
+                                  {...field}
+                                  placeholder={`Step ${index + 1} instruction...`}
+                                  className="flex-1"
+                                />
+                              )}
+                            />
+                            {instructionFields.length > 1 && (
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => removeInstruction(index)}
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                      {errors.instructions && (
+                        <p className="text-sm text-red-500">
+                          {errors.instructions.message}
+                        </p>
+                      )}
+                    </div>
+
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <Label>Additional Requirements</Label>
                         <Button
                           type="button"
                           variant="outline"
                           size="sm"
-                          onClick={() => handleInputChange("bannerImage", null)}
+                          onClick={() => appendRequirement({ requirement: "" })}
                         >
-                          Remove
+                          <Plus className="h-4 w-4" />
+                          Add Requirement
                         </Button>
                       </div>
+                      <div className="space-y-2">
+                        {requirementFields.map((field, index) => (
+                          <div
+                            key={field.id}
+                            className="flex items-center gap-2"
+                          >
+                            <Controller
+                              name={`requirements.${index}.requirement`}
+                              control={control}
+                              render={({ field }) => (
+                                <Input
+                                  {...field}
+                                  placeholder={`Requirement ${index + 1}...`}
+                                  className="flex-1"
+                                />
+                              )}
+                            />
+                            {requirementFields.length > 1 && (
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => removeRequirement(index)}
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                      {errors.requirements && (
+                        <p className="text-sm text-red-500">
+                          {errors.requirements.message}
+                        </p>
+                      )}
                     </div>
-                  ) : (
-                    <div className="space-y-4">
-                      <Upload className="h-12 w-12 mx-auto text-muted-foreground" />
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <p className="text-lg font-medium">
-                          Drop your banner image here
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          or click to browse (PNG, JPG up to 5MB)
-                        </p>
+                        <Label htmlFor="estimatedTime" className="pb-2">
+                          Estimated Time (minutes)
+                        </Label>
+                        <Controller
+                          name="estimatedTimeMinutes"
+                          control={control}
+                          render={({ field }) => (
+                            <Input
+                              {...field}
+                              id="estimatedTime"
+                              type="number"
+                              min="1"
+                              max="120"
+                              onChange={(e) =>
+                                field.onChange(Number.parseInt(e.target.value))
+                              }
+                            />
+                          )}
+                        />
+                        {errors.estimatedTimeMinutes && (
+                          <p className="text-sm text-red-500">
+                            {errors.estimatedTimeMinutes.message}
+                          </p>
+                        )}
                       </div>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleFileChange}
-                        className="hidden"
-                        id="banner-upload"
-                      />
-                      <label htmlFor="banner-upload">
-                        <Button type="button" variant="outline" asChild>
-                          <span>Choose File</span>
-                        </Button>
-                      </label>
+                      <div>
+                        <Label htmlFor="expiryDate" className="pb-2">
+                          Campaign Expiry Date
+                        </Label>
+                        <Controller
+                          name="expiryDate"
+                          control={control}
+                          render={({ field }) => (
+                            <Input
+                              {...field}
+                              id="expiryDate"
+                              type="date"
+                              min={minDate}
+                            />
+                          )}
+                        />
+                        {errors.expiryDate && (
+                          <p className="text-sm text-red-500">
+                            {errors.expiryDate.message}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Budget & Targeting */}
+                <Card className="shadow-none rounded-sm">
+                  <CardHeader>
+                    <CardTitle>Budget & Targeting</CardTitle>
+                    <CardDescription>
+                      Set your budget and target audience size
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="payoutPerUser" className="pb-2">
+                          Payout Per User (₦)
+                        </Label>
+                        <Controller
+                          name="payoutPerUser"
+                          control={control}
+                          render={({ field }) => (
+                            <Input
+                              {...field}
+                              id="payoutPerUser"
+                              type="number"
+                              min="10"
+                              onChange={(e) =>
+                                field.onChange(Number.parseInt(e.target.value))
+                              }
+                            />
+                          )}
+                        />
+                        {errors.payoutPerUser && (
+                          <p className="text-sm text-red-500">
+                            {errors.payoutPerUser.message}
+                          </p>
+                        )}
+                      </div>
+                      <div>
+                        <Label htmlFor="maxUsers" className="pb-2">
+                          Maximum Users
+                        </Label>
+                        <Controller
+                          name="maxUsers"
+                          control={control}
+                          render={({ field }) => (
+                            <Input
+                              {...field}
+                              id="maxUsers"
+                              type="number"
+                              min="1"
+                              max="10000"
+                              onChange={(e) =>
+                                field.onChange(Number.parseInt(e.target.value))
+                              }
+                            />
+                          )}
+                        />
+                        {errors.maxUsers && (
+                          <p className="text-sm text-red-500">
+                            {errors.maxUsers.message}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    {watchedValues.payoutPerUser > 0 &&
+                      watchedValues.maxUsers > 0 && (
+                        <Alert>
+                          <Calculator className="h-4 w-4" />
+                          <AlertDescription>
+                            <div className="space-y-1">
+                              <div className="flex justify-between">
+                                <span>Subtotal:</span>
+                                <span>
+                                  {formatCurrency(
+                                    watchedValues.payoutPerUser *
+                                      watchedValues.maxUsers,
+                                  )}
+                                </span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span>Platform Fee:</span>
+                                <span>
+                                  {formatCurrency(
+                                    platformSettings?.platformFee ?? 0,
+                                  )}
+                                </span>
+                              </div>
+                              <div className="flex justify-between font-semibold border-t pt-1">
+                                <span>Total Cost:</span>
+                                <span>
+                                  {formatCurrency(calculateTotalCost())}
+                                </span>
+                              </div>
+                            </div>
+                          </AlertDescription>
+                        </Alert>
+                      )}
+                  </CardContent>
+                </Card>
+
+                {/* Submit Button */}
+                <div className="flex justify-end gap-4">
+                  <Link href="/advertisers/campaigns">
+                    <Button type="button" variant="outline">
+                      Cancel
+                    </Button>
+                  </Link>
+                  <Button
+                    type="submit"
+                    disabled={!isValid || createCampaignMutation.isPending}
+                    className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+                  >
+                    {createCampaignMutation.isPending
+                      ? "Creating Campaign..."
+                      : "Review & Create Campaign"}
+                  </Button>
+                </div>
+              </form>
+            </DndContext>
+          </div>
+
+          {/* Preview */}
+          <div className="lg:col-span-1">
+            <div className="sticky top-8">
+              <Card className="shadow-none rounded-sm">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Eye className="h-5 w-5" />
+                    Preview
+                  </CardTitle>
+                  <CardDescription>
+                    How your campaign will appear to taskers
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {bannerImageUrl && (
+                    // biome-ignore lint/performance/noImgElement: <Preview image>
+                    <img
+                      src={bannerImageUrl}
+                      alt="Campaign banner"
+                      className="w-full h-32 object-cover rounded-lg"
+                    />
+                  )}
+
+                  <div>
+                    <h3 className="font-semibold text-lg">
+                      {watchedValues.title || "Campaign Name"}
+                    </h3>
+                  </div>
+
+                  <p className="text-sm text-muted-foreground">
+                    {watchedValues.description ||
+                      "Campaign description will appear here..."}
+                  </p>
+
+                  {watchedValues.instructions.length > 0 && (
+                    <div>
+                      <h4 className="font-medium text-sm mb-2">
+                        Instructions:
+                      </h4>
+                      <ol className="text-sm space-y-1">
+                        {watchedValues.instructions.map(
+                          (instruction, index) => (
+                            <li
+                              key={instruction.instruction}
+                              className="flex gap-2"
+                            >
+                              <span className="text-muted-foreground">
+                                {index + 1}.
+                              </span>
+                              <span>{instruction.instruction}</span>
+                            </li>
+                          ),
+                        )}
+                      </ol>
                     </div>
                   )}
-                </div>
-              </CardContent>
-            </Card>
 
-            {/* Submit Button */}
-            <div className="flex justify-end gap-4">
-              <Link href="/advertisers/campaigns">
-                <Button type="button" variant="outline">
-                  Cancel
-                </Button>
-              </Link>
-              <Button
-                type="submit"
-                disabled={!isFormValid || isSubmitting}
-                className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
-              >
-                {isSubmitting ? "Creating Campaign..." : "Create Campaign"}
-              </Button>
+                  <div className="flex items-center justify-between text-sm">
+                    <div className="flex items-center gap-1">
+                      <DollarSign className="h-4 w-4" />
+                      <span className="font-medium">
+                        {watchedValues.payoutPerUser > 0
+                          ? formatCurrency(watchedValues.payoutPerUser)
+                          : "₦0"}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Users className="h-4 w-4" />
+                      <span>{watchedValues.maxUsers || 0} spots</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Clock className="h-4 w-4" />
+                      <span>{watchedValues.estimatedTimeMinutes || 0}min</span>
+                    </div>
+                  </div>
+
+                  {watchedValues.payoutPerUser > 0 &&
+                    watchedValues.maxUsers > 0 && (
+                      <div className="bg-muted p-3 rounded-lg">
+                        <div className="text-sm font-medium mb-1">
+                          Total Budget
+                        </div>
+                        <div className="text-lg font-bold text-primary">
+                          {formatCurrency(calculateTotalCost())}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          Including ₦
+                          {platformSettings?.platformFee.toLocaleString()}{" "}
+                          platform fee
+                        </div>
+                      </div>
+                    )}
+
+                  {!isValid && (
+                    <Alert>
+                      <AlertCircle className="h-4 w-4" />
+                      <AlertDescription>
+                        Please fill in all required fields to see the complete
+                        preview.
+                      </AlertDescription>
+                    </Alert>
+                  )}
+                </CardContent>
+              </Card>
             </div>
-          </form>
-        </div>
-
-        {/* Preview */}
-        <div className="lg:col-span-1">
-          <div className="sticky top-8">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Eye className="h-5 w-5" />
-                  Live Preview
-                </CardTitle>
-                <CardDescription>
-                  How your campaign will appear to taskers
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {formData.bannerImage && (
-                  <img
-                    src={
-                      URL.createObjectURL(formData.bannerImage) ||
-                      "/placeholder.svg"
-                    }
-                    alt="Campaign banner"
-                    className="w-full h-32 object-cover rounded-lg"
-                  />
-                )}
-
-                <div>
-                  <h3 className="font-semibold text-lg">
-                    {formData.name || "Campaign Name"}
-                  </h3>
-                  {formData.taskType && (
-                    <Badge variant="secondary" className="mt-1">
-                      {
-                        taskTypes.find((t) => t.value === formData.taskType)
-                          ?.label
-                      }
-                    </Badge>
-                  )}
-                </div>
-
-                <p className="text-sm text-muted-foreground">
-                  {formData.description ||
-                    "Campaign description will appear here..."}
-                </p>
-
-                <div className="flex items-center justify-between text-sm">
-                  <div className="flex items-center gap-1">
-                    <DollarSign className="h-4 w-4" />
-                    <span className="font-medium">
-                      {formData.payoutPerUser > 0
-                        ? formatCurrency(formData.payoutPerUser)
-                        : "₦0"}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Users className="h-4 w-4" />
-                    <span>{formData.maxUsers || 0} spots</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Clock className="h-4 w-4" />
-                    <span>{formData.estimatedTimeMinutes || 0}min</span>
-                  </div>
-                </div>
-
-                {formData.payoutPerUser > 0 && formData.maxUsers > 0 && (
-                  <div className="bg-muted p-3 rounded-lg">
-                    <div className="text-sm font-medium mb-1">Total Budget</div>
-                    <div className="text-lg font-bold text-primary">
-                      {formatCurrency(calculateTotalCost())}
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      Including 10% platform fee
-                    </div>
-                  </div>
-                )}
-
-                {!isFormValid && (
-                  <Alert>
-                    <AlertCircle className="h-4 w-4" />
-                    <AlertDescription>
-                      Please fill in all required fields to see the complete
-                      preview.
-                    </AlertDescription>
-                  </Alert>
-                )}
-              </CardContent>
-            </Card>
           </div>
         </div>
       </div>
+
+      {/* Transaction Confirmation Dialog */}
+      <Dialog
+        open={showTransactionDialog}
+        onOpenChange={setShowTransactionDialog}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertCircle className="h-5 w-5 text-amber-500" />
+              Confirm Campaign Payment
+            </DialogTitle>
+            <DialogDescription>
+              You are about to create a campaign. The total cost will be
+              deducted from your wallet.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <div className="bg-muted p-4 rounded-lg space-y-3">
+              <div className="flex justify-between text-sm">
+                <span>Campaign Budget:</span>
+                <span>
+                  {formatCurrency(
+                    watchedValues.payoutPerUser * watchedValues.maxUsers,
+                  )}
+                </span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span>Platform Fee:</span>
+                <span>
+                  {formatCurrency(platformSettings?.platformFee || 0)}
+                </span>
+              </div>
+              <div className="flex justify-between font-semibold border-t pt-2">
+                <span>Total Cost:</span>
+                <span className="text-red-600">
+                  {formatCurrency(calculateTotalCost())}
+                </span>
+              </div>
+            </div>
+
+            <div className="bg-primary/10 p-3 rounded-lg">
+              <div className="flex justify-between text-sm">
+                <span>Current Wallet Balance:</span>
+                <span className="font-medium">
+                  {formatCurrency(user?.walletBalance || 0)}
+                </span>
+              </div>
+              <div className="flex justify-between text-sm text-muted-foreground">
+                <span>Balance After Payment:</span>
+                <span>
+                  {formatCurrency(
+                    (user?.walletBalance || 0) - calculateTotalCost(),
+                  )}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setShowTransactionDialog(false)}
+              disabled={createCampaignMutation.isPending}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleConfirmTransaction}
+              disabled={createCampaignMutation.isPending}
+              className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+            >
+              {createCampaignMutation.isPending
+                ? "Processing..."
+                : "Confirm & Pay"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
