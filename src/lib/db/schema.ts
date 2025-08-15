@@ -194,7 +194,7 @@ export const campaign = pgTable("campaign", {
   estimatedTimeMinutes: integer("estimated_time_minutes").notNull(),
   image: text("image"),
   bannerImageUrl: text("banner_image_url"),
-  expiryDate: text("expiry_date"),
+  expiryDate: timestamp("expiry_date"),
   status: statusEnum("status").notNull().default("pending"),
   activity: activityEnum("activity").notNull().default("active"),
   statusUpdatedAt: timestamp("status_updated_at"),

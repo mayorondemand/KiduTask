@@ -11,6 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { DatePicker } from "@/components/ui/date-picker";
 import {
   Dialog,
   DialogContent,
@@ -64,7 +65,7 @@ export default function NewCampaignPage() {
       requirements: [{ requirement: "" }],
       payoutPerUser: 0,
       maxUsers: 0,
-      expiryDate: "",
+      expiryDate: new Date(),
       estimatedTimeMinutes: 0,
       bannerImageUrl: "",
     },
@@ -113,7 +114,7 @@ export default function NewCampaignPage() {
     return subtotal + platformSettings.platformFee;
   };
 
-  const onSubmit = (_data: CreateCampaignData) => {
+  const onSubmit = () => {
     const totalCost = calculateTotalCost();
 
     // Check if user has sufficient balance
@@ -143,7 +144,6 @@ export default function NewCampaignPage() {
   // Get tomorrow's date as minimum date
   const tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
-  const minDate = tomorrow.toISOString().split("T")[0];
 
   return (
     <div className="min-h-screen pt-20">
@@ -388,26 +388,21 @@ export default function NewCampaignPage() {
                         )}
                       </div>
                       <div>
-                        <Label htmlFor="expiryDate" className="pb-2">
-                          Campaign Expiry Date
-                        </Label>
                         <Controller
                           name="expiryDate"
                           control={control}
                           render={({ field }) => (
-                            <Input
-                              {...field}
+                            <DatePicker
+                              value={field.value}
+                              onChange={field.onChange}
+                              label="Campaign Expiry Date"
                               id="expiryDate"
-                              type="date"
-                              min={minDate}
+                              placeholder="Select expiry date"
+                              fromDate={tomorrow}
+                              error={errors.expiryDate?.message}
                             />
                           )}
                         />
-                        {errors.expiryDate && (
-                          <p className="text-sm text-red-500">
-                            {errors.expiryDate.message}
-                          </p>
-                        )}
                       </div>
                     </div>
                   </CardContent>
