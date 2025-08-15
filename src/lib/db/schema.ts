@@ -10,22 +10,34 @@ import { pgEnum } from "drizzle-orm/pg-core";
 
 export const statusEnum = pgEnum("status", ["pending", "approved", "rejected"]);
 export const STATUS_ENUM = {
-  APPROVED: statusEnum.enumValues.find((value) => value === "approved"),
-  PENDING: statusEnum.enumValues.find((value) => value === "pending"),
-  REJECTED: statusEnum.enumValues.find((value) => value === "rejected"),
+  APPROVED: statusEnum.enumValues.find((value) => value === "approved") as StatusEnum,
+  PENDING: statusEnum.enumValues.find((value) => value === "pending") as StatusEnum,
+  REJECTED: statusEnum.enumValues.find((value) => value === "rejected") as StatusEnum,
 };
+export type StatusEnum = (typeof statusEnum.enumValues)[number];
 export const activityEnum = pgEnum("activity", ["active", "paused", "ended"]);
 export const ACTIVITY_ENUM = {
-  ACTIVE: activityEnum.enumValues.find((value) => value === "active"),
-  PAUSED: activityEnum.enumValues.find((value) => value === "paused"),
-  ENDED: activityEnum.enumValues.find((value) => value === "ended"),
+  ACTIVE: activityEnum.enumValues.find((value) => value === "active") as ActivityEnum,
+  PAUSED: activityEnum.enumValues.find((value) => value === "paused") as ActivityEnum,
+  ENDED: activityEnum.enumValues.find((value) => value === "ended") as ActivityEnum,
 };
+export type ActivityEnum = (typeof activityEnum.enumValues)[number];
 
 export const kycTypeEnum = pgEnum("kyc_type", [
   "national_id",
   "passport",
   "driver_license",
 ]);
+
+export const transactionTypeEnum = pgEnum("transaction_type", ["deposit", "withdrawal", "earning", "spending", "campaign_creation"]);
+export const TRANSACTION_TYPE_ENUM = {
+  DEPOSIT: transactionTypeEnum.enumValues.find((value) => value === "deposit") as TransactionTypeEnum,
+  WITHDRAWAL: transactionTypeEnum.enumValues.find((value) => value === "withdrawal") as TransactionTypeEnum,
+  EARNING: transactionTypeEnum.enumValues.find((value) => value === "earning") as TransactionTypeEnum,
+  SPENDING: transactionTypeEnum.enumValues.find((value) => value === "spending") as TransactionTypeEnum,
+  CAMPAIGN_CREATION: transactionTypeEnum.enumValues.find((value) => value === "campaign_creation") as TransactionTypeEnum,
+};
+export type TransactionTypeEnum = (typeof transactionTypeEnum.enumValues)[number];
 
 export const user = pgTable("user", {
   id: text("id").primaryKey(),
@@ -145,13 +157,16 @@ export const campaign = pgTable("campaign", {
     .references(() => advertiser.userId),
   title: text("title").notNull(),
   description: text("description").notNull(),
-  steps: text("steps").array().notNull(),
+  instructions: text("instructions").array().notNull(),
   requirements: text("requirements").array().notNull(),
   payoutPerUser: integer("payout_per_user").notNull(),
   totalCost: integer("total_cost").notNull(),
   totalSlots: integer("total_slots").notNull(),
   image: text("image"),
+  bannerImageUrl: text("banner_image_url"),
   estimatedTime: text("estimated_time").notNull(),
+  estimatedTimeMinutes: integer("estimated_time_minutes").notNull(),
+  expiryDate: text("expiry_date"),
   status: statusEnum("status").notNull().default("pending"),
   activity: activityEnum("activity").notNull().default("active"),
   statusUpdatedAt: timestamp("status_updated_at"),
@@ -223,4 +238,38 @@ export const submission = pgTable("submission", {
   updatedAt: timestamp("updated_at")
     .$defaultFn(() => /* @__PURE__ */ new Date())
     .notNull(),
+});
+
+export const platformSettings = pgTable("platform_settings", {
+  id: integer("id").generatedByDefaultAsIdentity().primaryKey(),
+  platformFee: integer("platform_fee").notNull(),
+  minimumWithdrawal: integer("minimum_withdrawal").notNull(),
+  maximumWithdrawal: integer("maximum_withdrawal").notNull(),
+  minimumDeposit: integer("minimum_deposit").notNull(),
+  createdAt: timestamp("created_at")
+    .$defaultFn(() => /* @__PURE__ */ new Date())
+    .notNull(),
+  updatedAt: timestamp("updated_at")
+    .$defaultFn(() => /* @__PURE__ */ new Date())
+    .notNull(),
+  updatedBy: text("updated_by").references(() => user.id),
+});
+
+export const transaction = pgTable("transaction", {
+  id: integer("id").generatedByDefaultAsIdentity().primaryKey(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id),
+  campaignId: integer("campaign_id").references(() => campaign.id),
+  status: statusEnum("status").notNull().default("pending"),
+  amount: integer("amount").notNull(),
+  type: transactionTypeEnum("type").notNull(),
+  description: text("description").notNull(),
+  createdAt: timestamp("created_at")
+    .$defaultFn(() => /* @__PURE__ */ new Date())
+    .notNull(),
+  updatedAt: timestamp("updated_at")
+    .$defaultFn(() => /* @__PURE__ */ new Date())
+    .notNull(),
+  updatedBy: text("updated_by").references(() => user.id),
 });
