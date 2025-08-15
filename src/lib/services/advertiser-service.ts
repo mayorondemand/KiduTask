@@ -10,17 +10,21 @@ import {
 import type { UserDetails } from "@/lib/services/user-service";
 import { eq, sql } from "drizzle-orm";
 
+export interface AdvertiserStats {
+  activeCampaigns: number;
+  pendingApprovals: number;
+  totalSpentMonth: number;
+  totalReach: number;
+  conversionRate: number;
+  totalCampaigns: number;
+  submissionsToday: number;
+  approvalRate: number;
+}
+
 class AdvertiserService {
-  async getAdvertiserStats(advertiserId: UserDetails["id"]): Promise<{
-    activeCampaigns: number;
-    pendingApprovals: number;
-    totalSpentMonth: number;
-    totalReach: number;
-    conversionRate: number;
-    totalCampaigns: number;
-    submissionsToday: number;
-    approvalRate: number;
-  }> {
+  async getAdvertiserStats(
+    advertiserId: UserDetails["id"],
+  ): Promise<AdvertiserStats> {
     const startOfMonth = new Date();
     startOfMonth.setDate(1);
     startOfMonth.setHours(0, 0, 0, 0);

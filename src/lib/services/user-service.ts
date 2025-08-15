@@ -16,6 +16,11 @@ class UserService {
     const session = await auth.api.getSession({
       headers: request.headers,
     });
+
+    if (!session?.user?.id) {
+      throw new NotAuthorizedError("Authentication required");
+    }
+
     return session?.user as UserDetails;
   }
 
