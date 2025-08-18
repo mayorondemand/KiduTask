@@ -26,6 +26,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useCreateCampaign, usePlatformSettings } from "@/lib/client";
 import { createCampaignSchema, type CreateCampaignData } from "@/lib/types";
+import { formatCurrency } from "@/lib/utils";
 import { DndContext } from "@dnd-kit/core";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -98,7 +99,9 @@ export default function NewCampaignPage() {
   };
 
   const handleUploadError = (error: string) => {
-    console.error("Upload error:", error);
+    toast.error("An error occured while uploading the banner image", {
+      description: error,
+    });
   };
 
   const handleRemoveBanner = () => {
@@ -132,13 +135,6 @@ export default function NewCampaignPage() {
   const handleConfirmTransaction = () => {
     const formData = watch();
     createCampaignMutation.mutate(formData);
-  };
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-NG", {
-      style: "currency",
-      currency: "NGN",
-    }).format(amount);
   };
 
   // Get tomorrow's date as minimum date
@@ -262,7 +258,6 @@ export default function NewCampaignPage() {
                           type="button"
                           size="sm"
                           onClick={() => {
-                            console.log(instructionFields);
                             appendInstruction({ instruction: "" });
                           }}
                         >

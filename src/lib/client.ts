@@ -2,8 +2,9 @@
 import { useAuth } from "@/components/providers/auth-provider";
 import { errorHandler } from "@/lib/error-handler";
 import type { AdvertiserStats } from "@/lib/services/advertiser-service";
-import type { CreateCampaignData } from "@/lib/types";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import type { CampaignQuery, StatusEnum } from "@/lib/types";
+import type { CampaignWithCounts, CreateCampaignData } from "@/lib/types";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -255,6 +256,74 @@ export const useCreateCampaign = () => {
       toast.success("Campaign created successfully");
       refetch();
       router.push(`/advertisers/campaigns/${data.campaignId}`);
+    },
+    onError: errorHandler.handleQueryError,
+  });
+};
+
+export const useCampaigns = (filters: Partial<CampaignQuery> & Pick<CampaignQuery, "page" | "limit">) => {
+  return useQuery({
+    queryKey: ["campaigns", filters],
+    queryFn: async (): Promise<CampaignWithCounts[]> => {
+      const response = await axios.get("/api/advertiser/campaigns", {
+        params: filters,
+      });
+      return response.data.campaigns;
+    },
+  });
+};
+
+export const useCampaign = (id: string) => {
+  return useQuery({
+    queryKey: ["campaign", id],
+    queryFn: async (): Promise<CampaignWithCounts> => {
+      const response = await axios.get(`/api/advertiser/campaigns/${id}`);
+      return response.data.campaign;
+    },
+    enabled: !!id,
+  });
+};
+
+export const useCampaignSubmissions = (campaignId: string, page: number = 1, limit: number = 10) => {
+  return useQuery({
+    queryKey: ["campaign-submissions", campaignId, page, limit],
+    queryFn: async () => {
+      const response = await axios.get(`/api/advertiser/campaigns/${campaignId}/submissions`, {
+        params: { page, limit },
+      });
+      return response.data;
+    },
+    enabled: !!campaignId,
+  });
+};
+
+export const useUpdateSubmission = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async ({ 
+      submissionId, 
+      status, 
+      advertiserFeedback, 
+      advertiserRating 
+    }: {
+      submissionId: number;
+      status: StatusEnum;
+      advertiserFeedback?: string;
+      advertiserRating?: number;
+    }) => {
+      const response = await axios.patch(`/api/advertiser/submissions/${submissionId}`, {
+        status,
+        advertiserFeedback,
+        advertiserRating,
+      });
+      return response.data;
+    },
+    onSuccess: (data, variables) => {
+      // Invalidate and refetch campaign submissions
+      queryClient.invalidateQueries({ queryKey: ["campaign-submissions"] });
+      queryClient.invalidateQueries({ queryKey: ["campaigns"] });
+      toast.success(data.message);
     },
     onError: errorHandler.handleQueryError,
   });

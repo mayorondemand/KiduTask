@@ -1,6 +1,11 @@
-import { STATUS_ENUM } from "@/lib/db/schema";
 import { errorHandler, NotAuthorizedError } from "@/lib/error-handler";
-import { campaignService, campaignQuerySchema, type CampaignQuery } from "@/lib/services/campaign-service";
+import {
+  STATUS_ENUM,
+  campaignQuerySchema,
+  type CampaignQuery,
+} from "@/lib/types";
+import { campaignService } from "@/lib/services/campaign-service";
+
 import { userService } from "@/lib/services/user-service";
 import { type NextRequest, NextResponse } from "next/server";
 import { validateQueryParams } from "@/lib/utils";
@@ -16,9 +21,11 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
 
-    const queryParams = validateQueryParams(searchParams, campaignQuerySchema) as CampaignQuery;
+    const queryParams = validateQueryParams(
+      searchParams,
+      campaignQuerySchema,
+    ) as CampaignQuery;
 
-    
     queryParams.advertiserId = user.id;
 
     const { campaigns, totalCount } =

@@ -9,38 +9,12 @@ import {
 import { pgEnum } from "drizzle-orm/pg-core";
 
 export const statusEnum = pgEnum("status", ["pending", "approved", "rejected"]);
-export const STATUS_ENUM = {
-  APPROVED: statusEnum.enumValues.find(
-    (value) => value === "approved",
-  ) as StatusEnum,
-  PENDING: statusEnum.enumValues.find(
-    (value) => value === "pending",
-  ) as StatusEnum,
-  REJECTED: statusEnum.enumValues.find(
-    (value) => value === "rejected",
-  ) as StatusEnum,
-};
-export type StatusEnum = (typeof statusEnum.enumValues)[number];
 export const activityEnum = pgEnum("activity", ["active", "paused", "ended"]);
-export const ACTIVITY_ENUM = {
-  ACTIVE: activityEnum.enumValues.find(
-    (value) => value === "active",
-  ) as ActivityEnum,
-  PAUSED: activityEnum.enumValues.find(
-    (value) => value === "paused",
-  ) as ActivityEnum,
-  ENDED: activityEnum.enumValues.find(
-    (value) => value === "ended",
-  ) as ActivityEnum,
-};
-export type ActivityEnum = (typeof activityEnum.enumValues)[number];
-
 export const kycTypeEnum = pgEnum("kyc_type", [
   "national_id",
   "passport",
   "driver_license",
 ]);
-
 export const transactionTypeEnum = pgEnum("transaction_type", [
   "deposit",
   "withdrawal",
@@ -48,25 +22,6 @@ export const transactionTypeEnum = pgEnum("transaction_type", [
   "spending",
   "campaign_creation",
 ]);
-export const TRANSACTION_TYPE_ENUM = {
-  DEPOSIT: transactionTypeEnum.enumValues.find(
-    (value) => value === "deposit",
-  ) as TransactionTypeEnum,
-  WITHDRAWAL: transactionTypeEnum.enumValues.find(
-    (value) => value === "withdrawal",
-  ) as TransactionTypeEnum,
-  EARNING: transactionTypeEnum.enumValues.find(
-    (value) => value === "earning",
-  ) as TransactionTypeEnum,
-  SPENDING: transactionTypeEnum.enumValues.find(
-    (value) => value === "spending",
-  ) as TransactionTypeEnum,
-  CAMPAIGN_CREATION: transactionTypeEnum.enumValues.find(
-    (value) => value === "campaign_creation",
-  ) as TransactionTypeEnum,
-};
-export type TransactionTypeEnum =
-  (typeof transactionTypeEnum.enumValues)[number];
 
 export const user = pgTable("user", {
   id: text("id").primaryKey(),

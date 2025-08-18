@@ -1,6 +1,7 @@
 "use client";
 
 import { Navbar } from "@/components/layout/navbar";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -30,43 +31,30 @@ import {
 } from "@/components/ui/table";
 import { useCampaigns } from "@/lib/client";
 import type { CampaignQuery } from "@/lib/services/campaign-service";
-import { formatCurrency, getStatusColor } from "@/lib/utils";
+import { cn, formatCurrency, getStatusColor } from "@/lib/utils";
+import { useDebounce } from "@uidotdev/usehooks";
 import {
+  AlertCircle,
   ArrowLeft,
   ArrowRight,
   BarChart3,
   Calendar,
   ChevronDown,
   ChevronUp,
-  DollarSign,
   Eye,
   Filter,
   MoreHorizontal,
   Pause,
   Play,
   Plus,
+  RefreshCw,
   Search,
   Users,
+  WifiOff
 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { useDebounce } from "@uidotdev/usehooks";
-// Loading skeleton components
-const CampaignSkeleton = () => (
-  <div className="space-y-3">
-    <div className="flex items-center space-x-4">
-      <Skeleton className="h-4 w-[250px]" />
-      <Skeleton className="h-4 w-[100px]" />
-      <Skeleton className="h-4 w-[100px]" />
-    </div>
-    <div className="flex items-center space-x-4">
-      <Skeleton className="h-4 w-[150px]" />
-      <Skeleton className="h-4 w-[120px]" />
-      <Skeleton className="h-4 w-[100px]" />
-    </div>
-    <Skeleton className="h-2 w-full" />
-  </div>
-);
+import { toast } from "sonner";
 
 export default function CampaignsPage() {
   const [searchInput, setSearchInput] = useState("");
@@ -106,18 +94,40 @@ export default function CampaignsPage() {
     ],
   );
 
-  const { data: campaignsData, isLoading, error } = useCampaigns(queryParams);
+  const {
+    data: campaignsData,
+    isLoading,
+    error,
+    refetch,
+    isError,
+  } = useCampaigns(queryParams);
   const campaigns = campaignsData || [];
   const totalCount = campaignsData?.length || 0;
-  // Reset page when search term changes
+
+  const handleRetry = async () => {
+    await refetch();
+  };
+  // Reset page when needed
   useEffect(() => {
     setCurrentPage(1);
   }, []);
 
-  // Reset page when filters change
+  // Show loading toast for long operations
   useEffect(() => {
-    setCurrentPage(1);
-  }, []);
+    let timeoutId: NodeJS.Timeout;
+
+    if (isLoading) {
+      timeoutId = setTimeout(() => {
+        toast.info("Loading campaigns... This might take a moment", {
+          duration: 3000,
+        });
+      }, 2000);
+    }
+
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }, [isLoading]);
 
   const handleSort = (field: string) => {
     if (sortBy === field) {
@@ -139,15 +149,21 @@ export default function CampaignsPage() {
       variant="ghost"
       size="sm"
       onClick={() => handleSort(field)}
-      className="h-auto p-0 font-normal"
+      className={cn(
+        "h-auto hover:text-primary p-0 font-normal",
+        sortBy === field && "text-primary font-semibold",
+      )}
     >
       {children}
-      {sortBy === field &&
-        (sortOrder === "asc" ? (
-          <ChevronUp className="ml-1 h-3 w-3" />
-        ) : (
-          <ChevronDown className="ml-1 h-3 w-3" />
-        ))}
+      {sortOrder === "asc" ? (
+        <ChevronUp
+          className={cn("h-3 w-3", sortBy === field && "text-primary")}
+        />
+      ) : (
+        <ChevronDown
+          className={cn("h-3 w-3", sortBy === field && "text-primary")}
+        />
+      )}
     </Button>
   );
 
@@ -164,12 +180,14 @@ export default function CampaignsPage() {
               Manage and track all your advertising campaigns
             </p>
           </div>
-          <Link href="/advertisers/campaigns/new">
-            <Button className="flex items-center gap-2 mt-4 sm:mt-0">
-              <Plus className="h-4 w-4" />
-              Create New Campaign
-            </Button>
-          </Link>
+          <div className="flex items-center gap-2 mt-4 sm:mt-0">
+            <Link href="/advertisers/campaigns/new">
+              <Button className="flex items-center gap-2">
+                <Plus className="h-4 w-4" />
+                Create New Campaign
+              </Button>
+            </Link>
+          </div>
         </div>
 
         {/* Status Overview */}
@@ -219,46 +237,55 @@ export default function CampaignsPage() {
           </CardContent>
         </Card>
 
-        {/* Loading State */}
-        {isLoading && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Campaigns</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-6">
-                {[1, 2, 3].map((i) => (
-                  <CampaignSkeleton key={i} />
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
         {/* Error State */}
-        {error && (
-          <Card>
-            <CardContent className="p-12 text-center">
-              <div className="text-destructive mb-4">
-                <BarChart3 className="h-12 w-12 mx-auto mb-2" />
-                <h3 className="text-lg font-semibold">
-                  Error loading campaigns
-                </h3>
-                <p className="text-sm text-muted-foreground">
-                  {error instanceof Error
+        {isError && (
+          <Alert variant="destructive" className="mb-6">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle className="flex items-center gap-2">
+              {error?.message?.includes("network") ||
+              error?.message?.includes("fetch") ? (
+                <>
+                  <WifiOff className="h-4 w-4" />
+                  Connection Error
+                </>
+              ) : (
+                "Error Loading Campaigns"
+              )}
+            </AlertTitle>
+            <AlertDescription className="mt-2">
+              <div className="mb-4">
+                {error?.message?.includes("network") ||
+                error?.message?.includes("fetch")
+                  ? "Unable to connect to the server. Please check your internet connection and try again."
+                  : error instanceof Error
                     ? error.message
-                    : "Something went wrong"}
-                </p>
+                    : "Something went wrong while loading your campaigns. Please try again."}
               </div>
-              <Button onClick={() => window.location.reload()}>
-                Try Again
-              </Button>
-            </CardContent>
-          </Card>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleRetry}
+                  className="bg-background"
+                >
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Try Again
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => window.location.reload()}
+                  className="bg-background"
+                >
+                  Reload Page
+                </Button>
+              </div>
+            </AlertDescription>
+          </Alert>
         )}
 
         {/* Campaigns Table */}
-        {!isLoading && !error && campaigns.length > 0 && (
+        {!isError && (
           <Card>
             <CardHeader>
               <CardTitle>Campaigns</CardTitle>
@@ -267,7 +294,7 @@ export default function CampaignsPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>
+                    <TableHead colSpan={4}>
                       <SortButton field="title">Campaign</SortButton>
                     </TableHead>
                     <TableHead>
@@ -292,105 +319,142 @@ export default function CampaignsPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {campaigns.map((campaign) => (
-                    <TableRow key={campaign.id}>
-                      <TableCell>
-                        <div className="flex flex-col gap-2">
-                          <div className="font-medium">{campaign.title}</div>
-                          <div className="text-sm text-muted-foreground line-clamp-2">
-                            {campaign.description}
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge className={getStatusColor(campaign.status)}>
-                          {campaign.status}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Badge
-                          variant="outline"
-                          className={getStatusColor(campaign.activity)}
-                        >
-                          {campaign.activity}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-1">
-                          <Users className="h-4 w-4" />
-                          {campaign.totalSubmissions}/{campaign.maxUsers}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-1">
-                          {formatCurrency(campaign.totalCost)}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-1">
-                          <Calendar className="h-4 w-4" />
-                          {new Date(campaign.createdAt).toLocaleDateString()}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="w-full">
-                          <div className="flex justify-between text-xs mb-1">
-                            <span>Progress</span>
-                            <span>
-                              {campaign.totalSubmissions > 0
-                                ? Math.round(
-                                    (campaign.approvedSubmissions /
-                                      campaign.totalSubmissions) *
-                                      100,
-                                  )
-                                : 0}
-                              %
-                            </span>
-                          </div>
-                          <Progress
-                            value={
-                              campaign.totalSubmissions > 0
-                                ? (campaign.approvedSubmissions /
-                                    campaign.totalSubmissions) *
-                                  100
-                                : 0
-                            }
-                            className="h-2"
-                          />
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm">
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem asChild>
-                              <Link
-                                href={`/advertisers/campaigns/${campaign.id}`}
-                              >
-                                <Eye className="mr-2 h-4 w-4" />
-                                View Details
-                              </Link>
-                            </DropdownMenuItem>
-                            {campaign.activity === "active" ? (
-                              <DropdownMenuItem>
-                                <Pause className="mr-2 h-4 w-4" />
-                                Pause Campaign
-                              </DropdownMenuItem>
-                            ) : campaign.activity === "paused" ? (
-                              <DropdownMenuItem>
-                                <Play className="mr-2 h-4 w-4" />
-                                Resume Campaign
-                              </DropdownMenuItem>
-                            ) : null}
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                  {!isLoading
+                    ? campaigns.map((campaign) => (
+                        <TableRow key={campaign.id}>
+                          <TableCell colSpan={4}>
+                            <div className="flex flex-col gap-2">
+                              <div className="font-medium">
+                                {campaign.title}
+                              </div>
+                              <div className="text-sm text-muted-foreground line-clamp-2">
+                                {campaign.description}
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge className={getStatusColor(campaign.status)}>
+                              {campaign.status}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Badge
+                              variant="outline"
+                              className={getStatusColor(campaign.activity)}
+                            >
+                              {campaign.activity}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-1">
+                              <Users className="h-4 w-4" />
+                              {campaign.totalSubmissions}/{campaign.maxUsers}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-1">
+                              {formatCurrency(campaign.totalCost)}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-1">
+                              <Calendar className="h-4 w-4" />
+                              {new Date(
+                                campaign.createdAt,
+                              ).toLocaleDateString()}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="w-full">
+                              <div className="flex justify-between text-xs mb-1">
+                                <span>Progress</span>
+                                <span>
+                                  {campaign.totalSubmissions > 0
+                                    ? Math.round(
+                                        (campaign.approvedSubmissions /
+                                          campaign.totalSubmissions) *
+                                          100,
+                                      )
+                                    : 0}
+                                  %
+                                </span>
+                              </div>
+                              <Progress
+                                value={
+                                  campaign.totalSubmissions > 0
+                                    ? (campaign.approvedSubmissions /
+                                        campaign.totalSubmissions) *
+                                      100
+                                    : 0
+                                }
+                                className="h-2"
+                              />
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="sm">
+                                  <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuItem asChild>
+                                  <Link
+                                    href={`/advertisers/campaigns/${campaign.id}`}
+                                  >
+                                    <Eye className="mr-2 h-4 w-4" />
+                                    View Details
+                                  </Link>
+                                </DropdownMenuItem>
+                                {campaign.activity === "active" ? (
+                                  <DropdownMenuItem>
+                                    <Pause className="mr-2 h-4 w-4" />
+                                    Pause Campaign
+                                  </DropdownMenuItem>
+                                ) : campaign.activity === "paused" ? (
+                                  <DropdownMenuItem>
+                                    <Play className="mr-2 h-4 w-4" />
+                                    Resume Campaign
+                                  </DropdownMenuItem>
+                                ) : null}
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    : Array.from({ length: 5 }).map((_, i) => (
+                        // biome-ignore lint/suspicious/noArrayIndexKey: <No data in the map>
+                        <TableRow key={i}>
+                          <TableCell colSpan={4}>
+                            <Skeleton className="h-4 w-full" />
+                          </TableCell>
+                          <TableCell>
+                            <Skeleton className="h-4 w-full" />
+                          </TableCell>
+                          <TableCell>
+                            <Skeleton className="h-4 w-full" />
+                          </TableCell>
+                          <TableCell>
+                            <Skeleton className="h-4 w-full" />
+                          </TableCell>
+                          <TableCell>
+                            <Skeleton className="h-4 w-full" />
+                          </TableCell>
+                          <TableCell>
+                            <Skeleton className="h-4 w-full" />
+                          </TableCell>
+                          <TableCell>
+                            <Skeleton className="h-4 w-full" />
+                          </TableCell>
+                          <TableCell>
+                            <Skeleton className="h-4 w-full" />
+                          </TableCell>
+                          <TableCell>
+                            <Skeleton className="h-4 w-full" />
+                          </TableCell>
+                        </TableRow>
+                      ))}
                 </TableBody>
               </Table>
             </CardContent>
@@ -398,26 +462,67 @@ export default function CampaignsPage() {
         )}
 
         {/* Empty State */}
-        {!isLoading && !error && campaigns.length === 0 && (
+        {!isLoading && !isError && campaigns.length === 0 && (
           <Card>
             <CardContent className="p-12 text-center">
-              <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4 mx-auto">
-                <BarChart3 className="h-8 w-8 text-muted-foreground" />
+              <div className="w-20 h-20 bg-gradient-to-br from-primary/10 to-primary/20 rounded-full flex items-center justify-center mb-6 mx-auto">
+                <BarChart3 className="h-10 w-10 text-primary" />
               </div>
-              <h3 className="text-lg font-semibold mb-2">No campaigns found</h3>
-              <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-                {searchTerm ||
-                statusFilter !== "all" ||
-                activityFilter !== "all"
-                  ? "No campaigns match your current filters. Try adjusting your search or filters."
-                  : "You haven't created any campaigns yet. Get started by creating your first campaign!"}
-              </p>
-              <Link href="/advertisers/campaigns/new">
-                <Button className="flex items-center gap-2">
-                  <Plus className="h-4 w-4" />
-                  Create Your First Campaign
-                </Button>
-              </Link>
+
+              {searchTerm ||
+              statusFilter !== "all" ||
+              activityFilter !== "all" ? (
+                // Filtered empty state
+                <>
+                  <h3 className="text-xl font-semibold mb-3">
+                    No campaigns match your filters
+                  </h3>
+                  <p className="text-muted-foreground mb-6 max-w-lg mx-auto">
+                    We couldn't find any campaigns matching your current search
+                    and filter criteria. Try adjusting your filters or search
+                    terms to see more results.
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setSearchInput("");
+                        setStatusFilter("all");
+                        setActivityFilter("all");
+                        toast.success("Filters cleared");
+                      }}
+                      className="flex items-center gap-2"
+                    >
+                      <RefreshCw className="h-4 w-4" />
+                      Clear Filters
+                    </Button>
+                    <Link href="/advertisers/campaigns/new">
+                      <Button className="flex items-center gap-2">
+                        <Plus className="h-4 w-4" />
+                        Create New Campaign
+                      </Button>
+                    </Link>
+                  </div>
+                </>
+              ) : (
+                // No campaigns at all
+                <div className="flex flex-col items-center justify-center">
+                  <h3 className="text-xl font-semibold mb-3">
+                    Welcome to Campaign Management!
+                  </h3>
+                  <p className="text-muted-foreground mb-6 max-w-lg mx-auto">
+                    You haven't created any campaigns yet. Start by creating
+                    your first campaign to reach your target audience and grow
+                    your business.
+                  </p>
+                  <Link className="mx-auto" href="/advertisers/campaigns/new">
+                    <Button size="lg" className="flex items-center gap-2">
+                      <Plus className="h-5 w-5" />
+                      Create Your First Campaign
+                    </Button>
+                  </Link>
+                </div>
+              )}
             </CardContent>
           </Card>
         )}
