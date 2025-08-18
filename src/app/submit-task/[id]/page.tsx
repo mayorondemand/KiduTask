@@ -36,7 +36,6 @@ import {
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useState, useEffect } from "react";
-import { toast } from "sonner";
 
 const submissionSchema = z
   .object({
@@ -154,7 +153,6 @@ export default function SubmitTaskPage() {
   const params = useParams();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const {} = useToast();
   const [proofType, setProofType] = useState<"screenshot" | "link" | "text">(
     "screenshot",
   );

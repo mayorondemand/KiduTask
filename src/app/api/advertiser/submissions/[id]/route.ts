@@ -1,4 +1,4 @@
-import { STATUS_ENUM } from "@/lib/db/schema";
+import { STATUS_ENUM } from "@/lib/types";
 import { errorHandler, NotAuthorizedError, NotFoundError, BadRequestError } from "@/lib/error-handler";
 import { campaignService } from "@/lib/services/campaign-service";
 import { userService } from "@/lib/services/user-service";

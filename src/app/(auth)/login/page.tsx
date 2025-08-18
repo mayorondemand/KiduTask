@@ -15,21 +15,13 @@ import { Label } from "@/components/ui/label";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, Lock, Mail } from "lucide-react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
 import { z } from "zod";
+import { toast } from "sonner";
+import { useSearchParams } from "next/navigation";
 
-const loginSchema = z.object({
-  email: z.string().email("Please enter a valid email address"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
-});
-
-type LoginForm = z.infer<typeof loginSchema>;
-
-export default function LoginPage() {
-  const { loginMutation, googleAuthMutation } = useAuth();
+export function VerificationHandler() {
   const searchParams = useSearchParams();
   const emailVerified = searchParams.get("emailverified");
   const error = searchParams.get("error");
@@ -49,6 +41,19 @@ export default function LoginPage() {
     }
   }, [emailVerified, error]);
 
+  return null; // This component doesn't render anything
+}
+
+const loginSchema = z.object({
+  email: z.string().email("Please enter a valid email address"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+});
+
+type LoginForm = z.infer<typeof loginSchema>;
+
+export default function LoginPage() {
+  const { loginMutation, googleAuthMutation } = useAuth();
+
   const {
     register,
     handleSubmit,
@@ -66,6 +71,9 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <Suspense fallback={null}>
+        <VerificationHandler />
+      </Suspense>
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
           <div className="flex items-center justify-center space-x-2 mb-4">

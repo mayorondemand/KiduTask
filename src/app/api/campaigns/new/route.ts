@@ -1,4 +1,4 @@
-import { STATUS_ENUM, TRANSACTION_TYPE_ENUM } from "@/lib/db/schema";
+import { STATUS_ENUM, TRANSACTION_TYPE_ENUM } from "@/lib/types";
 import {
   AppError,
   BadRequestError,

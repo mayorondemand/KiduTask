@@ -11,13 +11,28 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AlertCircle, CheckCircle, Eye, EyeOff, Lock } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+export function TokenHandler({
+  onTokenChangeAction,
+}: {
+  onTokenChangeAction: (token: string | null) => void;
+}) {
+  const searchParams = useSearchParams();
+  const token = searchParams.get("token");
+
+  useEffect(() => {
+    onTokenChangeAction(token);
+  }, [token, onTokenChangeAction]);
+
+  return null;
+}
 
 const resetPasswordSchema = z
   .object({
@@ -35,10 +50,8 @@ export default function ResetPasswordPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isValidToken, setIsValidToken] = useState(true);
+  const [token, setToken] = useState<string | null>(null);
   const { resetPasswordMutation } = useAuth();
-
-  const searchParams = useSearchParams();
-  const token = searchParams.get("token");
 
   const {
     register,
@@ -53,12 +66,12 @@ export default function ResetPasswordPage() {
   const password = watch("password");
   const confirmPassword = watch("confirmPassword");
 
-  useEffect(() => {
-    if (!token) {
+  const handleTokenChange = (newToken: string | null) => {
+    setToken(newToken);
+    if (!newToken) {
       setIsValidToken(false);
     }
-  }, [token]);
-
+  };
 
   const onSubmit = (data: ResetPasswordForm) => {
     if (token) {
@@ -72,6 +85,9 @@ export default function ResetPasswordPage() {
   if (!isValidToken) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+        <Suspense fallback={null}>
+          <TokenHandler onTokenChangeAction={handleTokenChange} />
+        </Suspense>
         <div className="max-w-md w-full space-y-8">
           <Card>
             <CardHeader className="text-center">
@@ -104,6 +120,9 @@ export default function ResetPasswordPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <Suspense fallback={null}>
+        <TokenHandler onTokenChangeAction={handleTokenChange} />
+      </Suspense>
       <div className="max-w-md w-full space-y-8">
         <Card>
           <CardHeader className="text-center">
@@ -177,7 +196,9 @@ export default function ResetPasswordPage() {
                 className="w-full"
                 disabled={resetPasswordMutation.isPending || !isValid}
               >
-                {resetPasswordMutation.isPending ? "Resetting..." : "Reset Password"}
+                {resetPasswordMutation.isPending
+                  ? "Resetting..."
+                  : "Reset Password"}
               </Button>
 
               <div className="text-center">

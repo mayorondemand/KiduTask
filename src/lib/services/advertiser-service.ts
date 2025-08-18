@@ -1,12 +1,11 @@
 import { db } from "@/lib/db";
 import {
-  ACTIVITY_ENUM,
   advertiser,
   campaign,
   campaignView,
-  STATUS_ENUM,
   submission,
 } from "@/lib/db/schema";
+import { ACTIVITY_ENUM, STATUS_ENUM } from "@/lib/types";
 import type { UserDetails } from "@/lib/services/user-service";
 import { eq, sql } from "drizzle-orm";
 

@@ -1,4 +1,4 @@
-import { STATUS_ENUM } from "@/lib/db/schema";
+import { STATUS_ENUM } from "@/lib/types";
 import {
   errorHandler,
   NotAuthorizedError,
