@@ -91,14 +91,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const isPublicPath = publicPaths.includes(pathname);
 
     if (!user && !isPublicPath) {
-      console.warn(`[AuthProvider] ${pathname} -> Login <Not Public, Not User>`);
+      console.warn(
+        `[AuthProvider] ${pathname} -> Login <Not Public, Not User>`,
+      );
       router.push("/login");
     }
 
     if (
       user &&
       user.advertiserRequestStatus !== "approved" &&
-      !pathname.includes("/advertisers")
+      pathname.includes("/advertisers")
     ) {
       console.warn(`[AuthProvider] ${pathname} -> Home <User, Not Advertiser>`);
       toast.error("You are not an advertiser");
