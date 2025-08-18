@@ -1,12 +1,12 @@
 import { db } from "@/lib/db";
-import { 
-  transaction, 
-  StatusEnum, 
+import { transaction } from "@/lib/db/schema";
+import type {
+  StatusEnum,
+  TransactionDB,
   TransactionTypeEnum,
-  STATUS_ENUM,
-  TRANSACTION_TYPE_ENUM 
-} from "@/lib/db/schema";
-import { eq, desc } from "drizzle-orm";
+} from "@/lib/types";
+
+import { desc, eq } from "drizzle-orm";
 
 class TransactionService {
   async createTransaction(
@@ -16,43 +16,54 @@ class TransactionService {
     description: string,
     status: StatusEnum,
     campaignId?: number,
-  ): Promise<typeof transaction.$inferSelect> {
-    const result = await db.insert(transaction).values({
-      campaignId,
-      userId,
-      amount,
-      type,
-      description,
-      status,
-    }).returning();
-    
+  ): Promise<TransactionDB> {
+    const result = await db
+      .insert(transaction)
+      .values({
+        campaignId,
+        userId,
+        amount,
+        type,
+        description,
+        status,
+      })
+      .returning();
+
     return result[0];
   }
 
-  async updateTransaction(transactionId: number, status: StatusEnum): Promise<typeof transaction.$inferSelect> {
+  async updateTransaction(
+    transactionId: number,
+    status: StatusEnum,
+  ): Promise<TransactionDB> {
     const result = await db
       .update(transaction)
-      .set({ 
+      .set({
         status,
-        updatedAt: new Date()
+        updatedAt: new Date(),
       })
       .where(eq(transaction.id, transactionId))
       .returning();
-    
+
     return result[0];
   }
 
-  async getTransactionById(transactionId: number): Promise<typeof transaction.$inferSelect | null> {
+  async getTransactionById(
+    transactionId: number,
+  ): Promise<TransactionDB | null> {
     const result = await db
       .select()
       .from(transaction)
       .where(eq(transaction.id, transactionId))
       .limit(1);
-    
+
     return result[0] || null;
   }
 
-  async getUserTransactions(userId: string, limit: number = 50): Promise<typeof transaction.$inferSelect[]> {
+  async getUserTransactions(
+    userId: string,
+    limit: number = 50,
+  ): Promise<TransactionDB[]> {
     return await db
       .select()
       .from(transaction)
@@ -61,7 +72,7 @@ class TransactionService {
       .limit(limit);
   }
 
-  async getCampaignTransactions(campaignId: number): Promise<typeof transaction.$inferSelect[]> {
+  async getCampaignTransactions(campaignId: number): Promise<TransactionDB[]> {
     return await db
       .select()
       .from(transaction)

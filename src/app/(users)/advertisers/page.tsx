@@ -60,7 +60,7 @@ export default function AdvertiserDashboard() {
                   Welcome back, {user?.name.split(" ")[0]}! 👋
                 </h1>
                 <p className="text-gray-600 mt-1">
-                  Here's your campaign performance overview
+                  Here&apos;s your campaign performance overview
                 </p>
               </div>
             </div>
@@ -414,7 +414,7 @@ export default function AdvertiserDashboard() {
                     No campaigns found
                   </h3>
                   <p className="text-gray-500 mb-6 max-w-md">
-                    You haven't created any campaigns yet, or no campaigns match
+                    You haven&apos;t created any campaigns yet, or no campaigns match
                     your current filters. Get started by creating your first
                     campaign!
                   </p>

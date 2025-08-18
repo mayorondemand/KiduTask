@@ -36,7 +36,7 @@ export default function VerificationEmail({
             <Text style={text}>Hi {name},</Text>
 
             <Text style={text}>
-              Thank you for signing up for KudiTask! We're excited to have you
+              Thank you for signing up for KudiTask! We&apos;re excited to have you
               join our community of task performers and advertisers.
             </Text>
 
@@ -52,7 +52,7 @@ export default function VerificationEmail({
             </Section>
 
             <Text style={text}>
-              If the button above doesn't work, you can also copy and paste the
+              If the button above doesn&apos;t work, you can also copy and paste the
               following link into your browser:
             </Text>
 
@@ -68,7 +68,7 @@ export default function VerificationEmail({
             </Text>
 
             <Text style={text}>
-              If you didn't create an account with KudiTask, you can safely
+              If you didn&apos;t create an account with KudiTask, you can safely
               ignore this email.
             </Text>
 

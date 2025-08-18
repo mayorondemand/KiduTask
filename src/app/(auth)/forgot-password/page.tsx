@@ -55,17 +55,14 @@ export default function ForgotPasswordPage() {
                 Check your email
               </CardTitle>
               <CardDescription>
-                We've sent a password reset link to {submittedEmail}
+                We&apos;ve sent a password reset link to {submittedEmail}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="text-center text-sm text-gray-600">
-                <p>Didn't receive the email? Check your spam folder or</p>
-                <Button
-                  onClick={() => setSubmittedEmail("")}
-                  variant={"ghost"}
-                >
-                 try again
+                <p>Didn&apos;t receive the email? Check your spam folder or</p>
+                <Button onClick={() => setSubmittedEmail("")} variant={"ghost"}>
+                  try again
                 </Button>
               </div>
               <div className="text-center">
@@ -96,8 +93,8 @@ export default function ForgotPasswordPage() {
               Forgot your password?
             </CardTitle>
             <CardDescription>
-              Enter your email address and we'll send you a link to reset your
-              password.
+              Enter your email address and we&apos;ll send you a link to reset
+              your password.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -118,7 +115,9 @@ export default function ForgotPasswordPage() {
                 className="w-full"
                 disabled={requestPasswordResetMutation.isPending || !isValid}
               >
-                {requestPasswordResetMutation.isPending ? "Sending..." : "Send reset link"}
+                {requestPasswordResetMutation.isPending
+                  ? "Sending..."
+                  : "Send reset link"}
               </Button>
 
               <div className="text-center">

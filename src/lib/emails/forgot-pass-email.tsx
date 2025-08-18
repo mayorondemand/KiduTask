@@ -43,11 +43,11 @@ import {
               </Button>
             </Section>
             <Text style={text}>
-              This link will expire in 24 hours for security reasons. If you didn't request this password reset, you can
+              This link will expire in 24 hours for security reasons. If you didn&apos;t request this password reset, you can
               safely ignore this email.
             </Text>
             <Text style={text}>
-              If the button above doesn't work, you can also copy and paste the following link into your browser:
+              If the button above doesn&apos;t work, you can also copy and paste the following link into your browser:
             </Text>
             <Link href={resetLink} style={link}>
               {resetLink}

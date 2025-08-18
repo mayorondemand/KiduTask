@@ -1,14 +1,14 @@
 import { auth } from "@/lib/auth/auth-config";
 import { db } from "@/lib/db";
-import { advertiser, kyc, type statusEnum, user } from "@/lib/db/schema";
+import { advertiser, kyc, user } from "@/lib/db/schema";
 import { NotAuthorizedError, NotFoundError } from "@/lib/error-handler";
 import { eq, getTableColumns, sql } from "drizzle-orm";
 import type { NextRequest } from "next/server";
+import type { StatusEnum, UserDB } from "@/lib/types";
 
-type UserDb = typeof user.$inferSelect;
-export type UserDetails = UserDb & {
+export type UserDetails = UserDB & {
   isKycVerified: boolean;
-  advertiserRequestStatus: (typeof statusEnum.enumValues)[number] | null;
+  advertiserRequestStatus: StatusEnum | null;
 };
 
 class UserService {
@@ -24,7 +24,7 @@ class UserService {
     return session?.user as UserDetails;
   }
 
-  async validateUser(request: NextRequest): Promise<UserDb> {
+  async validateUser(request: NextRequest): Promise<UserDetails> {
     const session = await auth.api.getSession({
       headers: request.headers,
     });

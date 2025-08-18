@@ -36,7 +36,7 @@ import {
             <Heading style={h1}>Password Reset Successful</Heading>
             <Text style={heroText}>Hi {name}, your password has been successfully reset for your KudiTask account.</Text>
             <Text style={text}>
-              You can now log in to your account using your new password. If you didn't make this change, please contact
+              You can now log in to your account using your new password. If you didn&apos;t make this change, please contact
               our support team immediately.
             </Text>
             <Section style={buttonContainer}>
@@ -51,7 +51,7 @@ import {
               <br />• Keeping your account information up to date
             </Text>
             <Text style={text}>
-              If the button above doesn't work, you can also copy and paste the following link into your browser:
+              If the button above doesn&apos;t work, you can also copy and paste the following link into your browser:
             </Text>
             <Link href={loginLink} style={link}>
               {loginLink}

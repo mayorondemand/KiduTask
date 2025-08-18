@@ -478,7 +478,7 @@ export default function CampaignsPage() {
                     No campaigns match your filters
                   </h3>
                   <p className="text-muted-foreground mb-6 max-w-lg mx-auto">
-                    We couldn't find any campaigns matching your current search
+                    We couldn&apos;t find any campaigns matching your current search
                     and filter criteria. Try adjusting your filters or search
                     terms to see more results.
                   </p>
@@ -511,7 +511,7 @@ export default function CampaignsPage() {
                     Welcome to Campaign Management!
                   </h3>
                   <p className="text-muted-foreground mb-6 max-w-lg mx-auto">
-                    You haven't created any campaigns yet. Start by creating
+                    You haven&apos;t created any campaigns yet. Start by creating
                     your first campaign to reach your target audience and grow
                     your business.
                   </p>
