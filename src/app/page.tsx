@@ -64,35 +64,35 @@ import {
 const heroSamples = [
   {
     id: 1,
-    image: "/hero-videos/1.webm",
+    image: "/hero-videos/1.mp4",
   },
   {
     id: 2,
-    image: "/hero-videos/2.webm",
+    image: "/hero-videos/2.mp4",
   },
   {
     id: 3,
-    image: "/hero-videos/1.webm",
+    image: "/hero-videos/3.mp4",
   },
   {
     id: 4,
-    image: "/hero-videos/2.webm",
+    image: "/hero-videos/4.mp4",
   },
   {
     id: 5,
-    image: "/hero-videos/1.webm",
+    image: "/hero-videos/5.mp4",
   },
   {
     id: 6,
-    image: "/hero-videos/2.webm",
+    image: "/hero-videos/6.mp4",
   },
   {
     id: 7,
-    image: "/hero-videos/1.webm",
+    image: "/hero-videos/7.mp4",
   },
   {
     id: 8,
-    image: "/hero-videos/2.webm",
+    image: "/hero-videos/8.mp4",
   },
 ];
 
@@ -235,70 +235,86 @@ const featuredLogos = [
 const brandsSay = [
   {
     id: 1,
-    video: "/hero-videos/1.webm",
+    video: "/hero-videos/9.mp4",
     name: "Brand 1",
     logoLink: dominos,
   },
   {
     id: 2,
-    video: "/hero-videos/2.webm",
+    video: "/hero-videos/1.mp4",
     name: "Brand 2",
     logoLink: mtn,
   },
   {
     id: 3,
-    video: "/hero-videos/1.webm",
+    video: "/hero-videos/2.mp4",
     name: "Brand 3",
     logoLink: dominos,
   },
   {
     id: 4,
-    video: "/hero-videos/2.webm",
+    video: "/hero-videos/3.mp4",
     name: "Brand 4",
     logoLink: mtn,
+  },
+  {
+    id: 5,
+    video: "/hero-videos/4.mp4",
+    name: "Brand 5",
+    logoLink: mtn,
+  },
+  {
+    id: 6,
+    video: "/hero-videos/5.mp4",
+    name: "Brand 6",
+    logoLink: dominos,
+  },
+  {
+    id: 7,
+    video: "/hero-videos/6.mp4",
+    name: "Brand 7",
+    logoLink: mtn,
+  },
+  {
+    id: 8,
+    video: "/hero-videos/7.mp4",
+    name: "Brand 8",
+    logoLink: dominos,
   },
 ];
 
 const howItWorksSteps = [
   {
     id: 1,
-    title: "Create Your Campaign",
+    title: "Post Your Campaign",
     description:
-      "Set up your brand campaign with detailed requirements and target audience preferences",
+      "Describe your campaign, set your budget, and specify the type of creators and content you need. Our simple form makes it easy to get started in minutes.",
     icons: [Target, Settings, Palette],
-    image: "/placeholder.svg?height=300&width=400&text=Campaign+Setup",
+    image: "/hero-images/howto1.webp",
   },
   {
     id: 2,
-    title: "Get AI-Matched with Creators",
+    title: "Creators Apply & Perform Tasks",
     description:
-      "Our intelligent algorithm finds the perfect creators for your brand and campaign goals",
-    icons: [Brain, Users, Shield],
-    image: "/placeholder.svg?height=300&width=400&text=AI+Matching",
+      "Vetted creators discover your campaign, apply, and get started on your tasks. They produce authentic UGC content based on your requirements.",
+    icons: [Users, Zap, Star],
+    image: "/hero-images/howto2.webp",
   },
   {
     id: 3,
-    title: "Receive High-Quality Content",
+    title: "Submit, Review & Approve Content",
     description:
-      "Get professional UGC content delivered on time with quality guarantee",
-    icons: [Zap, Clock, Star],
-    image: "/placeholder.svg?height=300&width=400&text=Content+Delivery",
+      "Creators submit their completed content for your review. Request revisions if needed, then approve the work when you’re satisfied.",
+    icons: [CheckIcon, Eye, Clock],
+    image: "/hero-images/howto3.webp",
   },
   {
     id: 4,
-    title: "Track Performance & Results",
+    title: "Secure Payment & Delivery",
     description:
-      "Monitor your campaign success with detailed analytics and comprehensive reporting",
-    icons: [BarChart3, Eye, LineChart],
-    image: "/placeholder.svg?height=300&width=400&text=Analytics+Dashboard",
-  },
-  {
-    id: 5,
-    title: "Scale Your Brand",
-    description:
-      "Grow your brand presence with ongoing creator partnerships and automated campaigns",
-    icons: [TrendingUp, Rocket, Award],
-    image: "/placeholder.svg?height=300&width=400&text=Brand+Growth",
+      "Once you approve the content, payment is released to the creator..",
+    icons: [BanknoteArrowUp, Shield, Award],
+    image: "/hero-images/howto4.webp",
   },
 ];
 
@@ -360,7 +376,7 @@ function BrandsCarousel({
           <div
             role="presentation"
             key={brand.id}
-            className={`embla__slide flex-shrink-0 flex-grow-0 basis-[40%] px-1 transition-transform -ml-10 duration-300 ease-out cursor-pointer ${
+            className={`embla__slide flex-shrink-0 flex-grow-0 basis-[35%] px-1 transition-transform -ml-10 duration-300 ease-out cursor-pointer ${
               index === selectedIndex ? "scale-90" : "scale-80"
             }`}
             onClick={() => handleSlideClick(index)}
@@ -381,7 +397,6 @@ function BrandsCarousel({
                   index !== selectedIndex && "blur-xs opacity-50",
                 )}
                 loop
-                muted
                 playsInline
                 onPlay={() => setIsPlaying(true)}
                 onPause={() => setIsPlaying(false)}
@@ -406,7 +421,7 @@ function BrandsCarousel({
   );
 }
 
-export default function HomePage() {
+export default function LandingPage() {
   const [selectedIndex, setSelectedIndex] = React.useState(1);
   const columnCount = useColumnCount();
 
@@ -438,10 +453,10 @@ export default function HomePage() {
                 How it works
               </a>
               <a
-                href="#pricing"
+                href="#faq"
                 className="text-sm text-gray-600 hover:text-gray-900"
               >
-                Pricing
+                FAQ
               </a>
             </nav>
           </div>
@@ -757,7 +772,7 @@ export default function HomePage() {
       </section>
 
       {/* How it works Section */}
-      <section className="py-20 bg-gray-50">
+      <section id="how-it-works" className="py-20 bg-gray-50">
         <div className="max-w-7xl mx-auto px-6">
           <h2 className="text-4xl font-bold text-center text-gray-900 mb-4">
             How it works?
@@ -855,7 +870,7 @@ export default function HomePage() {
       </section>
 
       {/* FAQ Section */}
-      <section className="py-20 bg-gray-50">
+      <section id="faq" className="py-20 bg-gray-50">
         <div className="max-w-4xl mx-auto px-6">
           <h2 className="text-4xl font-bold text-center text-gray-900 mb-4">
             Frequently asked questions
