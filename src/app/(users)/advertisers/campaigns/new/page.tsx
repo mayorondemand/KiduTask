@@ -525,7 +525,7 @@ export default function NewCampaignPage() {
 
           {/* Preview */}
           <div className="lg:col-span-1">
-            <div className="sticky top-8">
+            <div className="sticky top-20">
               <Card className="shadow-none rounded-sm">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
