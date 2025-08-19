@@ -39,6 +39,7 @@ import {
 import Link from "next/link";
 import { useState } from "react";
 import { usePathname } from "next/navigation";
+import { formatCurrency } from "@/lib/utils";
 
 export function Navbar() {
   const { user, logoutMutation } = useAuth();
@@ -52,13 +53,6 @@ export function Navbar() {
   };
 
   if (!user) return null;
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-NG", {
-      style: "currency",
-      currency: "NGN",
-    }).format(amount);
-  };
 
   const NavLinks = () => {
     if (user.role === "admin") {
