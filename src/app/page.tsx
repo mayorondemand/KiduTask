@@ -2,17 +2,26 @@
 import React from "react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
-  Check,
-  Star,
-  Users,
-  TrendingUp,
-  Award,
   Play,
   User2,
   BanknoteArrowUp,
-  PartyPopper,
   CheckIcon,
   Megaphone,
+  Target,
+  Users,
+  Zap,
+  BarChart3,
+  TrendingUp,
+  Settings,
+  Palette,
+  Clock,
+  Brain,
+  Shield,
+  Star,
+  Rocket,
+  Eye,
+  LineChart,
+  Award,
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -22,6 +31,8 @@ import {
   Carousel,
   CarouselContent,
   CarouselItem,
+  CarouselPrevious,
+  CarouselNext,
 } from "@/components/ui/carousel";
 import Autoscroll from "embla-carousel-auto-scroll";
 import useEmblaCarousel from "embla-carousel-react";
@@ -42,6 +53,13 @@ import creatorImage from "@/assets/hero/creator.png";
 import dominos from "@/assets/featured-icon/dominos.svg";
 import mtn from "@/assets/featured-icon/mtn.svg";
 import { cn } from "@/lib/utils";
+import { useColumnCount } from "@/hooks/use-mobile";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 const heroSamples = [
   {
@@ -241,6 +259,49 @@ const brandsSay = [
   },
 ];
 
+const howItWorksSteps = [
+  {
+    id: 1,
+    title: "Create Your Campaign",
+    description:
+      "Set up your brand campaign with detailed requirements and target audience preferences",
+    icons: [Target, Settings, Palette],
+    image: "/placeholder.svg?height=300&width=400&text=Campaign+Setup",
+  },
+  {
+    id: 2,
+    title: "Get AI-Matched with Creators",
+    description:
+      "Our intelligent algorithm finds the perfect creators for your brand and campaign goals",
+    icons: [Brain, Users, Shield],
+    image: "/placeholder.svg?height=300&width=400&text=AI+Matching",
+  },
+  {
+    id: 3,
+    title: "Receive High-Quality Content",
+    description:
+      "Get professional UGC content delivered on time with quality guarantee",
+    icons: [Zap, Clock, Star],
+    image: "/placeholder.svg?height=300&width=400&text=Content+Delivery",
+  },
+  {
+    id: 4,
+    title: "Track Performance & Results",
+    description:
+      "Monitor your campaign success with detailed analytics and comprehensive reporting",
+    icons: [BarChart3, Eye, LineChart],
+    image: "/placeholder.svg?height=300&width=400&text=Analytics+Dashboard",
+  },
+  {
+    id: 5,
+    title: "Scale Your Brand",
+    description:
+      "Grow your brand presence with ongoing creator partnerships and automated campaigns",
+    icons: [TrendingUp, Rocket, Award],
+    image: "/placeholder.svg?height=300&width=400&text=Brand+Growth",
+  },
+];
+
 function BrandsCarousel({
   selectedIndex,
   setSelectedIndex,
@@ -347,6 +408,7 @@ function BrandsCarousel({
 
 export default function HomePage() {
   const [selectedIndex, setSelectedIndex] = React.useState(1);
+  const columnCount = useColumnCount();
 
   return (
     <div className="min-h-screen bg-white">
@@ -695,59 +757,61 @@ export default function HomePage() {
       </section>
 
       {/* How it works Section */}
-      <section className="py-20 bg-white">
+      <section className="py-20 bg-gray-50">
         <div className="max-w-7xl mx-auto px-6">
           <h2 className="text-4xl font-bold text-center text-gray-900 mb-4">
             How it works?
           </h2>
           <p className="text-center text-gray-600 mb-16">
-            Get started in 3 simple steps
+            From campaign creation to scaling your brand - here's your complete
+            journey
           </p>
-          <div className="grid md:grid-cols-3 gap-12 max-w-4xl mx-auto">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-6">
-                <span className="text-2xl font-bold text-white">1</span>
-              </div>
-              <h3 className="text-xl font-semibold mb-4 text-gray-900">
-                Create a campaign
-              </h3>
-              <p className="text-gray-600">
-                Tell us about your brand and what type of content you need from
-                our creators.
-              </p>
-            </div>
-            <div className="text-center">
-              <div className="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-6">
-                <span className="text-2xl font-bold text-white">2</span>
-              </div>
-              <h3 className="text-xl font-semibold mb-4 text-gray-900">
-                Get matched
-              </h3>
-              <p className="text-gray-600">
-                Our AI algorithm matches you with the perfect creators for your
-                brand and campaign goals.
-              </p>
-            </div>
-            <div className="text-center">
-              <div className="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-6">
-                <span className="text-2xl font-bold text-white">3</span>
-              </div>
-              <h3 className="text-xl font-semibold mb-4 text-gray-900">
-                Receive content
-              </h3>
-              <p className="text-gray-600">
-                Get high-quality UGC content delivered directly to your inbox
-                within days.
-              </p>
-            </div>
-          </div>
-          <div className="text-center mt-12">
-            <Button
-              size="lg"
-              className="bg-pink-500 hover:bg-pink-600 text-white px-8 py-3 rounded-full"
-            >
-              Get Started
-            </Button>
+          <Carousel
+            className="max-w-6xl mx-auto"
+            opts={{
+              align: "center",
+              loop: true,
+            }}
+          >
+            <CarouselContent>
+              {howItWorksSteps.map((step) => (
+                <CarouselItem key={step.id} className="px-4">
+                  <div className="bg-white flex rounded-4xl gap-4 p-8 px-12  border border-gray-100">
+                    <div className="py-20 w-2/5">
+                      <div className=" -space-x-2 flex items-center mb-6">
+                        {step.icons.map((IconComponent, index) => (
+                          <div
+                            key={index}
+                            className="bg-primary justify-center size-11 rounded-full ring-1 ring-white flex items-center mb-4"
+                          >
+                            <IconComponent size={20} className="text-white" />
+                          </div>
+                        ))}
+                      </div>
+                      <h3 className="text-3xl tracking-tight font-bold mb-4 text-gray-900">
+                        {step.title}
+                      </h3>
+                      <p className="text-gray-600 text-lg">
+                        {step.description}
+                      </p>
+                    </div>
+                    <div className="relative rounded-xl overflow-clip w-3/5">
+                      <Image
+                        src={step.image}
+                        alt={step.title}
+                        className="w-full h-full object-cover"
+                        fill
+                      />
+                    </div>
+                  </div>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            <CarouselPrevious className="-left-7" />
+            <CarouselNext className="-right-2.5" />
+          </Carousel>
+          <div className="text-center mt-4">
+            <Button size="lg">Get Started</Button>
           </div>
         </div>
       </section>
@@ -758,182 +822,34 @@ export default function HomePage() {
           <h2 className="text-4xl font-bold text-center text-gray-900 mb-16">
             Meet our creators
           </h2>
-          <div className="grid grid-cols-5 gap-3 mb-8">
-            {/* Row 1 */}
-            <div className="aspect-square rounded-2xl overflow-hidden">
-              <img
-                src="/placeholder.svg?height=200&width=200"
-                alt="Creator"
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <div className="aspect-square rounded-2xl overflow-hidden">
-              <img
-                src="/placeholder.svg?height=200&width=200"
-                alt="Creator"
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <div className="aspect-square rounded-2xl overflow-hidden">
-              <img
-                src="/placeholder.svg?height=200&width=200"
-                alt="Creator"
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <div className="aspect-square rounded-2xl overflow-hidden">
-              <img
-                src="/placeholder.svg?height=200&width=200"
-                alt="Creator"
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <div className="aspect-square rounded-2xl overflow-hidden">
-              <img
-                src="/placeholder.svg?height=200&width=200"
-                alt="Creator"
-                className="w-full h-full object-cover"
-              />
-            </div>
+          <div className="grid gap-3 mb-8 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+            {heroSamples.map((creator, index) => {
+              // Calculate if this item should be staggered based on column position
+              const columnPosition = index % columnCount;
+              const shouldStagger = columnPosition % 2 === 1;
 
-            {/* Row 2 */}
-            <div className="aspect-square rounded-2xl overflow-hidden">
-              <img
-                src="/placeholder.svg?height=200&width=200"
-                alt="Creator"
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <div className="aspect-square rounded-2xl overflow-hidden">
-              <img
-                src="/placeholder.svg?height=200&width=200"
-                alt="Creator"
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <div className="aspect-square rounded-2xl overflow-hidden">
-              <img
-                src="/placeholder.svg?height=200&width=200"
-                alt="Creator"
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <div className="aspect-square rounded-2xl overflow-hidden">
-              <img
-                src="/placeholder.svg?height=200&width=200"
-                alt="Creator"
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <div className="aspect-square rounded-2xl overflow-hidden">
-              <img
-                src="/placeholder.svg?height=200&width=200"
-                alt="Creator"
-                className="w-full h-full object-cover"
-              />
-            </div>
-
-            {/* Row 3 */}
-            <div className="aspect-square rounded-2xl overflow-hidden">
-              <img
-                src="/placeholder.svg?height=200&width=200"
-                alt="Creator"
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <div className="aspect-square rounded-2xl overflow-hidden">
-              <img
-                src="/placeholder.svg?height=200&width=200"
-                alt="Creator"
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <div className="aspect-square rounded-2xl overflow-hidden">
-              <img
-                src="/placeholder.svg?height=200&width=200"
-                alt="Creator"
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <div className="aspect-square rounded-2xl overflow-hidden">
-              <img
-                src="/placeholder.svg?height=200&width=200"
-                alt="Creator"
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <div className="aspect-square rounded-2xl overflow-hidden">
-              <img
-                src="/placeholder.svg?height=200&width=200"
-                alt="Creator"
-                className="w-full h-full object-cover"
-              />
-            </div>
+              return (
+                <div
+                  key={creator.id}
+                  className={cn(
+                    "aspect-[9/16] rounded-2xl",
+                    shouldStagger && "mt-3",
+                  )}
+                >
+                  <video
+                    autoPlay
+                    loop
+                    muted
+                    src={creator.image}
+                    className="w-full h-full object-cover rounded-2xl"
+                  />
+                </div>
+              );
+            })}
           </div>
           <div className="text-center">
-            <p className="text-gray-600 mb-6">and 250,000+ more...</p>
-            <Button
-              size="lg"
-              className="bg-pink-500 hover:bg-pink-600 text-white px-8 py-3 rounded-full"
-            >
-              Browse Creators
-            </Button>
-          </div>
-        </div>
-      </section>
-
-      {/* Find perfect creators Section */}
-      <section className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-6">
-          <h2 className="text-4xl font-bold text-center text-gray-900 mb-4">
-            Find your <span className="text-pink-500">perfect</span> creators
-          </h2>
-          <p className="text-center text-gray-600 mb-16">
-            with our AI matching algorithm
-          </p>
-          <div className="grid lg:grid-cols-3 gap-8">
-            <div className="bg-white p-8 rounded-2xl border border-gray-200">
-              <img
-                src="/placeholder.svg?height=200&width=300"
-                alt="AI Matching"
-                className="w-full rounded-lg mb-6"
-              />
-              <h3 className="text-xl font-semibold mb-4 text-gray-900">
-                Smart Matching
-              </h3>
-              <p className="text-gray-600">
-                Our AI analyzes your brand and matches you with creators who
-                align perfectly with your values and audience.
-              </p>
-            </div>
-            <div className="bg-white p-8 rounded-2xl border border-gray-200">
-              <img
-                src="/placeholder.svg?height=200&width=300"
-                alt="Analytics"
-                className="w-full rounded-lg mb-6"
-              />
-              <h3 className="text-xl font-semibold mb-4 text-gray-900">
-                Performance Analytics
-              </h3>
-              <p className="text-gray-600">
-                Track engagement, reach, and ROI with comprehensive performance
-                metrics and detailed reporting.
-              </p>
-            </div>
-            <div className="bg-white p-8 rounded-2xl border border-gray-200">
-              <img
-                src="/placeholder.svg?height=200&width=300"
-                alt="Creator Profiles"
-                className="w-full rounded-lg mb-6"
-              />
-              <h3 className="text-xl font-semibold mb-4 text-gray-900">
-                Detailed Profiles
-              </h3>
-              <p className="text-gray-600">
-                View comprehensive creator portfolios, engagement rates,
-                audience demographics, and past work samples.
-              </p>
-            </div>
+            <p className="text-gray-600 text-3xl mb-6">and 250,000+ more...</p>
+            <Button size="lg">Browse Creators</Button>
           </div>
         </div>
       </section>
@@ -945,63 +861,70 @@ export default function HomePage() {
             Frequently asked questions
           </h2>
           <p className="text-center text-gray-600 mb-16">
-            Everything you need to know about JoinBrands
+            Everything you need to know about Kuditask
           </p>
-          <div className="space-y-6">
-            {[
-              {
-                question: "How does JoinBrands work?",
-                answer:
-                  "JoinBrands connects brands with vetted UGC creators through our AI-powered matching system. Simply create a campaign, get matched with creators, and receive high-quality content.",
-              },
-              {
-                question: "What types of content can creators make?",
-                answer:
-                  "Our creators specialize in various content types including product reviews, unboxing videos, tutorials, lifestyle content, and social media posts across all major platforms.",
-              },
-              {
-                question: "How quickly can I receive content?",
-                answer:
-                  "Most content is delivered within 3-7 business days, depending on the complexity of your requirements and the number of creators involved in your campaign.",
-              },
-              {
-                question: "Can I request revisions?",
-                answer:
-                  "Yes, we offer unlimited revisions until you're completely satisfied with the content. Our creators are committed to delivering exactly what your brand needs.",
-              },
-              {
-                question: "Are the creators vetted?",
-                answer:
-                  "All creators go through a thorough vetting process including portfolio review, background checks, and quality assessments to ensure brand safety and content quality.",
-              },
-            ].map((faq, index) => (
-              <div
-                key={index}
-                className="bg-white p-6 rounded-2xl border border-gray-200"
-              >
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">
-                  {faq.question}
-                </h3>
-                <p className="text-gray-600">{faq.answer}</p>
-              </div>
-            ))}
+          <div>
+            <Accordion type="single" collapsible className="space-y-4">
+              {[
+                {
+                  question: "How does Kuditask work?",
+                  answer:
+                    "Kuditask connects brands with vetted UGC creators through our AI-powered matching system. Simply create a campaign, get matched with creators, and receive high-quality content.",
+                },
+                {
+                  question: "What types of content can creators make?",
+                  answer:
+                    "Our creators specialize in various content types including product reviews, unboxing videos, tutorials, lifestyle content, and social media posts across all major platforms.",
+                },
+                {
+                  question: "How quickly can I receive content?",
+                  answer:
+                    "Most content is delivered within 3-7 business days, depending on the complexity of your requirements and the number of creators involved in your campaign.",
+                },
+                {
+                  question: "Can I request revisions?",
+                  answer:
+                    "Yes, we offer unlimited revisions until you're completely satisfied with the content. Our creators are committed to delivering exactly what your brand needs.",
+                },
+                {
+                  question: "Are the creators vetted?",
+                  answer:
+                    "All creators go through a thorough vetting process including portfolio review, background checks, and quality assessments to ensure brand safety and content quality.",
+                },
+              ].map((faq) => (
+                <AccordionItem
+                  key={faq.question}
+                  value={faq.question}
+                  className="bg-white rounded-2xl border border-gray-200"
+                >
+                  <AccordionTrigger className="text-lg font-semibold text-gray-900 px-6 py-4 rounded-2xl">
+                    {faq.question}
+                  </AccordionTrigger>
+                  <AccordionContent className="text-gray-600 px-6 pb-6">
+                    {faq.answer}
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
           </div>
         </div>
       </section>
 
       {/* Final CTA Section */}
-      <section className="py-20 bg-pink-500">
+      <section className="py-20 bg-primary">
         <div className="max-w-7xl mx-auto px-6 text-center">
           <h2 className="text-4xl font-bold text-white mb-4">
-            Have more questions?
+            Ready to get started?
           </h2>
-          <p className="text-white/90 mb-8 text-lg">Book a Demo!</p>
-          <Button
-            size="lg"
-            className="bg-white text-pink-500 hover:bg-gray-100 px-8 py-3 rounded-full"
+          <p className="text-white/90 mb-8 text-lg">
+            Signup with Kuditask today!
+          </p>
+          <Link
+            href="/signup"
+            className={buttonVariants({ variant: "secondary", size: "lg" })}
           >
-            Book a Demo
-          </Button>
+            Get Started
+          </Link>
         </div>
       </section>
 
@@ -1011,7 +934,7 @@ export default function HomePage() {
           <div className="grid md:grid-cols-4 gap-8">
             <div>
               <div className="font-bold text-xl text-gray-900 mb-4">
-                JoinBrands
+                Kuditask
               </div>
               <p className="text-gray-600 text-sm">
                 The all-in-one UGC creator marketplace for modern brands.
@@ -1079,7 +1002,7 @@ export default function HomePage() {
             </div>
           </div>
           <div className="border-t border-gray-200 mt-8 pt-8 text-center text-sm text-gray-600">
-            © 2024 JoinBrands. All rights reserved.
+            © {new Date().getFullYear()} Kuditask. All rights reserved.
           </div>
         </div>
       </footer>
