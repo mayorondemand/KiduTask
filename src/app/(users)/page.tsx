@@ -1,41 +1,47 @@
 "use client";
-import React from "react";
-import { Button, buttonVariants } from "@/components/ui/button";
+import dominos from "@/assets/featured-icon/dominos.svg";
+import mtn from "@/assets/featured-icon/mtn.svg";
+import creatorImage from "@/assets/hero/creator.png";
 import {
-  Play,
-  User2,
-  BanknoteArrowUp,
-  CheckIcon,
-  Megaphone,
-  Target,
-  Users,
-  Zap,
-  BarChart3,
-  TrendingUp,
-  Settings,
-  Palette,
-  Clock,
-  Brain,
-  Shield,
-  Star,
-  Rocket,
-  Eye,
-  LineChart,
-  Award,
-} from "lucide-react";
-import Link from "next/link";
-import Image from "next/image";
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { FlipWords } from "@/components/ui/flip-words";
+import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
-  CarouselPrevious,
   CarouselNext,
+  CarouselPrevious,
 } from "@/components/ui/carousel";
+import { FlipWords } from "@/components/ui/flip-words";
+import { useColumnCount } from "@/hooks/use-mobile";
+import { cn } from "@/lib/utils";
 import Autoscroll from "embla-carousel-auto-scroll";
 import useEmblaCarousel from "embla-carousel-react";
+import {
+  Award,
+  BanknoteArrowUp,
+  CheckIcon,
+  Clock,
+  Eye,
+  Megaphone,
+  Palette,
+  Play,
+  Settings,
+  Shield,
+  Star,
+  Target,
+  User2,
+  Users,
+  Zap,
+} from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import React from "react";
 import {
   IoBarChart,
   IoCheckmarkCircle,
@@ -49,17 +55,6 @@ import {
   IoShieldCheckmark,
   IoSparkles,
 } from "react-icons/io5";
-import creatorImage from "@/assets/hero/creator.png";
-import dominos from "@/assets/featured-icon/dominos.svg";
-import mtn from "@/assets/featured-icon/mtn.svg";
-import { cn } from "@/lib/utils";
-import { useColumnCount } from "@/hooks/use-mobile";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 
 const heroSamples = [
   {
@@ -426,63 +421,7 @@ export default function LandingPage() {
   const columnCount = useColumnCount();
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Header */}
-      <header className="border-b border-gray-200 bg-white sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center space-x-8">
-            <nav className="hidden md:flex items-center space-x-8">
-              <Link href="/" className="flex items-center space-x-2">
-                <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-                  <span className="text-primary-foreground font-bold text-sm">
-                    KT
-                  </span>
-                </div>
-                <span className="font-semibold text-lg">KudiTask</span>
-              </Link>
-              <a
-                href="#about"
-                className="text-sm text-gray-600 hover:text-gray-900"
-              >
-                About
-              </a>
-              <a
-                href="#how-it-works"
-                className="text-sm text-gray-600 hover:text-gray-900"
-              >
-                How it works
-              </a>
-              <a
-                href="#faq"
-                className="text-sm text-gray-600 hover:text-gray-900"
-              >
-                FAQ
-              </a>
-            </nav>
-          </div>
-          <div className="flex items-center space-x-4">
-            <Link
-              href="/creators"
-              className={buttonVariants({ variant: "ghost" })}
-            >
-              Become a creator
-            </Link>
-            <Link
-              href="/login"
-              className={buttonVariants({ variant: "outline" })}
-            >
-              Log in
-            </Link>
-            <Link
-              href="/register"
-              className={buttonVariants({ variant: "default", size: "sm" })}
-            >
-              Sign up
-            </Link>
-          </div>
-        </div>
-      </header>
-
+    <div className="min-h-screen pt-10 bg-white">
       {/* Hero Section */}
       <section className="pt-16 pb-8 px-6">
         <div className="max-w-7xl mx-auto">
@@ -743,7 +682,7 @@ export default function LandingPage() {
       {/* What our brands say Section */}
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto items-center flex">
-          <div className="flex text-right mr-6 flex-col w-1/2 gap-4">
+          <div className="flex text-right mr-6 flex-col w-full gap-4">
             <h2 className="text-4xl tracking-tight  font-bold text-gray-900 mb-4">
               What our brands say about us
             </h2>
@@ -942,85 +881,6 @@ export default function LandingPage() {
           </Link>
         </div>
       </section>
-
-      {/* Footer */}
-      <footer className="bg-white border-t border-gray-200 py-12">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="grid md:grid-cols-4 gap-8">
-            <div>
-              <div className="font-bold text-xl text-gray-900 mb-4">
-                Kuditask
-              </div>
-              <p className="text-gray-600 text-sm">
-                The all-in-one UGC creator marketplace for modern brands.
-              </p>
-            </div>
-            <div>
-              <h4 className="font-semibold text-gray-900 mb-4">Product</h4>
-              <ul className="space-y-2 text-sm text-gray-600">
-                <li>
-                  <a href="#" className="hover:text-gray-900">
-                    Creators
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-gray-900">
-                    Brands
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-gray-900">
-                    Pricing
-                  </a>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold text-gray-900 mb-4">Company</h4>
-              <ul className="space-y-2 text-sm text-gray-600">
-                <li>
-                  <a href="#" className="hover:text-gray-900">
-                    About
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-gray-900">
-                    Blog
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-gray-900">
-                    Careers
-                  </a>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold text-gray-900 mb-4">Support</h4>
-              <ul className="space-y-2 text-sm text-gray-600">
-                <li>
-                  <a href="#" className="hover:text-gray-900">
-                    Help Center
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-gray-900">
-                    Contact
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-gray-900">
-                    Privacy
-                  </a>
-                </li>
-              </ul>
-            </div>
-          </div>
-          <div className="border-t border-gray-200 mt-8 pt-8 text-center text-sm text-gray-600">
-            © {new Date().getFullYear()} Kuditask. All rights reserved.
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }

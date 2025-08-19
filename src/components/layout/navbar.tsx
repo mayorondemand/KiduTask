@@ -3,7 +3,7 @@
 import { useAuth } from "@/components/providers/auth-provider";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -52,7 +52,46 @@ export function Navbar() {
     advertiserRequestMutation.mutate();
   };
 
-  if (!user) return null;
+  if (!user) {
+    return (
+      <header className="border-b border-gray-200 bg-white sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+          <div className="flex items-center space-x-8">
+            <nav className="hidden md:flex items-center space-x-8">
+              <Link href="/" className="flex items-center space-x-2">
+                <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
+                  <span className="text-primary-foreground font-bold text-sm">
+                    KT
+                  </span>
+                </div>
+                <span className="font-semibold text-lg">KudiTask</span>
+              </Link>
+              <a href="#about" className="text-sm text-gray-600 hover:text-gray-900">
+                About
+              </a>
+              <a href="#how-it-works" className="text-sm text-gray-600 hover:text-gray-900">
+                How it works
+              </a>
+              <a href="#faq" className="text-sm text-gray-600 hover:text-gray-900">
+                FAQ
+              </a>
+            </nav>
+          </div>
+          <div className="flex items-center space-x-4">
+            <Link href="/creators" className={buttonVariants({ variant: "ghost" })}>
+              Become a creator
+            </Link>
+            <Link href="/login" className={buttonVariants({ variant: "outline" })}>
+              Log in
+            </Link>
+            <Link href="/register" className={buttonVariants({ variant: "default", size: "sm" })}>
+              Sign up
+            </Link>
+          </div>
+        </div>
+      </header>
+    );
+  }
 
   const NavLinks = () => {
     if (user.role === "admin") {
