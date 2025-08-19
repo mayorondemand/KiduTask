@@ -1,4 +1,5 @@
 "use client";
+import React from "react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Check,
@@ -23,6 +24,7 @@ import {
   CarouselItem,
 } from "@/components/ui/carousel";
 import Autoscroll from "embla-carousel-auto-scroll";
+import useEmblaCarousel from "embla-carousel-react";
 import {
   IoBarChart,
   IoCheckmarkCircle,
@@ -39,6 +41,7 @@ import {
 import creatorImage from "@/assets/hero/creator.png";
 import dominos from "@/assets/featured-icon/dominos.svg";
 import mtn from "@/assets/featured-icon/mtn.svg";
+import { cn } from "@/lib/utils";
 
 const heroSamples = [
   {
@@ -211,7 +214,140 @@ const featuredLogos = [
   },
 ];
 
+const brandsSay = [
+  {
+    id: 1,
+    video: "/hero-videos/1.webm",
+    name: "Brand 1",
+    logoLink: dominos,
+  },
+  {
+    id: 2,
+    video: "/hero-videos/2.webm",
+    name: "Brand 2",
+    logoLink: mtn,
+  },
+  {
+    id: 3,
+    video: "/hero-videos/1.webm",
+    name: "Brand 3",
+    logoLink: dominos,
+  },
+  {
+    id: 4,
+    video: "/hero-videos/2.webm",
+    name: "Brand 4",
+    logoLink: mtn,
+  },
+];
+
+function BrandsCarousel({
+  selectedIndex,
+  setSelectedIndex,
+}: {
+  selectedIndex: number;
+  setSelectedIndex: (index: number) => void;
+}) {
+  const [emblaRef, emblaApi] = useEmblaCarousel({
+    // loop: true,
+    align: "start",
+  });
+  const [isPlaying, setIsPlaying] = React.useState(false);
+  const videoRefs = React.useRef<(HTMLVideoElement | null)[]>([]);
+
+  const handleSlideClick = (index: number) => {
+    if (emblaApi) {
+      emblaApi.scrollTo(index);
+    }
+    setSelectedIndex(index);
+
+    // Pause all other videos
+    videoRefs.current.forEach((video, i) => {
+      if (video && i !== index) {
+        video.pause();
+      }
+    });
+
+    // Play the selected video
+    const selectedVideo = videoRefs.current[index];
+    if (selectedVideo) {
+      selectedVideo.play();
+      setIsPlaying(true);
+    }
+  };
+
+  React.useEffect(() => {
+    if (!emblaApi) return;
+
+    const onSelect = () => {
+      setSelectedIndex(emblaApi.selectedScrollSnap());
+    };
+
+    emblaApi.on("select", onSelect);
+    onSelect(); // Initialize
+
+    return () => {
+      emblaApi.off("select", onSelect);
+    };
+  }, [emblaApi, setSelectedIndex]);
+
+  return (
+    <div className="embla overflow-hidden" ref={emblaRef}>
+      <div className="embla__container flex ml-4 pl-4">
+        {brandsSay.map((brand, index) => (
+          // biome-ignore lint/a11y/noStaticElementInteractions: <Need to fix this>
+          <div
+            role="presentation"
+            key={brand.id}
+            className={`embla__slide flex-shrink-0 flex-grow-0 basis-[40%] px-1 transition-transform -ml-10 duration-300 ease-out cursor-pointer ${
+              index === selectedIndex ? "scale-90" : "scale-80"
+            }`}
+            onClick={() => handleSlideClick(index)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                handleSlideClick(index);
+              }
+            }}
+          >
+            <div className="flex flex-col gap-2 relative">
+              <video
+                ref={(el) => {
+                  videoRefs.current[index] = el;
+                }}
+                src={brand.video}
+                className={cn(
+                  "w-full h-full object-cover rounded-2xl",
+                  index !== selectedIndex && "blur-xs opacity-50",
+                )}
+                loop
+                muted
+                playsInline
+                onPlay={() => setIsPlaying(true)}
+                onPause={() => setIsPlaying(false)}
+              />
+              {/* Play icon overlay */}
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div
+                  className={`bg-black/50 rounded-full p-3 transition-opacity duration-300 ${
+                    index === selectedIndex && isPlaying
+                      ? "opacity-0"
+                      : "opacity-100"
+                  }`}
+                >
+                  <Play className="w-8 h-8 text-white fill-white" />
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function HomePage() {
+  const [selectedIndex, setSelectedIndex] = React.useState(1);
+
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
@@ -227,10 +363,16 @@ export default function HomePage() {
                 </div>
                 <span className="font-semibold text-lg">KudiTask</span>
               </Link>
-              <a href="#about" className="text-sm text-gray-600 hover:text-gray-900">
+              <a
+                href="#about"
+                className="text-sm text-gray-600 hover:text-gray-900"
+              >
                 About
               </a>
-              <a href="#how-it-works" className="text-sm text-gray-600 hover:text-gray-900">
+              <a
+                href="#how-it-works"
+                className="text-sm text-gray-600 hover:text-gray-900"
+              >
                 How it works
               </a>
               <a
@@ -488,8 +630,8 @@ export default function HomePage() {
       </section>
 
       {/* Why else Section */}
-      <section className="py-16 bg-white">
-        <div className="max-w-6xl shadow-lg rounded-xl mx-auto p-10">
+      <section className="py-16 bg-gray-50">
+        <div className="max-w-6xl bg-white shadow-sm rounded-4xl mx-auto p-10">
           <div className="grid  lg:grid-cols-2 gap-16 items-center">
             <div>
               <h2 className="text-5xl tracking-tight font-bold text-gray-900 mb-8">
@@ -522,71 +664,33 @@ export default function HomePage() {
       </section>
 
       {/* What our brands say Section */}
-      <section className="py-20 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-6">
-          <h2 className="text-4xl font-bold text-center text-gray-900 mb-16">
-            What our brands say about us
-          </h2>
-          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            <div className="bg-white p-8 rounded-2xl">
-              <div className="flex items-center mb-4">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <Star
-                    key={i}
-                    className="w-5 h-5 fill-yellow-400 text-yellow-400"
-                  />
-                ))}
-              </div>
-              <p className="text-gray-700 mb-6">
-                "JoinBrands helped us scale our UGC campaigns effortlessly. The
-                quality of creators is outstanding and the platform is
-                incredibly easy to use."
-              </p>
-              <div className="flex items-center">
-                <img
-                  src="/placeholder.svg?height=50&width=50"
-                  alt="Brand manager"
-                  className="w-12 h-12 rounded-full mr-4"
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto items-center flex">
+          <div className="flex text-right mr-6 flex-col w-1/2 gap-4">
+            <h2 className="text-4xl tracking-tight  font-bold text-gray-900 mb-4">
+              What our brands say about us
+            </h2>
+            <div className="flex flex-col items-end gap-2">
+              <div className="relative size-14 rounded-lg ring-1 ring-gray-200">
+                <Image
+                  src={brandsSay[selectedIndex].logoLink}
+                  alt={brandsSay[selectedIndex].name}
+                  className="object-container"
+                  fill
                 />
-                <div>
-                  <div className="font-semibold text-gray-900">
-                    Sarah Johnson
-                  </div>
-                  <div className="text-sm text-gray-600">
-                    Marketing Director, TechCorp
-                  </div>
-                </div>
               </div>
+              <span className="text-2xl font-bold text-gray-500">
+                {brandsSay[selectedIndex].name}
+              </span>
             </div>
-            <div className="bg-white p-8 rounded-2xl">
-              <div className="flex items-center mb-4">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <Star
-                    key={i}
-                    className="w-5 h-5 fill-yellow-400 text-yellow-400"
-                  />
-                ))}
-              </div>
-              <p className="text-gray-700 mb-6">
-                "The platform is incredibly user-friendly and the results speak
-                for themselves. Our ROI has increased by 300% since using
-                JoinBrands."
-              </p>
-              <div className="flex items-center">
-                <img
-                  src="/placeholder.svg?height=50&width=50"
-                  alt="Brand manager"
-                  className="w-12 h-12 rounded-full mr-4"
-                />
-                <div>
-                  <div className="font-semibold text-gray-900">Mike Chen</div>
-                  <div className="text-sm text-gray-600">
-                    CMO, Fashion Brand
-                  </div>
-                </div>
-              </div>
-            </div>
+            <p className="text-gray-500 text-lg font-semibold mb-16">
+              Hear from our brands about their experience with Kuditask
+            </p>
           </div>
+          <BrandsCarousel
+            selectedIndex={selectedIndex}
+            setSelectedIndex={setSelectedIndex}
+          />
         </div>
       </section>
 
