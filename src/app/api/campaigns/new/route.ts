@@ -23,6 +23,8 @@ export async function POST(request: NextRequest) {
 
     const rawBody = await request.json();
 
+    rawBody.expiryDate = new Date(rawBody.expiryDate);
+
     const validatedBody = createCampaignSchema.parse(rawBody);
 
     const costOfCampaign = await platForm.getAmountAfterPlatformFee(

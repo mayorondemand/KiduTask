@@ -225,7 +225,6 @@ class CampaignService {
       .groupBy(campaign.id)
       .orderBy(sortDirection(sortColumn));
 
-    console.log("[getCampaigns query]: ", query.toSQL());
 
     // Get total count for pagination (counting distinct campaigns)
     const totalCountResult = await db

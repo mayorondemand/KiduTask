@@ -49,6 +49,10 @@ export const auth = betterAuth({
           ...user,
           isKycVerified: userDetails?.isKycVerified,
           advertiserRequestStatus: userDetails?.advertiserRequestStatus,
+          advertiserBrand: userDetails?.advertiserBrand,
+          advertiserDescription: userDetails?.advertiserDescription,
+          advertiserWebsite: userDetails?.advertiserWebsite,
+          advertiserLogo: userDetails?.advertiserLogo,
         },
         session,
       };

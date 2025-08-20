@@ -27,4 +27,8 @@ export type Session = typeof auth.$Infer.Session;
 export type UserSession = Session["user"] & {
   isKycVerified: boolean;
   advertiserRequestStatus: StatusEnum;
+  advertiserBrand: string;
+  advertiserDescription: string;
+  advertiserWebsite: string;
+  advertiserLogo: string;
 };
