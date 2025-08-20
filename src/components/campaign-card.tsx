@@ -6,19 +6,19 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { Campaign } from "@/lib/client";
+import type { CampaignWithCounts } from "@/lib/types";
 import { formatCurrency } from "@/lib/utils";
 import { Clock, Users } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
-export function CampaignCard({ campaign }: { campaign: Campaign }) {
+export function CampaignCard({ campaign }: { campaign: CampaignWithCounts }) {
   return (
     <Link href={`/campaign/${campaign.id}`}>
       <Card className="overflow-clip shadow-none border-1 border-gray-200 p-0 hover:border-primary/50 transition-shadow">
         <div className="aspect-video relative overflow-hidden rounded-t-lg">
           <Image
-            src={campaign.thumbnail}
+            src={campaign.bannerImageUrl || ""}
             alt={campaign.title}
             className="w-full h-full object-cover"
             fill
@@ -31,12 +31,12 @@ export function CampaignCard({ campaign }: { campaign: Campaign }) {
                 {campaign.title}
               </CardTitle>
               <CardDescription className="text-sm text-muted-foreground">
-                by {campaign.advertiser}
+                by {campaign.advertiserBrandName}
               </CardDescription>
             </div>
             <div className="text-right">
               <div className="text-lg font-bold text-primary">
-                {formatCurrency(campaign.payout)}
+                {formatCurrency(campaign.payoutPerUser)}
               </div>
               <div className="text-xs text-muted-foreground">per task</div>
             </div>
@@ -50,11 +50,11 @@ export function CampaignCard({ campaign }: { campaign: Campaign }) {
           <div className="flex items-center justify-between text-sm text-muted-foreground mb-4">
             <div className="flex items-center gap-1">
               <Users className="h-4 w-4" />
-              <span>{campaign.remainingSlots} slots left</span>
+              <span>{campaign.maxUsers - campaign.totalSubmissions} slots left</span>
             </div>
             <div className="flex items-center gap-1">
               <Clock className="h-4 w-4" />
-              <span>{campaign.estimatedTime}</span>
+              <span>{campaign.estimatedTimeMinutes} minutes</span>
             </div>
           </div>
         </CardContent>
@@ -65,7 +65,7 @@ export function CampaignCard({ campaign }: { campaign: Campaign }) {
 
 export function CampaignSkeleton() {
   return (
-    <Card>
+    <Card className="border-none shadow-none">
       <Skeleton className="aspect-video w-full rounded-t-lg" />
       <CardHeader className="pb-2">
         <div className="flex items-start justify-between">
@@ -77,6 +77,7 @@ export function CampaignSkeleton() {
             <Skeleton className="h-6 w-16" />
             <Skeleton className="h-3 w-12" />
           </div>
+          
         </div>
       </CardHeader>
       <CardContent className="pt-0 space-y-4">

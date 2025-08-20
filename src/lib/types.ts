@@ -90,7 +90,22 @@ export const campaignQuerySchema = z.object({
   createdBefore: z.date().optional(),
   expiryAfter: z.date().optional(),
   expiryBefore: z.date().optional(),
-  sortBy: z.string().optional(),
+  sortBy: z.enum([
+    "createdAt",
+    "updatedAt", 
+    "title",
+    "payoutPerUser",
+    "totalCost",
+    "maxUsers",
+    "estimatedTimeMinutes",
+    "expiryDate",
+    "status",
+    "activity",
+    "totalSubmissions",
+    "approvedSubmissions",
+    "remainingSlots",
+    "completionRate"
+  ]).optional(),
   sortOrder: z.enum(["asc", "desc"]).optional(),
 });
 
@@ -134,6 +149,12 @@ export type CreateCampaignData = z.infer<typeof createCampaignSchema>;
 export type CampaignWithCounts = CampaignDB & {
   totalSubmissions: number;
   approvedSubmissions: number;
+  remainingSlots: number;
+  completionRate: number;
+  advertiserBrandName: string | null;
+  advertiserBrandDescription: string | null;
+  advertiserBrandWebsite: string | null;
+  advertiserBrandLogo: string | null;
 };
 
 // Type for campaign with full submission data and submissions
