@@ -1,6 +1,7 @@
 import { db } from "@/lib/db";
 import {
   campaign,
+  advertiser,
   submission,
   transaction,
   user,
@@ -14,6 +15,7 @@ import {
   type CampaignDB,
   type TransactionDB,
   type CampaignQuery,
+  type SubmissionDB,
 } from "@/lib/types";
 import {
   and,
@@ -189,14 +191,44 @@ class CampaignService {
     }
 
     // Build the base query with filters and sorting, including submission counts
-    const sortColumn = campaign[sortBy as keyof typeof campaign] as SQLWrapper;
     const sortDirection = sortOrder === "asc" ? asc : desc;
+
+    // Define submission count columns for sorting
+    const totalSubmissionsColumn = sql<number>`COALESCE(COUNT(${submission.id}), 0)`;
+    const approvedSubmissionsColumn = sql<number>`COALESCE(COUNT(CASE WHEN ${submission.status} = ${sql.param(STATUS_ENUM.APPROVED)} THEN 1 END), 0)`;
+    const remainingSlotsColumn = sql<number>`${campaign.maxUsers} - COALESCE(COUNT(CASE WHEN ${submission.status} = ${sql.param(STATUS_ENUM.APPROVED)} THEN 1 END), 0)`;
+    const completionRateColumn = sql<number>`CASE WHEN ${campaign.maxUsers} > 0 THEN (COALESCE(COUNT(CASE WHEN ${submission.status} = ${sql.param(STATUS_ENUM.APPROVED)} THEN 1 END), 0)::float / ${campaign.maxUsers}::float * 100) ELSE 0 END`;
+
+    let sortColumn: SQLWrapper;
+
+    switch (sortBy) {
+      case "totalSubmissions":
+        sortColumn = totalSubmissionsColumn;
+        break;
+      case "approvedSubmissions":
+        sortColumn = approvedSubmissionsColumn;
+        break;
+      case "remainingSlots":
+        sortColumn = remainingSlotsColumn;
+        break;
+      case "completionRate":
+        sortColumn = completionRateColumn;
+        break;
+      default:
+        // Default to campaign table fields
+        sortColumn = campaign[sortBy as keyof typeof campaign] as SQLWrapper;
+        break;
+    }
 
     const query = db
       .select({
         // All campaign fields
         id: campaign.id,
         createdBy: campaign.createdBy,
+        advertiserBrandName: advertiser.brandName,
+        advertiserBrandDescription: advertiser.brandDescription,
+        advertiserBrandWebsite: advertiser.brandWebsite,
+        advertiserBrandLogo: advertiser.brandLogo,
         title: campaign.title,
         description: campaign.description,
         instructions: campaign.instructions,
@@ -215,16 +247,25 @@ class CampaignService {
         createdAt: campaign.createdAt,
         updatedAt: campaign.updatedAt,
 
-        // Submission counts
-        totalSubmissions: sql<number>`COALESCE(COUNT(${submission.id}), 0)`,
-        approvedSubmissions: sql<number>`COALESCE(COUNT(CASE WHEN ${submission.status} = ${sql.param(STATUS_ENUM.APPROVED)} THEN 1 END), 0)`,
+        // Submission counts and calculated fields
+        totalSubmissions: totalSubmissionsColumn,
+        approvedSubmissions: approvedSubmissionsColumn,
+        remainingSlots: remainingSlotsColumn,
+        completionRate: completionRateColumn,
       })
       .from(campaign)
       .leftJoin(submission, eq(campaign.id, submission.campaignId))
+      .leftJoin(advertiser, eq(campaign.createdBy, advertiser.userId))
       .where(conditions.length > 0 ? and(...conditions) : undefined)
-      .groupBy(campaign.id)
+      .groupBy(
+        campaign.id,
+        advertiser.id,
+        advertiser.brandName,
+        advertiser.brandDescription,
+        advertiser.brandWebsite,
+        advertiser.brandLogo,
+      )
       .orderBy(sortDirection(sortColumn));
-
 
     // Get total count for pagination (counting distinct campaigns)
     const totalCountResult = await db
@@ -377,7 +418,7 @@ class CampaignService {
     const [{ count: totalCount }] = await countQuery;
 
     // Apply pagination and execute query
-    const results = await query.limit(limit).offset(page * limit);
+    const results = await query.limit(limit).offset((page - 1) * limit);
 
     // Group submissions by campaign
     const campaignsWithSubmissions = results.reduce(
@@ -449,12 +490,23 @@ class CampaignService {
     return { campaigns: campaignsWithSubmissions, totalCount };
   }
 
-  async getCampaignById(campaignId: string): Promise<CampaignWithCounts | null> {
+  async getCampaignById(
+    campaignId: string,
+  ): Promise<CampaignWithCounts | null> {
+    const id = parseInt(campaignId);
+    if (Number.isNaN(id)) {
+      return null;
+    }
+
     const result = await db
       .select({
         // All campaign fields
         id: campaign.id,
         createdBy: campaign.createdBy,
+        advertiserBrandName: advertiser.brandName,
+        advertiserBrandDescription: advertiser.brandDescription,
+        advertiserBrandWebsite: advertiser.brandWebsite,
+        advertiserBrandLogo: advertiser.brandLogo,
         title: campaign.title,
         description: campaign.description,
         instructions: campaign.instructions,
@@ -473,14 +525,24 @@ class CampaignService {
         createdAt: campaign.createdAt,
         updatedAt: campaign.updatedAt,
 
-        // Submission counts
+        // Submission counts and calculated fields
         totalSubmissions: sql<number>`COALESCE(COUNT(${submission.id}), 0)`,
         approvedSubmissions: sql<number>`COALESCE(COUNT(CASE WHEN ${submission.status} = ${sql.param(STATUS_ENUM.APPROVED)} THEN 1 END), 0)`,
+        remainingSlots: sql<number>`${campaign.maxUsers} - COALESCE(COUNT(CASE WHEN ${submission.status} = ${sql.param(STATUS_ENUM.APPROVED)} THEN 1 END), 0)`,
+        completionRate: sql<number>`CASE WHEN ${campaign.maxUsers} > 0 THEN (COALESCE(COUNT(CASE WHEN ${submission.status} = ${sql.param(STATUS_ENUM.APPROVED)} THEN 1 END), 0)::float / ${campaign.maxUsers}::float * 100) ELSE 0 END`,
       })
       .from(campaign)
       .leftJoin(submission, eq(campaign.id, submission.campaignId))
-      .where(eq(campaign.id, campaignId))
-      .groupBy(campaign.id);
+      .leftJoin(advertiser, eq(campaign.createdBy, advertiser.userId))
+      .where(eq(campaign.id, id))
+      .groupBy(
+        campaign.id,
+        advertiser.id,
+        advertiser.brandName,
+        advertiser.brandDescription,
+        advertiser.brandWebsite,
+        advertiser.brandLogo,
+      );
 
     return result[0] || null;
   }
@@ -489,7 +551,12 @@ class CampaignService {
     campaignId: string,
     page: number = 1,
     limit: number = 10,
-  ): Promise<{ submissions: any[]; totalCount: number }> {
+  ): Promise<{ submissions: SubmissionDB[]; totalCount: number }> {
+    const id = parseInt(campaignId);
+    if (Number.isNaN(id)) {
+      return { submissions: [], totalCount: 0 };
+    }
+
     const offset = (page - 1) * limit;
 
     const submissions = await db
@@ -508,7 +575,7 @@ class CampaignService {
         advertiserRating: submission.advertiserRating,
         createdAt: submission.createdAt,
         updatedAt: submission.updatedAt,
-        
+
         // User information
         userName: user.name,
         userEmail: user.email,
@@ -516,7 +583,7 @@ class CampaignService {
       })
       .from(submission)
       .leftJoin(user, eq(submission.createdBy, user.id))
-      .where(eq(submission.campaignId, campaignId))
+      .where(eq(submission.campaignId, id))
       .orderBy(desc(submission.createdAt))
       .limit(limit)
       .offset(offset);
@@ -524,7 +591,7 @@ class CampaignService {
     const totalCountResult = await db
       .select({ count: count() })
       .from(submission)
-      .where(eq(submission.campaignId, campaignId));
+      .where(eq(submission.campaignId, id));
 
     const totalCount = totalCountResult[0]?.count || 0;
 
@@ -540,7 +607,8 @@ class CampaignService {
     await db
       .update(submission)
       .set({
-        status: status === "approved" ? STATUS_ENUM.APPROVED : STATUS_ENUM.REJECTED,
+        status:
+          status === "approved" ? STATUS_ENUM.APPROVED : STATUS_ENUM.REJECTED,
         advertiserFeedback: advertiserFeedback || null,
         advertiserRating: advertiserRating || null,
         statusUpdatedAt: new Date(),
