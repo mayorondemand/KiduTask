@@ -7,6 +7,7 @@ import {
 } from "@/lib/db/schema";
 import { ACTIVITY_ENUM, STATUS_ENUM } from "@/lib/types";
 import type { UserDetails } from "@/lib/services/user-service";
+import type { BrandSettingsFormData } from "@/lib/types";
 import { eq, sql } from "drizzle-orm";
 
 export interface AdvertiserStats {
@@ -100,6 +101,22 @@ class AdvertiserService {
         status: "rejected",
         statusUpdatedBy: adminId,
         statusUpdatedAt: new Date(),
+      })
+      .where(eq(advertiser.userId, userId));
+  }
+
+  async updateBrandSettings(
+    userId: UserDetails["id"],
+    data: BrandSettingsFormData,
+  ) {
+    await db
+      .update(advertiser)
+      .set({
+        brandName: data.brandName,
+        brandDescription: data.description,
+        brandWebsite: data.website || null,
+        brandLogo: data.logo || null,
+        updatedAt: new Date(),
       })
       .where(eq(advertiser.userId, userId));
   }

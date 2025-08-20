@@ -9,6 +9,10 @@ import type { StatusEnum, UserDB } from "@/lib/types";
 export type UserDetails = UserDB & {
   isKycVerified: boolean;
   advertiserRequestStatus: StatusEnum | null;
+  advertiserBrand: string | null;
+  advertiserDescription: string | null;
+  advertiserWebsite: string | null;
+  advertiserLogo: string | null;
 };
 
 class UserService {
@@ -47,6 +51,10 @@ class UserService {
         ...getTableColumns(user),
         isKycVerified: sql<boolean>`CASE WHEN ${kyc.status} = 'approved' THEN true ELSE false END`,
         advertiserRequestStatus: advertiser.status,
+        advertiserBrand: advertiser.brandName,
+        advertiserDescription: advertiser.brandDescription,
+        advertiserWebsite: advertiser.brandWebsite,
+        advertiserLogo: advertiser.brandLogo,
       })
       .from(user)
       .leftJoin(kyc, eq(user.id, kyc.userId))

@@ -94,6 +94,39 @@ export const campaignQuerySchema = z.object({
   sortOrder: z.enum(["asc", "desc"]).optional(),
 });
 
+export const brandSettingsSchema = z.object({
+  brandName: z
+    .string()
+    .min(1, "Brand name is required")
+    .min(2, "Brand name must be at least 2 characters")
+    .max(100, "Brand name must be less than 100 characters"),
+  description: z
+    .string()
+    .min(1, "Brand description is required")
+    .min(10, "Description must be at least 10 characters")
+    .max(1000, "Description must be less than 1000 characters"),
+  website: z
+    .string()
+    .optional()
+    .refine(
+      (val) => {
+        if (!val || val === "") return true;
+        try {
+          new URL(val);
+          return true;
+        } catch {
+          return false;
+        }
+      },
+      {
+        message: "Please enter a valid website URL",
+      },
+    ),
+  logo: z.string().optional(),
+});
+
+export type BrandSettingsFormData = z.infer<typeof brandSettingsSchema>;
+
 export type CampaignQuery = z.infer<typeof campaignQuerySchema>;
 export type CreateCampaignData = z.infer<typeof createCampaignSchema>;
 

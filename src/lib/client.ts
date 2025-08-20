@@ -4,6 +4,7 @@ import { errorHandler } from "@/lib/error-handler";
 import type { AdvertiserStats } from "@/lib/services/advertiser-service";
 import type { CampaignQuery, StatusEnum } from "@/lib/types";
 import type { CampaignWithCounts, CreateCampaignData } from "@/lib/types";
+import type { BrandSettingsFormData } from "@/lib/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import { useRouter } from "next/navigation";
@@ -261,7 +262,9 @@ export const useCreateCampaign = () => {
   });
 };
 
-export const useCampaigns = (filters: Partial<CampaignQuery> & Pick<CampaignQuery, "page" | "limit">) => {
+export const useCampaigns = (
+  filters: Partial<CampaignQuery> & Pick<CampaignQuery, "page" | "limit">,
+) => {
   return useQuery({
     queryKey: ["campaigns", filters],
     queryFn: async (): Promise<CampaignWithCounts[]> => {
@@ -284,13 +287,20 @@ export const useCampaign = (id: string) => {
   });
 };
 
-export const useCampaignSubmissions = (campaignId: string, page: number = 1, limit: number = 10) => {
+export const useCampaignSubmissions = (
+  campaignId: string,
+  page: number = 1,
+  limit: number = 10,
+) => {
   return useQuery({
     queryKey: ["campaign-submissions", campaignId, page, limit],
     queryFn: async () => {
-      const response = await axios.get(`/api/advertiser/campaigns/${campaignId}/submissions`, {
-        params: { page, limit },
-      });
+      const response = await axios.get(
+        `/api/advertiser/campaigns/${campaignId}/submissions`,
+        {
+          params: { page, limit },
+        },
+      );
       return response.data;
     },
     enabled: !!campaignId,
@@ -299,31 +309,50 @@ export const useCampaignSubmissions = (campaignId: string, page: number = 1, lim
 
 export const useUpdateSubmission = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
-    mutationFn: async ({ 
-      submissionId, 
-      status, 
-      advertiserFeedback, 
-      advertiserRating 
+    mutationFn: async ({
+      submissionId,
+      status,
+      advertiserFeedback,
+      advertiserRating,
     }: {
       submissionId: number;
       status: StatusEnum;
       advertiserFeedback?: string;
       advertiserRating?: number;
     }) => {
-      const response = await axios.patch(`/api/advertiser/submissions/${submissionId}`, {
-        status,
-        advertiserFeedback,
-        advertiserRating,
-      });
+      const response = await axios.patch(
+        `/api/advertiser/submissions/${submissionId}`,
+        {
+          status,
+          advertiserFeedback,
+          advertiserRating,
+        },
+      );
       return response.data;
     },
-    onSuccess: (data, variables) => {
+    onSuccess: (data) => {
       // Invalidate and refetch campaign submissions
       queryClient.invalidateQueries({ queryKey: ["campaign-submissions"] });
       queryClient.invalidateQueries({ queryKey: ["campaigns"] });
       toast.success(data.message);
+    },
+    onError: errorHandler.handleQueryError,
+  });
+};
+
+export const useUpdateBrandSettings = () => {
+  const { refetch } = useAuth();
+
+  return useMutation({
+    mutationFn: async (data: BrandSettingsFormData) => {
+      const response = await axios.patch("/api/advertiser/brand", data);
+      return response.data;
+    },
+    onSuccess: () => {
+      toast.success("Brand settings updated successfully");
+      refetch();
     },
     onError: errorHandler.handleQueryError,
   });

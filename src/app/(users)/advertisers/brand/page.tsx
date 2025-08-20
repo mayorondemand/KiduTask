@@ -1,9 +1,8 @@
 "use client";
 
-import type React from "react";
-
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuth } from "@/components/providers/auth-provider";
-import { Navbar } from "@/components/layout/navbar";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -13,155 +12,72 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import {
-  ArrowLeft,
-  Upload,
-  Building,
-  Globe,
-  Star,
-  Calendar,
-  BarChart3,
-} from "lucide-react";
+import { Building, Globe, Star, Calendar, BarChart3 } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import { toast } from "sonner";
-
-const industries = [
-  "Technology",
-  "E-commerce",
-  "Healthcare",
-  "Finance",
-  "Education",
-  "Entertainment",
-  "Food & Beverage",
-  "Fashion",
-  "Travel",
-  "Real Estate",
-  "Automotive",
-  "Other",
-];
+import { useAdvertiserStats, useUpdateBrandSettings } from "@/lib/client";
+import { formatCurrency } from "@/lib/utils";
+import { BreadcrumbResponsive } from "@/components/layout/breadcrumbresponsive";
+import { brandSettingsSchema, type BrandSettingsFormData } from "@/lib/types";
+import { ImageUploader } from "@/components/ui/image-uploader";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { useEffect } from "react";
 
 export default function BrandSettingsPage() {
   const { user } = useAuth();
-  const router = useRouter();
+  const { data: advertiserStats } = useAdvertiserStats();
+  const updateBrandSettings = useUpdateBrandSettings();
 
-  const [formData, setFormData] = useState({
-    brandName: "TechStartup Inc",
-    industry: "Technology",
-    description:
-      "Innovative technology solutions for modern businesses. We specialize in creating cutting-edge software and digital experiences.",
-    website: "https://techstartup.com",
-    logo: null as File | null,
+  const form = useForm<BrandSettingsFormData>({
+    resolver: zodResolver(brandSettingsSchema),
+    defaultValues: {
+      brandName: user?.advertiserBrand || "",
+      description: user?.advertiserDescription || "",
+      website: user?.advertiserWebsite || "",
+      logo: user?.advertiserLogo || "",
+    },
   });
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [dragActive, setDragActive] = useState(false);
-
   useEffect(() => {
-    if (!user?.isAdvertiser) {
-      router.push("/home");
-    }
-  }, [user, router]);
-
-  if (!user?.isAdvertiser) {
-    return null;
-  }
-
-  const handleInputChange = (field: string, value: any) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-  };
-
-  const handleDrag = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (e.type === "dragenter" || e.type === "dragover") {
-      setDragActive(true);
-    } else if (e.type === "dragleave") {
-      setDragActive(false);
-    }
-  };
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragActive(false);
-
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      const file = e.dataTransfer.files[0];
-      if (file.type.startsWith("image/")) {
-        setFormData((prev) => ({ ...prev, logo: file }));
-      }
-    }
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setFormData((prev) => ({ ...prev, logo: e.target.files![0] }));
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-
-    try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-
-      toast({
-        title: "Brand Settings Updated! ✨",
-        description: "Your brand information has been successfully updated.",
+    if (user) {
+      form.reset({
+        brandName: user.advertiserBrand || "",
+        description: user.advertiserDescription || "",
+        website: user.advertiserWebsite || "",
+        logo: user.advertiserLogo || "",
       });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update brand settings. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSubmitting(false);
     }
+  }, [user, form.reset]);
+
+  const { watch, setValue } = form;
+  const watchedValues = watch();
+
+  const handleLogoUpload = (url: string) => {
+    setValue("logo", url);
   };
 
-  const mockStats = {
-    memberSince: "January 2024",
-    totalCampaigns: 12,
-    totalSpent: 127500,
-    averageRating: 4.8,
+  const handleLogoRemove = () => {
+    setValue("logo", "");
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-NG", {
-      style: "currency",
-      currency: "NGN",
-    }).format(amount);
+  const onSubmit = async (data: BrandSettingsFormData) => {
+    await updateBrandSettings.mutateAsync(data);
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navbar />
-
+    <div className="min-h-screen pt-20 bg-gray-50">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
-        <div className="flex items-center gap-4 mb-8">
-          <Link href="/advertisers">
-            <Button variant="outline" size="sm">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Dashboard
-            </Button>
-          </Link>
+        <div className="flex flex-col  gap-4 mb-8">
+          <BreadcrumbResponsive />
           <div>
             <h1 className="text-3xl font-bold">Brand Settings</h1>
             <p className="text-muted-foreground mt-1">
@@ -173,175 +89,128 @@ export default function BrandSettingsPage() {
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Form */}
           <div className="lg:col-span-2">
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Brand Identity */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Brand Identity</CardTitle>
-                  <CardDescription>
-                    Your brand's visual identity and basic information
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  {/* Logo Upload */}
-                  <div>
-                    <Label>Brand Logo</Label>
-                    <div
-                      className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors mt-2 ${
-                        dragActive
-                          ? "border-primary bg-primary/5"
-                          : "border-muted-foreground/25"
-                      }`}
-                      onDragEnter={handleDrag}
-                      onDragLeave={handleDrag}
-                      onDragOver={handleDrag}
-                      onDrop={handleDrop}
-                    >
-                      {formData.logo ? (
-                        <div className="space-y-4">
-                          <img
-                            src={
-                              URL.createObjectURL(formData.logo) ||
-                              "/placeholder.svg"
-                            }
-                            alt="Brand logo preview"
-                            className="max-h-32 mx-auto rounded-lg"
-                          />
-                          <div className="flex items-center justify-center gap-2">
-                            <span className="text-sm text-muted-foreground">
-                              {formData.logo.name}
-                            </span>
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleInputChange("logo", null)}
-                            >
-                              Remove
-                            </Button>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="space-y-4">
-                          <Upload className="h-8 w-8 mx-auto text-muted-foreground" />
-                          <div>
-                            <p className="font-medium">Drop your logo here</p>
-                            <p className="text-sm text-muted-foreground">
-                              or click to browse (PNG, JPG up to 2MB)
-                            </p>
-                          </div>
-                          <input
-                            type="file"
-                            accept="image/*"
-                            onChange={handleFileChange}
-                            className="hidden"
-                            id="logo-upload"
-                          />
-                          <label htmlFor="logo-upload">
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              asChild
-                            >
-                              <span>Choose File</span>
-                            </Button>
-                          </label>
-                        </div>
+            <Form {...form}>
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-6"
+              >
+                {/* Brand Identity */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Brand Identity</CardTitle>
+                    <CardDescription>
+                      Your brand's visual identity and basic information
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    {/* Logo Upload */}
+                    <FormField
+                      control={form.control}
+                      name="logo"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Brand Logo</FormLabel>
+                          <FormControl>
+                            <ImageUploader
+                              nameToUse={`advertiser-logo-${Date.now()}-${watchedValues.brandName}`}
+                              folderToUse="/kuditask/advertisers/logo"
+                              onUploadSuccess={handleLogoUpload}
+                              onRemove={handleLogoRemove}
+                              currentImageUrl={field.value}
+                              maxSize={2}
+                              className="mt-2"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
                       )}
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="brandName">Brand Name *</Label>
-                      <Input
-                        id="brandName"
-                        value={formData.brandName}
-                        onChange={(e) =>
-                          handleInputChange("brandName", e.target.value)
-                        }
-                        required
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="industry">Industry *</Label>
-                      <Select
-                        value={formData.industry}
-                        onValueChange={(value) =>
-                          handleInputChange("industry", value)
-                        }
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {industries.map((industry) => (
-                            <SelectItem key={industry} value={industry}>
-                              {industry}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Brand Information */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Brand Information</CardTitle>
-                  <CardDescription>
-                    Tell taskers about your brand and what you do
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <Label htmlFor="description">Brand Description *</Label>
-                    <Textarea
-                      id="description"
-                      placeholder="Describe your brand, what you do, and what makes you unique..."
-                      value={formData.description}
-                      onChange={(e) =>
-                        handleInputChange("description", e.target.value)
-                      }
-                      rows={4}
-                      required
                     />
-                  </div>
 
-                  <div>
-                    <Label htmlFor="website">Website URL</Label>
-                    <Input
-                      id="website"
-                      type="url"
-                      placeholder="https://yourwebsite.com"
-                      value={formData.website}
-                      onChange={(e) =>
-                        handleInputChange("website", e.target.value)
-                      }
+                    <FormField
+                      control={form.control}
+                      name="brandName"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Brand Name *</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="Enter your brand name"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
                     />
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
 
-              {/* Submit Button */}
-              <div className="flex justify-end gap-4">
-                <Link href="/advertisers">
-                  <Button type="button" variant="outline">
-                    Cancel
+                {/* Brand Information */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Brand Information</CardTitle>
+                    <CardDescription>
+                      Tell taskers about your brand and what you do
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <FormField
+                      control={form.control}
+                      name="description"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Brand Description *</FormLabel>
+                          <FormControl>
+                            <Textarea
+                              placeholder="Describe your brand, what you do, and what makes you unique..."
+                              rows={4}
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="website"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Website URL</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="url"
+                              placeholder="https://yourwebsite.com"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </CardContent>
+                </Card>
+
+                {/* Submit Button */}
+                <div className="flex justify-end gap-4">
+                  <Link href="/advertisers">
+                    <Button type="button" variant="outline">
+                      Cancel
+                    </Button>
+                  </Link>
+                  <Button
+                    type="submit"
+                    disabled={updateBrandSettings.isPending}
+                    className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+                  >
+                    {updateBrandSettings.isPending
+                      ? "Saving Changes..."
+                      : "Save Changes"}
                   </Button>
-                </Link>
-                <Button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
-                >
-                  {isSubmitting ? "Saving Changes..." : "Save Changes"}
-                </Button>
-              </div>
-            </form>
+                </div>
+              </form>
+            </Form>
           </div>
 
           {/* Sidebar */}
@@ -358,13 +227,9 @@ export default function BrandSettingsPage() {
                 <div className="flex items-center gap-3">
                   <Avatar className="w-12 h-12">
                     <AvatarImage
-                      src={
-                        formData.logo
-                          ? URL.createObjectURL(formData.logo)
-                          : "https://api.dicebear.com/7.x/initials/svg?seed=" +
-                            formData.brandName
-                      }
-                      alt={formData.brandName}
+                      className="object-cover"
+                      src={watchedValues.logo}
+                      alt={watchedValues.brandName}
                     />
                     <AvatarFallback>
                       <Building className="h-6 w-6" />
@@ -372,27 +237,26 @@ export default function BrandSettingsPage() {
                   </Avatar>
                   <div>
                     <h3 className="font-semibold">
-                      {formData.brandName || "Brand Name"}
+                      {watchedValues.brandName || "Brand Name"}
                     </h3>
-                    <Badge variant="secondary">{formData.industry}</Badge>
                   </div>
                 </div>
 
                 <p className="text-sm text-muted-foreground">
-                  {formData.description ||
+                  {watchedValues.description ||
                     "Brand description will appear here..."}
                 </p>
 
-                {formData.website && (
+                {watchedValues.website && (
                   <div className="flex items-center gap-2 text-sm">
                     <Globe className="h-4 w-4" />
                     <a
-                      href={formData.website}
+                      href={watchedValues.website}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-blue-600 hover:underline"
                     >
-                      {formData.website}
+                      {watchedValues.website}
                     </a>
                   </div>
                 )}
@@ -411,7 +275,9 @@ export default function BrandSettingsPage() {
                     <Calendar className="h-4 w-4 text-muted-foreground" />
                     <span className="text-sm">Member Since</span>
                   </div>
-                  <span className="font-medium">{mockStats.memberSince}</span>
+                  <span className="font-medium">
+                    {user?.createdAt?.toLocaleDateString()}
+                  </span>
                 </div>
 
                 <div className="flex items-center justify-between">
@@ -420,17 +286,17 @@ export default function BrandSettingsPage() {
                     <span className="text-sm">Total Campaigns</span>
                   </div>
                   <span className="font-medium">
-                    {mockStats.totalCampaigns}
+                    {advertiserStats?.totalCampaigns}
                   </span>
                 </div>
 
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Building className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm">Total Spent</span>
+                    <span className="text-sm">Total Spent This Month</span>
                   </div>
                   <span className="font-medium">
-                    {formatCurrency(mockStats.totalSpent)}
+                    {formatCurrency(advertiserStats?.totalSpentMonth)}
                   </span>
                 </div>
 
@@ -441,7 +307,7 @@ export default function BrandSettingsPage() {
                   </div>
                   <div className="flex items-center gap-1">
                     <span className="font-medium">
-                      {mockStats.averageRating}
+                      {advertiserStats?.approvalRate}
                     </span>
                     <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
                   </div>
