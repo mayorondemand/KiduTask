@@ -30,7 +30,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useCampaigns } from "@/lib/client";
-import type { CampaignQuery } from "@/lib/services/campaign-service";
+import type { CampaignQuery } from "@/lib/types";
 import { cn, formatCurrency, getStatusColor } from "@/lib/utils";
 import { useDebounce } from "@uidotdev/usehooks";
 import {
@@ -42,7 +42,6 @@ import {
   ChevronDown,
   ChevronUp,
   Eye,
-  Filter,
   MoreHorizontal,
   Pause,
   Play,
@@ -193,13 +192,7 @@ export default function CampaignsPage() {
         {/* Status Overview */}
 
         {/* Filters */}
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <Filter className="h-5 w-5" />
-              Filters
-            </CardTitle>
-          </CardHeader>
+        <Card className="mb-6 shadow-none">
           <CardContent>
             <div className="flex flex-col sm:flex-row gap-4">
               <div className="relative flex-1">
@@ -478,9 +471,9 @@ export default function CampaignsPage() {
                     No campaigns match your filters
                   </h3>
                   <p className="text-muted-foreground mb-6 max-w-lg mx-auto">
-                    We couldn&apos;t find any campaigns matching your current search
-                    and filter criteria. Try adjusting your filters or search
-                    terms to see more results.
+                    We couldn&apos;t find any campaigns matching your current
+                    search and filter criteria. Try adjusting your filters or
+                    search terms to see more results.
                   </p>
                   <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
                     <Button
@@ -511,9 +504,9 @@ export default function CampaignsPage() {
                     Welcome to Campaign Management!
                   </h3>
                   <p className="text-muted-foreground mb-6 max-w-lg mx-auto">
-                    You haven&apos;t created any campaigns yet. Start by creating
-                    your first campaign to reach your target audience and grow
-                    your business.
+                    You haven&apos;t created any campaigns yet. Start by
+                    creating your first campaign to reach your target audience
+                    and grow your business.
                   </p>
                   <Link className="mx-auto" href="/advertisers/campaigns/new">
                     <Button size="lg" className="flex items-center gap-2">
