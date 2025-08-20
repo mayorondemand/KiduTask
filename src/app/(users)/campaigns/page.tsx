@@ -1,18 +1,11 @@
 "use client";
 
-import { useAuth } from "@/components/providers/auth-provider";
-import { useQuery } from "@tanstack/react-query";
+import { CampaignCard, CampaignSkeleton } from "@/components/campaign-card";
 import { Navbar } from "@/components/layout/navbar";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { useAuth } from "@/components/providers/auth-provider";
 import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -21,263 +14,328 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Search, Filter, Eye, Users, Clock, Star } from "lucide-react";
-import Link from "next/link";
-import { useState } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useCampaigns } from "@/lib/client";
+import type {
+  ActivityEnum,
+  CampaignQuery,
+  CampaignWithCounts,
+  StatusEnum,
+} from "@/lib/types";
+import { useDebounce } from "@uidotdev/usehooks";
+import {
+  Bookmark,
+  ChevronDown,
+  Loader2,
+  Search,
+  SlidersHorizontal,
+  X,
+} from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
-interface Campaign {
-  id: string;
-  title: string;
-  description: string;
-  payout: number;
-  remainingSlots: number;
-  totalSlots: number;
-  category: string;
-  thumbnail: string;
-  advertiser: string;
-  difficulty: "easy" | "medium" | "hard";
-  estimatedTime: string;
-  rating: number;
-  isCompleted?: boolean;
-}
+// Range slider component for payout filtering
+function PayoutRangeSlider({
+  min,
+  max,
+  value,
+  onChange,
+}: {
+  min: number;
+  max: number;
+  value: [number, number];
+  onChange: (value: [number, number]) => void;
+}) {
+  const [localValue, setLocalValue] = useState(value);
 
-const fetchCampaigns = async (filters: any) => {
-  await new Promise((resolve) => setTimeout(resolve, 5000));
+  useEffect(() => {
+    setLocalValue(value);
+  }, [value]);
 
-  const allCampaigns: Campaign[] = [
-    {
-      id: "1",
-      title: "Follow @TechStartup on Instagram",
-      description:
-        "Follow our Instagram account and like the latest post. Help us grow our social media presence.",
-      payout: 150,
-      remainingSlots: 45,
-      totalSlots: 100,
-      category: "Social Media",
-      thumbnail: "/instagram-follow-campaign.png",
-      advertiser: "TechStartup Inc",
-      difficulty: "easy",
-      estimatedTime: "2 mins",
-      rating: 4.8,
-    },
-    {
-      id: "2",
-      title: "Write App Review on Play Store",
-      description:
-        "Download our productivity app and write a genuine 5-star review based on your experience.",
-      payout: 500,
-      remainingSlots: 12,
-      totalSlots: 50,
-      category: "App Review",
-      thumbnail: "/app-review-playstore.png",
-      advertiser: "MobileApp Co",
-      difficulty: "medium",
-      estimatedTime: "10 mins",
-      rating: 4.6,
-    },
-    {
-      id: "3",
-      title: "Share Facebook Post",
-      description:
-        "Share our promotional post on your Facebook timeline and tag 2 friends who might be interested.",
-      payout: 200,
-      remainingSlots: 78,
-      totalSlots: 200,
-      category: "Social Media",
-      thumbnail: "/facebook-share-post.png",
-      advertiser: "Brand Marketing",
-      difficulty: "easy",
-      estimatedTime: "1 min",
-      rating: 4.9,
-    },
-    {
-      id: "4",
-      title: "YouTube Video Like & Subscribe",
-      description:
-        "Like our latest video tutorial and subscribe to our educational channel.",
-      payout: 300,
-      remainingSlots: 25,
-      totalSlots: 75,
-      category: "Video",
-      thumbnail: "/youtube-subscribe-like.png",
-      advertiser: "Content Creator",
-      difficulty: "easy",
-      estimatedTime: "3 mins",
-      rating: 4.7,
-    },
-    {
-      id: "5",
-      title: "Twitter Retweet Campaign",
-      description:
-        "Retweet our product announcement and add your own comment about why you're excited.",
-      payout: 250,
-      remainingSlots: 60,
-      totalSlots: 150,
-      category: "Social Media",
-      thumbnail: "/twitter-retweet-campaign.png",
-      advertiser: "Social Brand",
-      difficulty: "medium",
-      estimatedTime: "5 mins",
-      rating: 4.5,
-    },
-    {
-      id: "6",
-      title: "TikTok Video Creation",
-      description:
-        "Create a 30-second TikTok video showcasing our product in a creative way.",
-      payout: 800,
-      remainingSlots: 8,
-      totalSlots: 20,
-      category: "UGC",
-      thumbnail: "/tiktok-video-creation.png",
-      advertiser: "Creative Agency",
-      difficulty: "hard",
-      estimatedTime: "30 mins",
-      rating: 4.4,
-    },
-  ];
-
-  return {
-    campaigns: allCampaigns,
-    totalCount: allCampaigns.length,
-  };
-};
-
-function CampaignCard({ campaign }: { campaign: Campaign }) {
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-NG", {
-      style: "currency",
-      currency: "NGN",
-    }).format(amount);
+  const handleMinChange = (newMin: number) => {
+    const clampedMin = Math.max(min, Math.min(newMin, localValue[1] - 50));
+    const newValue: [number, number] = [clampedMin, localValue[1]];
+    setLocalValue(newValue);
+    onChange(newValue);
   };
 
-  const getDifficultyColor = (difficulty: string) => {
-    switch (difficulty) {
-      case "easy":
-        return "bg-green-100 text-green-800";
-      case "medium":
-        return "bg-yellow-100 text-yellow-800";
-      case "hard":
-        return "bg-red-100 text-red-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
+  const handleMaxChange = (newMax: number) => {
+    const clampedMax = Math.min(max, Math.max(newMax, localValue[0] + 50));
+    const newValue: [number, number] = [localValue[0], clampedMax];
+    setLocalValue(newValue);
+    onChange(newValue);
   };
 
   return (
-    <Card className="hover:shadow-lg transition-shadow">
-      <div className="aspect-video relative overflow-hidden rounded-t-lg">
-        <img
-          src={campaign.thumbnail || "/placeholder.svg"}
-          alt={campaign.title}
-          className="w-full h-full object-cover"
-        />
-        <div className="absolute top-2 right-2">
-          <Badge className={getDifficultyColor(campaign.difficulty)}>
-            {campaign.difficulty}
-          </Badge>
-        </div>
-        <div className="absolute top-2 left-2">
-          <div className="flex items-center bg-white/90 rounded-full px-2 py-1 text-xs">
-            <Star className="h-3 w-3 text-yellow-500 mr-1" />
-            <span>{campaign.rating}</span>
-          </div>
-        </div>
+    <div className="space-y-3">
+      <div className="flex items-center justify-between text-sm text-gray-600">
+        <span>₦{localValue[0]}</span>
+        <span>₦{localValue[1]}</span>
       </div>
-      <CardHeader className="pb-2">
-        <div className="flex items-start justify-between">
-          <div className="flex-1">
-            <CardTitle className="text-lg line-clamp-2">
-              {campaign.title}
-            </CardTitle>
-            <CardDescription className="text-sm text-muted-foreground">
-              by {campaign.advertiser}
-            </CardDescription>
-          </div>
-          <div className="text-right">
-            <div className="text-lg font-bold text-green-600">
-              {formatCurrency(campaign.payout)}
-            </div>
-            <div className="text-xs text-muted-foreground">per task</div>
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent className="pt-0">
-        <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
-          {campaign.description}
-        </p>
-
-        <div className="flex items-center justify-between text-sm text-muted-foreground mb-4">
-          <div className="flex items-center gap-1">
-            <Users className="h-4 w-4" />
-            <span>{campaign.remainingSlots} slots left</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <Clock className="h-4 w-4" />
-            <span>{campaign.estimatedTime}</span>
-          </div>
-        </div>
-
-        <div className="flex items-center justify-between">
-          <Badge variant="secondary">{campaign.category}</Badge>
-          <Link href={`/campaign/${campaign.id}`}>
-            <Button size="sm">
-              <Eye className="h-4 w-4 mr-1" />
-              View Details
-            </Button>
-          </Link>
-        </div>
-      </CardContent>
-    </Card>
+      <div className="relative h-2 bg-gray-200 rounded-full">
+        <div
+          className="absolute h-2 bg-primary rounded-full"
+          style={{
+            left: `${((localValue[0] - min) / (max - min)) * 100}%`,
+            width: `${((localValue[1] - localValue[0]) / (max - min)) * 100}%`,
+          }}
+        />
+        <input
+          type="range"
+          min={min}
+          max={max}
+          step={50}
+          value={localValue[0]}
+          onChange={(e) => handleMinChange(Number(e.target.value))}
+          className="absolute inset-0 w-full h-2 opacity-0 cursor-pointer"
+          aria-label="Minimum payout"
+        />
+        <input
+          type="range"
+          min={min}
+          max={max}
+          step={50}
+          value={localValue[1]}
+          onChange={(e) => handleMaxChange(Number(e.target.value))}
+          className="absolute inset-0 w-full h-2 opacity-0 cursor-pointer"
+          aria-label="Maximum payout"
+        />
+      </div>
+      <div className="flex gap-2">
+        <Input
+          type="number"
+          placeholder="Min"
+          value={localValue[0] === min ? "" : localValue[0]}
+          onChange={(e) => {
+            const value = e.target.value === "" ? min : Number(e.target.value);
+            handleMinChange(value);
+          }}
+          className="text-xs h-8"
+          min={min}
+          max={max}
+        />
+        <Input
+          type="number"
+          placeholder="Max"
+          value={localValue[1] === max ? "" : localValue[1]}
+          onChange={(e) => {
+            const value = e.target.value === "" ? max : Number(e.target.value);
+            handleMaxChange(value);
+          }}
+          className="text-xs h-8"
+          min={min}
+          max={max}
+        />
+      </div>
+    </div>
   );
 }
 
-function CampaignSkeleton() {
+// Filter badge component for active filters
+function FilterBadge({
+  label,
+  value,
+  onRemove,
+}: {
+  label: string;
+  value: string;
+  onRemove: () => void;
+}) {
   return (
-    <Card>
-      <Skeleton className="aspect-video w-full rounded-t-lg" />
-      <CardHeader className="pb-2">
-        <div className="flex items-start justify-between">
-          <div className="flex-1 space-y-2">
-            <Skeleton className="h-5 w-3/4" />
-            <Skeleton className="h-4 w-1/2" />
-          </div>
-          <div className="space-y-1">
-            <Skeleton className="h-6 w-16" />
-            <Skeleton className="h-3 w-12" />
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent className="pt-0 space-y-4">
-        <Skeleton className="h-4 w-full" />
-        <Skeleton className="h-4 w-2/3" />
-        <div className="flex justify-between">
-          <Skeleton className="h-6 w-20" />
-          <Skeleton className="h-8 w-24" />
-        </div>
-      </CardContent>
-    </Card>
+    <Badge variant="secondary" className="flex items-center gap-1 px-2 py-1">
+      <span className="text-xs font-medium">{label}:</span>
+      <span className="text-xs">{value}</span>
+      <button
+        type="button"
+        onClick={onRemove}
+        className="ml-1 hover:bg-muted-foreground/20 rounded-full p-0.5"
+        aria-label={`Remove ${label} filter`}
+      >
+        <X className="h-3 w-3" />
+      </button>
+    </Badge>
   );
 }
 
 export default function CampaignsPage() {
   const { user } = useAuth();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState("all");
-  const [payoutFilter, setPayoutFilter] = useState("all");
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
-  const { data, isLoading } = useQuery({
-    queryKey: ["campaigns", { searchQuery, categoryFilter, payoutFilter }],
-    queryFn: () =>
-      fetchCampaigns({ searchQuery, categoryFilter, payoutFilter }),
-  });
+  // Filter state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchInput, setSearchInput] = useState(""); // Separate input state for debouncing
+  const [statusFilter, setStatusFilter] = useState<StatusEnum | "">("");
+  const [activityFilter, setActivityFilter] = useState<ActivityEnum | "">("");
+  const [payoutRange, setPayoutRange] = useState<{
+    min?: number;
+    max?: number;
+  }>({});
+  const [sortBy, setSortBy] = useState<CampaignQuery["sortBy"]>("createdAt");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+  const [showMoreFilters, setShowMoreFilters] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
+  const [advancedPayoutRange, setAdvancedPayoutRange] = useState<
+    [number, number]
+  >([100, 1000]);
+
+  // Initialize state from URL parameters on mount
+  useEffect(() => {
+    const search = searchParams.get("search");
+    const status = searchParams.get("status");
+    const activity = searchParams.get("activity");
+    const minPayout = searchParams.get("minPayout");
+    const maxPayout = searchParams.get("maxPayout");
+    const sort = searchParams.get("sortBy");
+    const order = searchParams.get("sortOrder");
+    const page = searchParams.get("page");
+
+    if (search) {
+      setSearchQuery(search);
+      setSearchInput(search);
+    }
+    if (status) {
+      setStatusFilter(status as StatusEnum);
+    }
+    if (activity) {
+      setActivityFilter(activity as ActivityEnum);
+    }
+    if (minPayout || maxPayout) {
+      const range = {
+        min: minPayout ? Number(minPayout) : undefined,
+        max: maxPayout ? Number(maxPayout) : undefined,
+      };
+      setPayoutRange(range);
+      if (range.min && range.max) {
+        setAdvancedPayoutRange([range.min, range.max]);
+      }
+    }
+    if (sort) {
+      setSortBy(sort as CampaignQuery["sortBy"]);
+    }
+    if (order && ["asc", "desc"].includes(order)) {
+      setSortOrder(order as "asc" | "desc");
+    }
+    if (page) {
+      setCurrentPage(Number(page));
+    }
+  }, [searchParams]);
+
+  // Debounced search query
+  const debouncedSearchQuery = useDebounce(searchInput, 300);
+
+  // Update search query when debounced value changes
+  useEffect(() => {
+    setSearchQuery(debouncedSearchQuery);
+    setCurrentPage(1);
+    setIsSearching(false);
+  }, [debouncedSearchQuery]);
+
+  // Handle search input changes
+  const handleSearchInputChange = useCallback(
+    (value: string) => {
+      setSearchInput(value);
+      setIsSearching(value !== searchQuery);
+    },
+    [searchQuery],
+  );
+
+  // Build the query parameters
+  const queryParams: Partial<CampaignQuery> &
+    Pick<CampaignQuery, "page" | "limit"> = useMemo(() => {
+    const params: Partial<CampaignQuery> &
+      Pick<CampaignQuery, "page" | "limit"> = {
+      page: currentPage,
+      limit: 12,
+    };
+
+    if (searchQuery.trim()) params.search = searchQuery.trim();
+    if (statusFilter) params.status = statusFilter;
+    if (activityFilter) params.activity = activityFilter;
+    if (payoutRange.min !== undefined) params.minPayout = payoutRange.min;
+    if (payoutRange.max !== undefined) params.maxPayout = payoutRange.max;
+    if (sortBy) params.sortBy = sortBy;
+    if (sortOrder) params.sortOrder = sortOrder;
+
+    return params;
+  }, [
+    currentPage,
+    searchQuery,
+    statusFilter,
+    activityFilter,
+    payoutRange,
+    sortBy,
+    sortOrder,
+  ]);
+
+  const { data: campaigns, isLoading } = useCampaigns(queryParams);
+
+  const clearAllFilters = () => {
+    setSearchQuery("");
+    setSearchInput("");
+    setStatusFilter("");
+    setActivityFilter("");
+    setPayoutRange({});
+    setAdvancedPayoutRange([100, 1000]);
+    setSortBy("createdAt");
+    setSortOrder("desc");
+    setCurrentPage(1);
+    setIsSearching(false);
+    router.replace("", { scroll: false }); // Clear URL params
+  };
+
+  const handleAdvancedPayoutRangeChange = useCallback(
+    (range: [number, number]) => {
+      setAdvancedPayoutRange(range);
+      setPayoutRange({ min: range[0], max: range[1] });
+      setCurrentPage(1);
+    },
+    [],
+  );
+
+  // Update URL with current filter state
+  const updateUrlParams = useCallback(() => {
+    const params = new URLSearchParams();
+
+    if (searchQuery) params.set("search", searchQuery);
+    if (statusFilter) params.set("status", statusFilter);
+    if (activityFilter) params.set("activity", activityFilter);
+    if (payoutRange.min) params.set("minPayout", payoutRange.min.toString());
+    if (payoutRange.max) params.set("maxPayout", payoutRange.max.toString());
+    if (sortBy && sortBy !== "createdAt") params.set("sortBy", sortBy);
+    if (sortOrder && sortOrder !== "desc") params.set("sortOrder", sortOrder);
+    if (currentPage > 1) params.set("page", currentPage.toString());
+
+    const newUrl = params.toString() ? `?${params.toString()}` : "";
+    router.replace(newUrl, { scroll: false });
+  }, [
+    searchQuery,
+    statusFilter,
+    activityFilter,
+    payoutRange,
+    sortBy,
+    sortOrder,
+    currentPage,
+    router,
+  ]);
+
+  // Update URL when filters change
+  useEffect(() => {
+    updateUrlParams();
+  }, [updateUrlParams]);
+
+  const activeFiltersCount = [
+    searchQuery,
+    statusFilter,
+    activityFilter,
+    payoutRange.min !== undefined || payoutRange.max !== undefined,
+  ].filter(Boolean).length;
 
   if (!user) return null;
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navbar />
-
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
@@ -289,50 +347,261 @@ export default function CampaignsPage() {
           </p>
         </div>
 
-        {/* Filters */}
-        <Card className="mb-8">
-          <CardContent className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        {/* Enhanced Filters */}
+        <Card className="mb-8 shadow-sm border-0 bg-white">
+          <CardContent className="">
+            {/* Filter Presets */}
+            <section
+              className="mb-6 pb-4 border-b border-gray-100"
+              aria-labelledby="filter-presets-title"
+            >
+              <div className="flex items-center gap-2 mb-1">
+                <Bookmark className="h-4 w-4 text-gray-500" />
+                <span
+                  id="filter-presets-title"
+                  className="text-sm font-medium text-gray-700"
+                >
+                  Filters
+                </span>
+              </div>
+            </section>
+
+            {/* Primary Filters Row */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-4">
               <div className="relative">
                 <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                {isSearching && (
+                  <Loader2 className="absolute right-3 top-3 h-4 w-4 text-gray-400 animate-spin" />
+                )}
                 <Input
                   placeholder="Search campaigns..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
+                  value={searchInput}
+                  onChange={(e) => handleSearchInputChange(e.target.value)}
+                  className="pl-10 pr-10 border-gray-200 focus:border-primary focus:ring-primary"
+                  aria-label="Search campaigns"
                 />
               </div>
 
-              <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Category" />
+              <Select
+                value={statusFilter}
+                onValueChange={(value) => {
+                  setStatusFilter(value as StatusEnum);
+                  setCurrentPage(1);
+                }}
+              >
+                <SelectTrigger
+                  className="border-gray-200"
+                  aria-label="Filter by status"
+                >
+                  <SelectValue placeholder="Status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Categories</SelectItem>
-                  <SelectItem value="social-media">Social Media</SelectItem>
-                  <SelectItem value="app-review">App Review</SelectItem>
-                  <SelectItem value="video">Video</SelectItem>
-                  <SelectItem value="ugc">UGC</SelectItem>
+                  <SelectItem value="approved">Approved</SelectItem>
+                  <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="rejected">Rejected</SelectItem>
                 </SelectContent>
               </Select>
 
-              <Select value={payoutFilter} onValueChange={setPayoutFilter}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Payout Range" />
+              <Select
+                value={activityFilter}
+                onValueChange={(value) => {
+                  setActivityFilter(value as ActivityEnum);
+                  setCurrentPage(1);
+                }}
+              >
+                <SelectTrigger
+                  className="border-gray-200"
+                  aria-label="Filter by activity status"
+                >
+                  <SelectValue placeholder="Activity" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Payouts</SelectItem>
-                  <SelectItem value="low">₦100 - ₦300</SelectItem>
-                  <SelectItem value="medium">₦300 - ₦600</SelectItem>
-                  <SelectItem value="high">₦600+</SelectItem>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="paused">Paused</SelectItem>
+                  <SelectItem value="ended">Ended</SelectItem>
                 </SelectContent>
               </Select>
 
-              <Button variant="outline" className="bg-transparent">
-                <Filter className="h-4 w-4 mr-2" />
-                More Filters
+              <Button
+                variant="outline"
+                onClick={() => setShowMoreFilters(!showMoreFilters)}
+                className="border-gray-200 hover:bg-gray-50 relative"
+              >
+                <SlidersHorizontal className="h-4 w-4 mr-2" />
+                Advanced
+                {activeFiltersCount > 0 && (
+                  <Badge className="absolute -top-2 -right-2 h-5 w-5 p-0 text-xs bg-primary">
+                    {activeFiltersCount}
+                  </Badge>
+                )}
+                <ChevronDown
+                  className={`h-4 w-4 ml-2 transition-transform ${showMoreFilters ? "rotate-180" : ""}`}
+                />
               </Button>
             </div>
+
+            {/* Advanced Filters (Collapsible) */}
+            {showMoreFilters && (
+              <div className="pt-4 border-t border-gray-100 animate-in slide-in-from-top-2 duration-200">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div>
+                    <label
+                      htmlFor="sort-by"
+                      className="text-sm font-medium text-gray-700 mb-2 block"
+                    >
+                      Sort By
+                    </label>
+                    <Select
+                      value={sortBy}
+                      onValueChange={(value) =>
+                        setSortBy(value as CampaignQuery["sortBy"])
+                      }
+                    >
+                      <SelectTrigger id="sort-by" className="border-gray-200">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="createdAt">Date Created</SelectItem>
+                        <SelectItem value="payoutPerUser">Payout</SelectItem>
+                        <SelectItem value="totalSubmissions">
+                          Total Submissions
+                        </SelectItem>
+                        <SelectItem value="approvedSubmissions">
+                          Approved Submissions
+                        </SelectItem>
+                        <SelectItem value="remainingSlots">
+                          Remaining Slots
+                        </SelectItem>
+                        <SelectItem value="completionRate">
+                          Completion Rate
+                        </SelectItem>
+                        <SelectItem value="estimatedTimeMinutes">
+                          Duration
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="sort-order"
+                      className="text-sm font-medium text-gray-700 mb-2 block"
+                    >
+                      Sort Order
+                    </label>
+                    <Select
+                      value={sortOrder}
+                      onValueChange={(value) =>
+                        setSortOrder(value as "asc" | "desc")
+                      }
+                    >
+                      <SelectTrigger
+                        id="sort-order"
+                        className="border-gray-200"
+                      >
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="desc">Highest First</SelectItem>
+                        <SelectItem value="asc">Lowest First</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="payout-range-slider"
+                      className="text-sm font-medium text-gray-700 mb-2 block"
+                    >
+                      Custom Payout Range
+                    </label>
+                    <div id="payout-range-slider">
+                      <PayoutRangeSlider
+                        min={100}
+                        max={1000}
+                        value={advancedPayoutRange}
+                        onChange={handleAdvancedPayoutRangeChange}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex justify-center mt-6">
+                  <Button
+                    variant="ghost"
+                    onClick={clearAllFilters}
+                    className="hover:bg-gray-50"
+                  >
+                    <X className="h-4 w-4 mr-2" />
+                    Clear All Filters
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* Active Filters Display */}
+            {activeFiltersCount > 0 && (
+              <div className="mt-4 pt-4 border-t border-gray-100">
+                <div className="flex flex-wrap items-center gap-2 mb-3">
+                  <span className="text-sm font-medium text-gray-700">
+                    Active Filters:
+                  </span>
+                  {searchQuery && (
+                    <FilterBadge
+                      label="Search"
+                      value={searchQuery}
+                      onRemove={() => {
+                        setSearchQuery("");
+                        setSearchInput("");
+                      }}
+                    />
+                  )}
+                  {statusFilter && (
+                    <FilterBadge
+                      label="Status"
+                      value={
+                        statusFilter.charAt(0).toUpperCase() +
+                        statusFilter.slice(1)
+                      }
+                      onRemove={() => setStatusFilter("")}
+                    />
+                  )}
+                  {activityFilter && (
+                    <FilterBadge
+                      label="Activity"
+                      value={
+                        activityFilter.charAt(0).toUpperCase() +
+                        activityFilter.slice(1)
+                      }
+                      onRemove={() => setActivityFilter("")}
+                    />
+                  )}
+                  {(payoutRange.min !== undefined ||
+                    payoutRange.max !== undefined) && (
+                    <FilterBadge
+                      label="Payout"
+                      value={
+                        payoutRange.min && payoutRange.max
+                          ? `₦${payoutRange.min} - ₦${payoutRange.max}`
+                          : payoutRange.min
+                            ? `₦${payoutRange.min}+`
+                            : `Up to ₦${payoutRange.max}`
+                      }
+                      onRemove={() => setPayoutRange({})}
+                    />
+                  )}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={clearAllFilters}
+                    className="text-gray-500 hover:text-gray-700 ml-2"
+                  >
+                    <X className="h-4 w-4 mr-1" />
+                    Clear All
+                  </Button>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -342,34 +611,109 @@ export default function CampaignsPage() {
             {isLoading ? (
               <Skeleton className="h-4 w-32" />
             ) : (
-              `Showing ${data?.campaigns.length || 0} campaigns`
+              `Showing ${campaigns?.length || 0} campaigns`
             )}
           </div>
+
+          {/* Quick Sort Options */}
+          {!isLoading && campaigns && campaigns.length > 0 && (
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-500">Quick sort:</span>
+              <Button
+                variant={sortBy === "payoutPerUser" ? "default" : "ghost"}
+                size="sm"
+                onClick={() => {
+                  setSortBy("payoutPerUser");
+                  setSortOrder(
+                    sortBy === "payoutPerUser" && sortOrder === "desc"
+                      ? "asc"
+                      : "desc",
+                  );
+                }}
+                className="h-8"
+              >
+                Payout{" "}
+                {sortBy === "payoutPerUser" &&
+                  (sortOrder === "desc" ? "↓" : "↑")}
+              </Button>
+              <Button
+                variant={sortBy === "remainingSlots" ? "default" : "ghost"}
+                size="sm"
+                onClick={() => {
+                  setSortBy("remainingSlots");
+                  setSortOrder(
+                    sortBy === "remainingSlots" && sortOrder === "desc"
+                      ? "asc"
+                      : "desc",
+                  );
+                }}
+                className="h-8"
+              >
+                Slots{" "}
+                {sortBy === "remainingSlots" &&
+                  (sortOrder === "desc" ? "↓" : "↑")}
+              </Button>
+            </div>
+          )}
         </div>
 
         {/* Campaigns Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {isLoading
-            ? Array.from({ length: 6 }).map((_, i) => (
-                <CampaignSkeleton key={i} />
+            ? Array.from({ length: 12 }, (_, i) => (
+                <CampaignSkeleton key={`skeleton-${Date.now()}-${i}`} />
               ))
-            : data?.campaigns.map((campaign) => (
+            : campaigns?.map((campaign: CampaignWithCounts) => (
                 <CampaignCard key={campaign.id} campaign={campaign} />
               ))}
         </div>
 
-        {/* Empty State */}
-        {!isLoading && data?.campaigns.length === 0 && (
-          <div className="text-center py-12">
-            <div className="text-gray-400 mb-4">
-              <Search className="h-16 w-16 mx-auto" />
+        {/* Pagination */}
+        {!isLoading && campaigns && campaigns.length > 0 && (
+          <div className="flex justify-center mt-12">
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                disabled={currentPage === 1}
+              >
+                Previous
+              </Button>
+              <span className="px-4 py-2 text-sm text-gray-600">
+                Page {currentPage}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage((prev) => prev + 1)}
+                disabled={!campaigns || campaigns.length < queryParams.limit}
+              >
+                Next
+              </Button>
             </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
+          </div>
+        )}
+
+        {/* Empty State */}
+        {!isLoading && (!campaigns || campaigns.length === 0) && (
+          <div className="text-center py-16">
+            <div className="text-gray-400 mb-6">
+              <Search className="h-20 w-20 mx-auto" />
+            </div>
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">
               No campaigns found
             </h3>
-            <p className="text-gray-600">
-              Try adjusting your search or filter criteria
+            <p className="text-gray-600 mb-6 max-w-md mx-auto">
+              {activeFiltersCount > 0
+                ? "Try adjusting your search or filter criteria to find more campaigns."
+                : "No campaigns are currently available. Check back later for new opportunities."}
             </p>
+            {activeFiltersCount > 0 && (
+              <Button onClick={clearAllFilters} variant="outline">
+                Clear all filters
+              </Button>
+            )}
           </div>
         )}
       </div>

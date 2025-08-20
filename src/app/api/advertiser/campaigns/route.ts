@@ -1,8 +1,5 @@
 import { errorHandler, NotAuthorizedError } from "@/lib/error-handler";
-import {
-  campaignQuerySchema,
-  type CampaignQuery,
-} from "@/lib/types";
+import { campaignQuerySchema, type CampaignQuery } from "@/lib/types";
 import { campaignService } from "@/lib/services/campaign-service";
 
 import { userService } from "@/lib/services/user-service";
@@ -21,12 +18,13 @@ export async function GET(request: NextRequest) {
     ) as CampaignQuery;
 
     // Check if query id is from the same advertiser
-    if (queryParams.advertiserId && queryParams.advertiserId !== user.id) {
-      throw new NotAuthorizedError("You are not authorized to filter campaigns by advertiser");
+    if (queryParams.advertiserId) {
+      if (queryParams.advertiserId !== user.id) {
+        throw new NotAuthorizedError(
+          "You are not authorized to filter campaigns by advertiser",
+        );
+      }
     }
-    
-
-    queryParams.advertiserId = user.id;
 
     const { campaigns, totalCount } =
       await campaignService.getCampaigns(queryParams);
