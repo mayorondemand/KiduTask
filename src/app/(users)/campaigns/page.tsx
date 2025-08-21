@@ -1,8 +1,6 @@
 "use client";
 
 import { CampaignCard, CampaignSkeleton } from "@/components/campaign-card";
-import { Navbar } from "@/components/layout/navbar";
-import { useAuth } from "@/components/providers/auth-provider";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -16,120 +14,11 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCampaigns } from "@/lib/client";
-import type {
-  ActivityEnum,
-  CampaignQuery,
-  CampaignWithCounts,
-  StatusEnum,
-} from "@/lib/types";
+import type { CampaignFilters, CampaignWithCounts } from "@/lib/types";
 import { useDebounce } from "@uidotdev/usehooks";
-import {
-  Bookmark,
-  ChevronDown,
-  Loader2,
-  Search,
-  SlidersHorizontal,
-  X,
-} from "lucide-react";
+import { Bookmark, Loader2, Search, X } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
-
-// Range slider component for payout filtering
-function PayoutRangeSlider({
-  min,
-  max,
-  value,
-  onChange,
-}: {
-  min: number;
-  max: number;
-  value: [number, number];
-  onChange: (value: [number, number]) => void;
-}) {
-  const [localValue, setLocalValue] = useState(value);
-
-  useEffect(() => {
-    setLocalValue(value);
-  }, [value]);
-
-  const handleMinChange = (newMin: number) => {
-    const clampedMin = Math.max(min, Math.min(newMin, localValue[1] - 50));
-    const newValue: [number, number] = [clampedMin, localValue[1]];
-    setLocalValue(newValue);
-    onChange(newValue);
-  };
-
-  const handleMaxChange = (newMax: number) => {
-    const clampedMax = Math.min(max, Math.max(newMax, localValue[0] + 50));
-    const newValue: [number, number] = [localValue[0], clampedMax];
-    setLocalValue(newValue);
-    onChange(newValue);
-  };
-
-  return (
-    <div className="space-y-3">
-      <div className="flex items-center justify-between text-sm text-gray-600">
-        <span>₦{localValue[0]}</span>
-        <span>₦{localValue[1]}</span>
-      </div>
-      <div className="relative h-2 bg-gray-200 rounded-full">
-        <div
-          className="absolute h-2 bg-primary rounded-full"
-          style={{
-            left: `${((localValue[0] - min) / (max - min)) * 100}%`,
-            width: `${((localValue[1] - localValue[0]) / (max - min)) * 100}%`,
-          }}
-        />
-        <input
-          type="range"
-          min={min}
-          max={max}
-          step={50}
-          value={localValue[0]}
-          onChange={(e) => handleMinChange(Number(e.target.value))}
-          className="absolute inset-0 w-full h-2 opacity-0 cursor-pointer"
-          aria-label="Minimum payout"
-        />
-        <input
-          type="range"
-          min={min}
-          max={max}
-          step={50}
-          value={localValue[1]}
-          onChange={(e) => handleMaxChange(Number(e.target.value))}
-          className="absolute inset-0 w-full h-2 opacity-0 cursor-pointer"
-          aria-label="Maximum payout"
-        />
-      </div>
-      <div className="flex gap-2">
-        <Input
-          type="number"
-          placeholder="Min"
-          value={localValue[0] === min ? "" : localValue[0]}
-          onChange={(e) => {
-            const value = e.target.value === "" ? min : Number(e.target.value);
-            handleMinChange(value);
-          }}
-          className="text-xs h-8"
-          min={min}
-          max={max}
-        />
-        <Input
-          type="number"
-          placeholder="Max"
-          value={localValue[1] === max ? "" : localValue[1]}
-          onChange={(e) => {
-            const value = e.target.value === "" ? max : Number(e.target.value);
-            handleMaxChange(value);
-          }}
-          className="text-xs h-8"
-          min={min}
-          max={max}
-        />
-      </div>
-    </div>
-  );
-}
 
 // Filter badge component for active filters
 function FilterBadge({
@@ -158,7 +47,6 @@ function FilterBadge({
 }
 
 export default function CampaignsPage() {
-  const { user } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -166,25 +54,15 @@ export default function CampaignsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchInput, setSearchInput] = useState(""); // Separate input state for debouncing
-  const [statusFilter, setStatusFilter] = useState<StatusEnum | "">("");
-  const [activityFilter, setActivityFilter] = useState<ActivityEnum | "">("");
-  const [payoutRange, setPayoutRange] = useState<{
-    min?: number;
-    max?: number;
-  }>({});
-  const [sortBy, setSortBy] = useState<CampaignQuery["sortBy"]>("createdAt");
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
-  const [showMoreFilters, setShowMoreFilters] = useState(false);
+  const [minPayout, setMinPayout] = useState<string>(""); // Empty means no minimum
+  const [maxPayout, setMaxPayout] = useState<string>(""); // Empty means no maximum
+  const [sortBy, setSortBy] = useState<CampaignFilters["sortBy"] | "">("");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc" | "">("");
   const [isSearching, setIsSearching] = useState(false);
-  const [advancedPayoutRange, setAdvancedPayoutRange] = useState<
-    [number, number]
-  >([100, 1000]);
 
   // Initialize state from URL parameters on mount
   useEffect(() => {
     const search = searchParams.get("search");
-    const status = searchParams.get("status");
-    const activity = searchParams.get("activity");
     const minPayout = searchParams.get("minPayout");
     const maxPayout = searchParams.get("maxPayout");
     const sort = searchParams.get("sortBy");
@@ -195,24 +73,15 @@ export default function CampaignsPage() {
       setSearchQuery(search);
       setSearchInput(search);
     }
-    if (status) {
-      setStatusFilter(status as StatusEnum);
+
+    if (minPayout) {
+      setMinPayout(minPayout);
     }
-    if (activity) {
-      setActivityFilter(activity as ActivityEnum);
-    }
-    if (minPayout || maxPayout) {
-      const range = {
-        min: minPayout ? Number(minPayout) : undefined,
-        max: maxPayout ? Number(maxPayout) : undefined,
-      };
-      setPayoutRange(range);
-      if (range.min && range.max) {
-        setAdvancedPayoutRange([range.min, range.max]);
-      }
+    if (maxPayout) {
+      setMaxPayout(maxPayout);
     }
     if (sort) {
-      setSortBy(sort as CampaignQuery["sortBy"]);
+      setSortBy(sort as CampaignFilters["sortBy"]);
     }
     if (order && ["asc", "desc"].includes(order)) {
       setSortOrder(order as "asc" | "desc");
@@ -223,7 +92,11 @@ export default function CampaignsPage() {
   }, [searchParams]);
 
   // Debounced search query
-  const debouncedSearchQuery = useDebounce(searchInput, 300);
+  const debouncedSearchQuery = useDebounce(searchInput, 1000);
+
+  // Debounced payout inputs
+  const debouncedMinPayout = useDebounce(minPayout, 1000);
+  const debouncedMaxPayout = useDebounce(maxPayout, 1000);
 
   // Update search query when debounced value changes
   useEffect(() => {
@@ -231,6 +104,13 @@ export default function CampaignsPage() {
     setCurrentPage(1);
     setIsSearching(false);
   }, [debouncedSearchQuery]);
+
+  // Reset to page 1 when payout filters change
+  useEffect(() => {
+    if (debouncedMinPayout || debouncedMaxPayout) {
+      setCurrentPage(1);
+    }
+  }, [debouncedMinPayout, debouncedMaxPayout]);
 
   // Handle search input changes
   const handleSearchInputChange = useCallback(
@@ -242,19 +122,19 @@ export default function CampaignsPage() {
   );
 
   // Build the query parameters
-  const queryParams: Partial<CampaignQuery> &
-    Pick<CampaignQuery, "page" | "limit"> = useMemo(() => {
-    const params: Partial<CampaignQuery> &
-      Pick<CampaignQuery, "page" | "limit"> = {
+  const queryParams: CampaignFilters = useMemo(() => {
+    const params: CampaignFilters = {
       page: currentPage,
       limit: 12,
+      status: "approved",
+      activity: "active",
     };
 
     if (searchQuery.trim()) params.search = searchQuery.trim();
-    if (statusFilter) params.status = statusFilter;
-    if (activityFilter) params.activity = activityFilter;
-    if (payoutRange.min !== undefined) params.minPayout = payoutRange.min;
-    if (payoutRange.max !== undefined) params.maxPayout = payoutRange.max;
+    if (debouncedMinPayout && Number(debouncedMinPayout))
+      params.minPayout = Number(debouncedMinPayout);
+    if (debouncedMaxPayout && Number(debouncedMaxPayout))
+      params.maxPayout = Number(debouncedMaxPayout);
     if (sortBy) params.sortBy = sortBy;
     if (sortOrder) params.sortOrder = sortOrder;
 
@@ -262,9 +142,8 @@ export default function CampaignsPage() {
   }, [
     currentPage,
     searchQuery,
-    statusFilter,
-    activityFilter,
-    payoutRange,
+    debouncedMinPayout,
+    debouncedMaxPayout,
     sortBy,
     sortOrder,
   ]);
@@ -274,35 +153,22 @@ export default function CampaignsPage() {
   const clearAllFilters = () => {
     setSearchQuery("");
     setSearchInput("");
-    setStatusFilter("");
-    setActivityFilter("");
-    setPayoutRange({});
-    setAdvancedPayoutRange([100, 1000]);
+    setMinPayout("");
+    setMaxPayout("");
     setSortBy("createdAt");
     setSortOrder("desc");
     setCurrentPage(1);
     setIsSearching(false);
-    router.replace("", { scroll: false }); // Clear URL params
+    router.push(""); // Clear URL params
   };
-
-  const handleAdvancedPayoutRangeChange = useCallback(
-    (range: [number, number]) => {
-      setAdvancedPayoutRange(range);
-      setPayoutRange({ min: range[0], max: range[1] });
-      setCurrentPage(1);
-    },
-    [],
-  );
 
   // Update URL with current filter state
   const updateUrlParams = useCallback(() => {
     const params = new URLSearchParams();
 
     if (searchQuery) params.set("search", searchQuery);
-    if (statusFilter) params.set("status", statusFilter);
-    if (activityFilter) params.set("activity", activityFilter);
-    if (payoutRange.min) params.set("minPayout", payoutRange.min.toString());
-    if (payoutRange.max) params.set("maxPayout", payoutRange.max.toString());
+    if (minPayout) params.set("minPayout", minPayout);
+    if (maxPayout) params.set("maxPayout", maxPayout);
     if (sortBy && sortBy !== "createdAt") params.set("sortBy", sortBy);
     if (sortOrder && sortOrder !== "desc") params.set("sortOrder", sortOrder);
     if (currentPage > 1) params.set("page", currentPage.toString());
@@ -311,9 +177,8 @@ export default function CampaignsPage() {
     router.replace(newUrl, { scroll: false });
   }, [
     searchQuery,
-    statusFilter,
-    activityFilter,
-    payoutRange,
+    minPayout,
+    maxPayout,
     sortBy,
     sortOrder,
     currentPage,
@@ -325,17 +190,12 @@ export default function CampaignsPage() {
     updateUrlParams();
   }, [updateUrlParams]);
 
-  const activeFiltersCount = [
-    searchQuery,
-    statusFilter,
-    activityFilter,
-    payoutRange.min !== undefined || payoutRange.max !== undefined,
-  ].filter(Boolean).length;
-
-  if (!user) return null;
+  const activeFiltersCount = [searchQuery, minPayout, maxPayout].filter(
+    Boolean,
+  ).length;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen pt-20 bg-gray-50">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
@@ -366,8 +226,9 @@ export default function CampaignsPage() {
               </div>
             </section>
 
-            {/* Primary Filters Row */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-4">
+            {/* Filters Row */}
+            <div className="flex justify-between gap-4 mb-4">
+              {/* Search */}
               <div className="relative">
                 <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                 {isSearching && (
@@ -382,162 +243,69 @@ export default function CampaignsPage() {
                 />
               </div>
 
+              {/* Sort By */}
               <Select
-                value={statusFilter}
-                onValueChange={(value) => {
-                  setStatusFilter(value as StatusEnum);
-                  setCurrentPage(1);
-                }}
+                value={sortBy}
+                onValueChange={(value) =>
+                  setSortBy(value as CampaignFilters["sortBy"])
+                }
               >
-                <SelectTrigger
-                  className="border-gray-200"
-                  aria-label="Filter by status"
-                >
-                  <SelectValue placeholder="Status" />
+                <SelectTrigger className="border-gray-200">
+                  <SelectValue placeholder="Sort By" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="approved">Approved</SelectItem>
-                  <SelectItem value="pending">Pending</SelectItem>
-                  <SelectItem value="rejected">Rejected</SelectItem>
+                  <SelectItem value="createdAt">Date Created</SelectItem>
+                  <SelectItem value="payoutPerUser">Payout</SelectItem>
+                  <SelectItem value="totalSubmissions">
+                    Total Submissions
+                  </SelectItem>
+                  <SelectItem value="approvedSubmissions">
+                    Approved Submissions
+                  </SelectItem>
+                  <SelectItem value="remainingSlots">
+                    Remaining Slots
+                  </SelectItem>
+                  <SelectItem value="completionRate">
+                    Completion Rate
+                  </SelectItem>
+                  <SelectItem value="estimatedTimeMinutes">Duration</SelectItem>
                 </SelectContent>
               </Select>
 
+              {/* Sort Order */}
               <Select
-                value={activityFilter}
-                onValueChange={(value) => {
-                  setActivityFilter(value as ActivityEnum);
-                  setCurrentPage(1);
-                }}
+                value={sortOrder}
+                onValueChange={(value) => setSortOrder(value as "asc" | "desc")}
               >
-                <SelectTrigger
-                  className="border-gray-200"
-                  aria-label="Filter by activity status"
-                >
-                  <SelectValue placeholder="Activity" />
+                <SelectTrigger className="border-gray-200">
+                  <SelectValue placeholder="Sort Order" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="paused">Paused</SelectItem>
-                  <SelectItem value="ended">Ended</SelectItem>
+                  <SelectItem value="desc">Highest First</SelectItem>
+                  <SelectItem value="asc">Lowest First</SelectItem>
                 </SelectContent>
               </Select>
 
-              <Button
-                variant="outline"
-                onClick={() => setShowMoreFilters(!showMoreFilters)}
-                className="border-gray-200 hover:bg-gray-50 relative"
-              >
-                <SlidersHorizontal className="h-4 w-4 mr-2" />
-                Advanced
-                {activeFiltersCount > 0 && (
-                  <Badge className="absolute -top-2 -right-2 h-5 w-5 p-0 text-xs bg-primary">
-                    {activeFiltersCount}
-                  </Badge>
-                )}
-                <ChevronDown
-                  className={`h-4 w-4 ml-2 transition-transform ${showMoreFilters ? "rotate-180" : ""}`}
-                />
-              </Button>
+              {/* Min Payout */}
+              <Input
+                type="number"
+                placeholder="₦ Min Pay"
+                value={minPayout}
+                onChange={(e) => setMinPayout(e.target.value)}
+                className="max-w-32 text-xs"
+                min={0}
+              />
+
+              {/* Max Payout */}
+              <Input
+                type="number"
+                placeholder="₦ Max Pay"
+                value={maxPayout}
+                onChange={(e) => setMaxPayout(e.target.value)}
+                className="max-w-32 text-xs"
+                min={0}
+              />
             </div>
-
-            {/* Advanced Filters (Collapsible) */}
-            {showMoreFilters && (
-              <div className="pt-4 border-t border-gray-100 animate-in slide-in-from-top-2 duration-200">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  <div>
-                    <label
-                      htmlFor="sort-by"
-                      className="text-sm font-medium text-gray-700 mb-2 block"
-                    >
-                      Sort By
-                    </label>
-                    <Select
-                      value={sortBy}
-                      onValueChange={(value) =>
-                        setSortBy(value as CampaignQuery["sortBy"])
-                      }
-                    >
-                      <SelectTrigger id="sort-by" className="border-gray-200">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="createdAt">Date Created</SelectItem>
-                        <SelectItem value="payoutPerUser">Payout</SelectItem>
-                        <SelectItem value="totalSubmissions">
-                          Total Submissions
-                        </SelectItem>
-                        <SelectItem value="approvedSubmissions">
-                          Approved Submissions
-                        </SelectItem>
-                        <SelectItem value="remainingSlots">
-                          Remaining Slots
-                        </SelectItem>
-                        <SelectItem value="completionRate">
-                          Completion Rate
-                        </SelectItem>
-                        <SelectItem value="estimatedTimeMinutes">
-                          Duration
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div>
-                    <label
-                      htmlFor="sort-order"
-                      className="text-sm font-medium text-gray-700 mb-2 block"
-                    >
-                      Sort Order
-                    </label>
-                    <Select
-                      value={sortOrder}
-                      onValueChange={(value) =>
-                        setSortOrder(value as "asc" | "desc")
-                      }
-                    >
-                      <SelectTrigger
-                        id="sort-order"
-                        className="border-gray-200"
-                      >
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="desc">Highest First</SelectItem>
-                        <SelectItem value="asc">Lowest First</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div>
-                    <label
-                      htmlFor="payout-range-slider"
-                      className="text-sm font-medium text-gray-700 mb-2 block"
-                    >
-                      Custom Payout Range
-                    </label>
-                    <div id="payout-range-slider">
-                      <PayoutRangeSlider
-                        min={100}
-                        max={1000}
-                        value={advancedPayoutRange}
-                        onChange={handleAdvancedPayoutRangeChange}
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex justify-center mt-6">
-                  <Button
-                    variant="ghost"
-                    onClick={clearAllFilters}
-                    className="hover:bg-gray-50"
-                  >
-                    <X className="h-4 w-4 mr-2" />
-                    Clear All Filters
-                  </Button>
-                </div>
-              </div>
-            )}
 
             {/* Active Filters Display */}
             {activeFiltersCount > 0 && (
@@ -556,38 +324,19 @@ export default function CampaignsPage() {
                       }}
                     />
                   )}
-                  {statusFilter && (
+
+                  {minPayout && (
                     <FilterBadge
-                      label="Status"
-                      value={
-                        statusFilter.charAt(0).toUpperCase() +
-                        statusFilter.slice(1)
-                      }
-                      onRemove={() => setStatusFilter("")}
+                      label="Min Payout"
+                      value={`₦${minPayout}+`}
+                      onRemove={() => setMinPayout("")}
                     />
                   )}
-                  {activityFilter && (
+                  {maxPayout && (
                     <FilterBadge
-                      label="Activity"
-                      value={
-                        activityFilter.charAt(0).toUpperCase() +
-                        activityFilter.slice(1)
-                      }
-                      onRemove={() => setActivityFilter("")}
-                    />
-                  )}
-                  {(payoutRange.min !== undefined ||
-                    payoutRange.max !== undefined) && (
-                    <FilterBadge
-                      label="Payout"
-                      value={
-                        payoutRange.min && payoutRange.max
-                          ? `₦${payoutRange.min} - ₦${payoutRange.max}`
-                          : payoutRange.min
-                            ? `₦${payoutRange.min}+`
-                            : `Up to ₦${payoutRange.max}`
-                      }
-                      onRemove={() => setPayoutRange({})}
+                      label="Max Payout"
+                      value={`Up to ₦${maxPayout}`}
+                      onRemove={() => setMaxPayout("")}
                     />
                   )}
                   <Button
@@ -614,47 +363,6 @@ export default function CampaignsPage() {
               `Showing ${campaigns?.length || 0} campaigns`
             )}
           </div>
-
-          {/* Quick Sort Options */}
-          {!isLoading && campaigns && campaigns.length > 0 && (
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-500">Quick sort:</span>
-              <Button
-                variant={sortBy === "payoutPerUser" ? "default" : "ghost"}
-                size="sm"
-                onClick={() => {
-                  setSortBy("payoutPerUser");
-                  setSortOrder(
-                    sortBy === "payoutPerUser" && sortOrder === "desc"
-                      ? "asc"
-                      : "desc",
-                  );
-                }}
-                className="h-8"
-              >
-                Payout{" "}
-                {sortBy === "payoutPerUser" &&
-                  (sortOrder === "desc" ? "↓" : "↑")}
-              </Button>
-              <Button
-                variant={sortBy === "remainingSlots" ? "default" : "ghost"}
-                size="sm"
-                onClick={() => {
-                  setSortBy("remainingSlots");
-                  setSortOrder(
-                    sortBy === "remainingSlots" && sortOrder === "desc"
-                      ? "asc"
-                      : "desc",
-                  );
-                }}
-                className="h-8"
-              >
-                Slots{" "}
-                {sortBy === "remainingSlots" &&
-                  (sortOrder === "desc" ? "↓" : "↑")}
-              </Button>
-            </div>
-          )}
         </div>
 
         {/* Campaigns Grid */}

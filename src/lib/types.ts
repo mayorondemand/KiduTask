@@ -90,22 +90,24 @@ export const campaignQuerySchema = z.object({
   createdBefore: z.date().optional(),
   expiryAfter: z.date().optional(),
   expiryBefore: z.date().optional(),
-  sortBy: z.enum([
-    "createdAt",
-    "updatedAt", 
-    "title",
-    "payoutPerUser",
-    "totalCost",
-    "maxUsers",
-    "estimatedTimeMinutes",
-    "expiryDate",
-    "status",
-    "activity",
-    "totalSubmissions",
-    "approvedSubmissions",
-    "remainingSlots",
-    "completionRate"
-  ]).optional(),
+  sortBy: z
+    .enum([
+      "createdAt",
+      "updatedAt",
+      "title",
+      "payoutPerUser",
+      "totalCost",
+      "maxUsers",
+      "estimatedTimeMinutes",
+      "expiryDate",
+      "status",
+      "activity",
+      "totalSubmissions",
+      "approvedSubmissions",
+      "remainingSlots",
+      "completionRate",
+    ])
+    .optional(),
   sortOrder: z.enum(["asc", "desc"]).optional(),
 });
 
@@ -144,6 +146,8 @@ export type BrandSettingsFormData = z.infer<typeof brandSettingsSchema>;
 
 export type CampaignQuery = z.infer<typeof campaignQuerySchema>;
 export type CreateCampaignData = z.infer<typeof createCampaignSchema>;
+export type CampaignFilters = Partial<CampaignQuery> &
+  Pick<CampaignQuery, "page" | "limit">;
 
 // Type for campaign with submission counts and approved submissions
 export type CampaignWithCounts = CampaignDB & {

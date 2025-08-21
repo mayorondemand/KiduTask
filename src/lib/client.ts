@@ -2,9 +2,7 @@
 import { useAuth } from "@/components/providers/auth-provider";
 import { errorHandler } from "@/lib/error-handler";
 import type { AdvertiserStats } from "@/lib/services/advertiser-service";
-import type { CampaignQuery, StatusEnum } from "@/lib/types";
-import type { CampaignWithCounts, CreateCampaignData } from "@/lib/types";
-import type { BrandSettingsFormData } from "@/lib/types";
+import type { BrandSettingsFormData, CampaignFilters, CampaignWithCounts, CreateCampaignData, StatusEnum } from "@/lib/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import { useRouter } from "next/navigation";
@@ -262,9 +260,7 @@ export const useCreateCampaign = () => {
   });
 };
 
-export const useCampaigns = (
-  filters: Partial<CampaignQuery> & Pick<CampaignQuery, "page" | "limit">,
-) => {
+export const useCampaigns = (filters: CampaignFilters) => {
   return useQuery({
     queryKey: ["campaigns", filters],
     queryFn: async (): Promise<CampaignWithCounts[]> => {
