@@ -1,8 +1,7 @@
 "use client";
 
 import { BreadcrumbResponsive } from "@/components/layout/breadcrumbresponsive";
-import { Navbar } from "@/components/layout/navbar";
-import { renderStarRating } from "@/components/star-rating";
+import { StarRating } from "@/components/star-rating";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -30,9 +29,14 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   useCampaign,
   useCampaignSubmissions,
-  useUpdateSubmission,
+  useReviewSubmission,
+  useUpdateCampaignActivity,
 } from "@/lib/client";
-import { statusEnum } from "@/lib/db/schema";
+import {
+  STATUS_ENUM,
+  type StatusEnum,
+  type SubmissionWithUser,
+} from "@/lib/types";
 import { formatCurrency, getStatusColor } from "@/lib/utils";
 import {
   BarChart3,
@@ -42,7 +46,6 @@ import {
   DollarSign,
   Download,
   Edit,
-  Eye,
   Loader2,
   Pause,
   Play,
@@ -66,19 +69,23 @@ export default function CampaignDetailsPage({
     isLoading: isCampaignLoading,
     error: campaignError,
   } = useCampaign(id);
+
   const { data: submissionsData, isLoading: isSubmissionsLoading } =
     useCampaignSubmissions(id);
-  const updateSubmissionMutation = useUpdateSubmission();
+
+  const reviewSubmissionMutation = useReviewSubmission();
+  const updateCampaignActivityMutation = useUpdateCampaignActivity();
 
   const submissions = submissionsData?.submissions || [];
   const totalSubmissions = submissionsData?.totalCount || 0;
 
-  const [selectedSubmission, setSelectedSubmission] = useState<any>(null);
-  const [reviewDecision, setReviewDecision] =
-    useState<(typeof statusEnum.enumValues)[number]>("pending");
+  const [selectedSubmission, setSelectedSubmission] =
+    useState<SubmissionWithUser | null>(null);
+  const [reviewDecision, setReviewDecision] = useState<StatusEnum>(
+    STATUS_ENUM.PENDING,
+  );
   const [feedback, setFeedback] = useState("");
   const [rating, setRating] = useState(0);
-  const [isProcessing, setIsProcessing] = useState(false);
 
   const handleSubmissionAction = async () => {
     if (!reviewDecision || !selectedSubmission) return;
@@ -92,55 +99,58 @@ export default function CampaignDetailsPage({
     }
 
     // Validate rating requirement
-    if (reviewDecision === "approved" && !rating) {
+    if (!rating) {
       toast.warning("Rating Required", {
-        description: "Please provide a rating when approving a submission.",
+        description: "Please provide a rating for this submission.",
       });
       return;
     }
 
-    await updateSubmissionMutation.mutateAsync({
+    await reviewSubmissionMutation.mutateAsync({
       submissionId: selectedSubmission.id,
       status: reviewDecision,
       advertiserFeedback: feedback.trim() || undefined,
-      advertiserRating: rating || undefined,
+      advertiserRating: rating,
     });
 
-    if (!updateSubmissionMutation.isSuccess) {
+    if (!reviewSubmissionMutation.isSuccess) {
       return;
     }
 
     // Reset form
     setSelectedSubmission(null);
-    setReviewDecision("pending");
+    setReviewDecision(STATUS_ENUM.PENDING);
     setFeedback("");
     setRating(0);
   };
 
   const toggleCampaignStatus = async () => {
-    const newStatus = campaign?.activity === "active" ? "paused" : "active";
+    if (!campaign) return;
 
-    toast.warning(`Campaign ${newStatus === "active" ? "Resumed" : "Paused"}`, {
-      description: `No Api call for now`,
+    const newStatus = campaign.activity === "active" ? "paused" : "active";
+
+    await updateCampaignActivityMutation.mutateAsync({
+      campaignId: id,
+      activity: newStatus,
     });
   };
 
-  const openReviewDialog = (submission: any) => {
+  const openReviewDialog = (submission: SubmissionWithUser) => {
     setSelectedSubmission(submission);
-    setReviewDecision("pending");
+    setReviewDecision(STATUS_ENUM.PENDING);
     setFeedback("");
     setRating(0);
   };
 
   // Calculate stats
   const approvedSubmissions = submissions.filter(
-    (s) => s.status === "approved",
+    (s: SubmissionWithUser) => s.status === "approved",
   ).length;
   const pendingSubmissions = submissions.filter(
-    (s) => s.status === "pending",
+    (s: SubmissionWithUser) => s.status === "pending",
   ).length;
   const rejectedSubmissions = submissions.filter(
-    (s) => s.status === "rejected",
+    (s: SubmissionWithUser) => s.status === "rejected",
   ).length;
   const progress = campaign
     ? (campaign.totalSubmissions / campaign.maxUsers) * 100
@@ -359,7 +369,9 @@ export default function CampaignDetailsPage({
                       <span className="text-sm">Expires</span>
                     </div>
                     <span className="font-medium">
-                      {new Date(campaign.expiryDate).toLocaleDateString()}
+                      {campaign.expiryDate
+                        ? new Date(campaign.expiryDate).toLocaleDateString()
+                        : "Never"}
                     </span>
                   </div>
                 </div>
@@ -411,17 +423,15 @@ export default function CampaignDetailsPage({
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    {submissions.map((submission) => (
+                    {submissions.map((submission: SubmissionWithUser) => (
                       <div
                         key={submission.id}
                         className="flex items-start gap-4 p-4 border rounded-lg"
                       >
                         <Avatar>
-                          <AvatarImage
-                            src={submission.userImage || "/placeholder.svg"}
-                          />
+                          <AvatarImage src={submission.userImage || ""} />
                           <AvatarFallback>
-                            {submission.userName?.charAt(0) || "U"}
+                            {submission.userName?.charAt(0)}
                           </AvatarFallback>
                         </Avatar>
 
@@ -431,13 +441,7 @@ export default function CampaignDetailsPage({
                               {submission.userName || "Unknown User"}
                             </span>
                             <Badge
-                              className={
-                                submission.status === "approved"
-                                  ? "bg-green-100 text-green-800"
-                                  : submission.status === "rejected"
-                                    ? "bg-red-100 text-red-800"
-                                    : "bg-yellow-100 text-yellow-800"
-                              }
+                              className={getStatusColor(submission.status)}
                             >
                               {submission.status}
                             </Badge>
@@ -457,194 +461,198 @@ export default function CampaignDetailsPage({
                             </div>
                           )}
 
-                          {submission.status !== "pending" &&
-                            submission.advertiserRating &&
+                          {submission.advertiserRating &&
                             submission.advertiserRating > 0 && (
                               <div className="flex items-center gap-2">
                                 <span className="text-sm font-medium">
                                   Rating:
                                 </span>
-                                {renderStarRating(
-                                  submission.advertiserRating,
-                                  undefined,
-                                  true,
-                                )}
+                                <StarRating
+                                  rating={submission.advertiserRating}
+                                  readonly={true}
+                                />
                               </div>
                             )}
                         </div>
 
                         <div className="flex items-center gap-2">
-                          {submission.proofUrl && (
-                            <Button variant="outline" size="sm">
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                          )}
+                          <Dialog>
+                            <DialogTrigger asChild>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => openReviewDialog(submission)}
+                              >
+                                Review
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent className="max-w-2xl">
+                              <DialogHeader>
+                                <DialogTitle>Review Submission</DialogTitle>
+                                <DialogDescription>
+                                  Review {submission.userName || "this user"}
+                                  's submission and provide your decision
+                                </DialogDescription>
+                              </DialogHeader>
 
-                          {submission.status === "pending" && (
-                            <Dialog>
-                              <DialogTrigger asChild>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => openReviewDialog(submission)}
-                                >
-                                  Review
-                                </Button>
-                              </DialogTrigger>
-                              <DialogContent className="max-w-2xl">
-                                <DialogHeader>
-                                  <DialogTitle>Review Submission</DialogTitle>
-                                  <DialogDescription>
-                                    Review {submission.userName || "this user"}
-                                    's submission and provide your decision
-                                  </DialogDescription>
-                                </DialogHeader>
-
-                                <div className="space-y-6">
-                                  <div>
-                                    <Label>Submission Details</Label>
-                                    <p className="text-sm text-muted-foreground mt-1">
-                                      {submission.proofText}
-                                    </p>
-                                  </div>
-
-                                  {submission.proofUrl && (
-                                    <div>
-                                      <Label>Proof</Label>
-                                      <img
-                                        src={
-                                          submission.proofUrl ||
-                                          "/placeholder.svg"
-                                        }
-                                        alt="Submission proof"
-                                        className="w-full max-h-48 object-cover rounded mt-2"
-                                      />
-                                    </div>
-                                  )}
-
-                                  <div>
-                                    <Label>Decision *</Label>
-                                    <RadioGroup
-                                      value={reviewDecision}
-                                      onValueChange={(value) =>
-                                        setReviewDecision(
-                                          value as "approve" | "reject",
-                                        )
-                                      }
-                                      className="mt-2"
-                                    >
-                                      <div className="flex items-center space-x-2">
-                                        <RadioGroupItem
-                                          value="approve"
-                                          id="approve"
-                                        />
-                                        <Label
-                                          htmlFor="approve"
-                                          className="text-green-600 font-medium"
-                                        >
-                                          Approve Submission
-                                        </Label>
-                                      </div>
-                                      <div className="flex items-center space-x-2">
-                                        <RadioGroupItem
-                                          value="reject"
-                                          id="reject"
-                                        />
-                                        <Label
-                                          htmlFor="reject"
-                                          className="text-red-600 font-medium"
-                                        >
-                                          Reject Submission
-                                        </Label>
-                                      </div>
-                                    </RadioGroup>
-                                  </div>
-
-                                  {reviewDecision === "approve" && (
-                                    <div>
-                                      <Label>Rating *</Label>
-                                      <div className="mt-2">
-                                        {renderStarRating(rating, setRating)}
-                                      </div>
-                                    </div>
-                                  )}
-
-                                  <div>
-                                    <Label htmlFor="feedback">
-                                      Feedback{" "}
-                                      {reviewDecision === "reject"
-                                        ? "*"
-                                        : "(Optional)"}
-                                    </Label>
-                                    <Textarea
-                                      id="feedback"
-                                      placeholder={
-                                        reviewDecision === "reject"
-                                          ? "Please explain why this submission is being rejected..."
-                                          : "Provide feedback for the user..."
-                                      }
-                                      value={feedback}
-                                      onChange={(e) =>
-                                        setFeedback(e.target.value)
-                                      }
-                                      rows={3}
-                                      className="mt-1"
-                                    />
-                                    {reviewDecision === "reject" && (
-                                      <p className="text-sm text-muted-foreground mt-1">
-                                        Feedback is required when rejecting
-                                        submissions
-                                      </p>
-                                    )}
-                                  </div>
+                              <div className="space-y-6">
+                                <div>
+                                  <Label>Submission Details</Label>
+                                  <p className="text-sm text-muted-foreground mt-1">
+                                    {submission.proofText}
+                                  </p>
                                 </div>
 
-                                <DialogFooter>
-                                  <Button
-                                    variant="outline"
-                                    onClick={() => {
-                                      setSelectedSubmission(null);
-                                      setReviewDecision("");
-                                      setFeedback("");
-                                      setRating(0);
-                                    }}
-                                  >
-                                    Cancel
-                                  </Button>
-                                  <Button
-                                    onClick={handleSubmissionAction}
-                                    disabled={!reviewDecision || isProcessing}
-                                    className={
-                                      reviewDecision === "approve"
-                                        ? "bg-green-600 hover:bg-green-700"
-                                        : reviewDecision === "reject"
-                                          ? "bg-red-600 hover:bg-red-700"
-                                          : ""
-                                    }
-                                  >
-                                    {isProcessing ? (
-                                      <>
-                                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                        Processing...
-                                      </>
-                                    ) : reviewDecision === "approve" ? (
-                                      <>
-                                        <CheckCircle className="h-4 w-4 mr-2" />
-                                        Approve
-                                      </>
-                                    ) : reviewDecision === "reject" ? (
-                                      <>
-                                        <XCircle className="h-4 w-4 mr-2" />
-                                        Reject
-                                      </>
-                                    ) : (
-                                      "Select Decision"
-                                    )}
-                                  </Button>
-                                </DialogFooter>
-                              </DialogContent>
-                            </Dialog>
-                          )}
+                                {submission.proofUrl && (
+                                  <div>
+                                    <Label>Proof</Label>
+                                    <Image
+                                      src={
+                                        submission.proofUrl ||
+                                        "/placeholder.svg"
+                                      }
+                                      alt="Submission proof"
+                                      width={400}
+                                      height={200}
+                                      className="w-full max-h-48 object-cover rounded mt-2"
+                                    />
+                                  </div>
+                                )}
+
+                                {submission.status === "pending" && (
+                                  <>
+                                    <div>
+                                      <Label>Decision *</Label>
+                                      <RadioGroup
+                                        value={reviewDecision}
+                                        onValueChange={(value) =>
+                                          setReviewDecision(
+                                            value as "approved" | "rejected",
+                                          )
+                                        }
+                                        className="mt-2"
+                                      >
+                                        <div className="flex items-center space-x-2">
+                                          <RadioGroupItem
+                                            value="approved"
+                                            id="approved"
+                                          />
+                                          <Label
+                                            htmlFor="approved"
+                                            className="text-green-600 font-medium"
+                                          >
+                                            Approve Submission
+                                          </Label>
+                                        </div>
+                                        <div className="flex items-center space-x-2">
+                                          <RadioGroupItem
+                                            value="rejected"
+                                            id="rejected"
+                                          />
+                                          <Label
+                                            htmlFor="rejected"
+                                            className="text-red-600 font-medium"
+                                          >
+                                            Reject Submission
+                                          </Label>
+                                        </div>
+                                      </RadioGroup>
+                                    </div>
+
+                                    <div>
+                                      <Label>
+                                        Rating * (Required for all submissions)
+                                      </Label>
+                                      <div className="mt-2">
+                                        <StarRating
+                                          rating={rating}
+                                          onRatingChange={setRating}
+                                          readonly={false}
+                                        />
+                                      </div>
+                                    </div>
+
+                                    <div>
+                                      <Label htmlFor="feedback">
+                                        Feedback{" "}
+                                        {reviewDecision === "rejected"
+                                          ? "*"
+                                          : "(Optional)"}
+                                      </Label>
+                                      <Textarea
+                                        id="feedback"
+                                        placeholder={
+                                          reviewDecision === "rejected"
+                                            ? "Please explain why this submission is being rejected..."
+                                            : "Provide feedback for the user..."
+                                        }
+                                        value={feedback}
+                                        onChange={(e) =>
+                                          setFeedback(e.target.value)
+                                        }
+                                        rows={3}
+                                        className="mt-1"
+                                      />
+                                      {reviewDecision === "rejected" && (
+                                        <p className="text-sm text-muted-foreground mt-1">
+                                          Feedback is required when rejecting
+                                          submissions
+                                        </p>
+                                      )}
+                                    </div>
+                                  </>
+                                )}
+                              </div>
+
+                              <DialogFooter>
+                                <Button
+                                  variant="outline"
+                                  onClick={() => {
+                                    setSelectedSubmission(null);
+                                    setReviewDecision("pending");
+                                    setFeedback("");
+                                    setRating(0);
+                                  }}
+                                >
+                                  Cancel
+                                </Button>
+                                <Button
+                                  onClick={handleSubmissionAction}
+                                  disabled={
+                                    !reviewDecision ||
+                                    reviewSubmissionMutation.isPending ||
+                                    selectedSubmission?.status !== "pending"
+                                  }
+                                  className={
+                                    reviewDecision === "approved"
+                                      ? "bg-green-600 hover:bg-green-700"
+                                      : reviewDecision === "rejected"
+                                        ? "bg-red-600 hover:bg-red-700"
+                                        : ""
+                                  }
+                                >
+                                  {reviewSubmissionMutation.isPending ? (
+                                    <>
+                                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                      Processing...
+                                    </>
+                                  ) : reviewDecision === "approved" ? (
+                                    <>
+                                      <CheckCircle className="h-4 w-4 mr-2" />
+                                      Approve
+                                    </>
+                                  ) : reviewDecision === "rejected" ? (
+                                    <>
+                                      <XCircle className="h-4 w-4 mr-2" />
+                                      Reject
+                                    </>
+                                  ) : (
+                                    "Select Decision"
+                                  )}
+                                </Button>
+                              </DialogFooter>
+                            </DialogContent>
+                          </Dialog>
                         </div>
                       </div>
                     ))}
@@ -670,7 +678,10 @@ export default function CampaignDetailsPage({
                   <div className="bg-muted p-4 rounded-lg">
                     <ol className="space-y-2">
                       {campaign.instructions?.map((instruction, index) => (
-                        <li key={index} className="flex gap-3">
+                        <li
+                          key={`instruction-${index}-${instruction.slice(0, 20)}`}
+                          className="flex gap-3"
+                        >
                           <span className="flex-shrink-0 w-6 h-6 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-medium">
                             {index + 1}
                           </span>
@@ -687,7 +698,10 @@ export default function CampaignDetailsPage({
                     <div className="bg-muted p-4 rounded-lg">
                       <ul className="space-y-2">
                         {campaign.requirements.map((requirement, index) => (
-                          <li key={index} className="flex gap-3">
+                          <li
+                            key={`requirement-${index}-${requirement.slice(0, 20)}`}
+                            className="flex gap-3"
+                          >
                             <span className="text-muted-foreground">•</span>
                             <span className="text-sm">{requirement}</span>
                           </li>
