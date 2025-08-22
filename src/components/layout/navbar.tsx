@@ -21,7 +21,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { useAdvertiserRequest } from "@/lib/client";
+import { useAdvertiserAccess } from "@/lib/client";
 import {
   BarChart3,
   Briefcase,
@@ -46,7 +46,7 @@ export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [advertiserDialogOpen, setAdvertiserDialogOpen] = useState(false);
   const pathname = usePathname();
-  const advertiserRequestMutation = useAdvertiserRequest();
+  const advertiserRequestMutation = useAdvertiserAccess();
 
   const handleAdvertiserRequest = () => {
     advertiserRequestMutation.mutate();
