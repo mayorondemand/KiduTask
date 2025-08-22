@@ -18,7 +18,7 @@ import type { CampaignFilters, CampaignWithCounts } from "@/lib/types";
 import { useDebounce } from "@uidotdev/usehooks";
 import { Bookmark, Loader2, Search, X } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, Suspense } from "react";
 
 // Filter badge component for active filters
 function FilterBadge({
@@ -46,7 +46,8 @@ function FilterBadge({
   );
 }
 
-export default function CampaignsPage() {
+// Component that wraps useSearchParams in a Suspense boundary
+function CampaignsPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -426,5 +427,13 @@ export default function CampaignsPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function CampaignsPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen pt-20 bg-gray-50 flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div>}>
+      <CampaignsPageContent />
+    </Suspense>
   );
 }

@@ -421,7 +421,7 @@ export default function LandingPage() {
   const columnCount = useColumnCount();
 
   return (
-    <div className="min-h-screen pt-10 bg-white">
+    <div className="min-h-screen pt-20 bg-white">
       {/* Hero Section */}
       <section className="pt-16 pb-8 px-6">
         <div className="max-w-7xl mx-auto">
