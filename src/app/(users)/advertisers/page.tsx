@@ -29,11 +29,11 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { formatCurrency, getStatusColor } from "@/lib/utils";
-import { useAdvertiserStats, useCampaigns } from "@/lib/client";
+import { useAdvertiserDashboard, useCampaigns } from "@/lib/client";
 
 export default function AdvertiserDashboard() {
   const { user } = useAuth();
-  const { data: mockStats, isLoading: isStatsLoading } = useAdvertiserStats();
+  const { data: mockStats, isLoading: isStatsLoading } = useAdvertiserDashboard();
   const { data: campaigns, isLoading: isCampaignsLoading } = useCampaigns({
     limit: 5,
     page: 1,

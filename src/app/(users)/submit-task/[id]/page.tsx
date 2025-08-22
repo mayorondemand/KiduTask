@@ -24,13 +24,13 @@ import { ImageUploader } from "@/components/ui/image-uploader";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  useCreateSubmission,
+  useSubmitTask,
   usePublicCampaign,
   useResubmitSubmission,
-  useSubmission,
-  useUserSubmissions,
+  useMySubmission,
+  useMySubmissions,
 } from "@/lib/client";
-import { submissionSchema, type SubmissionForm } from "@/lib/types";
+import { submissionFormSchema, type SubmissionFormData } from "@/lib/types";
 import { formatCurrency, getStatusColor } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -66,10 +66,10 @@ export default function SubmitTaskPage() {
 
   // Fetch existing submission when editing
   const { data: existingSubmission, isLoading: isLoadingSubmission } =
-    useSubmission(params.id as string, editSubmissionId || "");
+    useMySubmission(params.id as string, editSubmissionId || "");
 
   // Fetch user's submission history for this campaign
-  const { data: userSubmissions = [] } = useUserSubmissions(
+  const { data: userSubmissions = [] } = useMySubmissions(
     params.id as string,
   );
 
@@ -77,8 +77,8 @@ export default function SubmitTaskPage() {
     return text.replace(/\s/g, "-");
   };
 
-  const form = useForm<SubmissionForm>({
-    resolver: zodResolver(submissionSchema),
+  const form = useForm<SubmissionFormData>({
+    resolver: zodResolver(submissionFormSchema),
     defaultValues: {
       proofType: "screenshot",
       proofUrl: "",
@@ -99,7 +99,7 @@ export default function SubmitTaskPage() {
   const proofType = watch("proofType");
 
   // Mutation hooks
-  const createSubmissionMutation = useCreateSubmission();
+  const createSubmissionMutation = useSubmitTask();
   const resubmitSubmissionMutation = useResubmitSubmission();
 
   // Pre-fill form when editing
@@ -121,7 +121,7 @@ export default function SubmitTaskPage() {
     }
   }, [existingSubmission, isEditing, reset]);
 
-  const onSubmit = async (data: SubmissionForm) => {
+  const onSubmit = async (data: SubmissionFormData) => {
     try {
       const submissionData = {
         proofType: data.proofType,

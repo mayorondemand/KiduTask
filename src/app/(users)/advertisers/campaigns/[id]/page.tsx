@@ -27,10 +27,10 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  useCampaign,
+  useAdvertiserCampaign,
   useCampaignSubmissions,
   useReviewSubmission,
-  useUpdateCampaignActivity,
+  useUpdateCampaign,
 } from "@/lib/client";
 import {
   STATUS_ENUM,
@@ -68,13 +68,13 @@ export default function CampaignDetailsPage({
     data: campaign,
     isLoading: isCampaignLoading,
     error: campaignError,
-  } = useCampaign(id);
+  } = useAdvertiserCampaign(id);
 
   const { data: submissionsData, isLoading: isSubmissionsLoading } =
     useCampaignSubmissions(id);
 
   const reviewSubmissionMutation = useReviewSubmission();
-  const updateCampaignActivityMutation = useUpdateCampaignActivity();
+  const updateCampaignActivityMutation = useUpdateCampaign();
 
   const submissions = submissionsData?.submissions || [];
   const totalSubmissions = submissionsData?.totalCount || 0;

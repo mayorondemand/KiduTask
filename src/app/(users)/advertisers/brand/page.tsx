@@ -16,7 +16,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Building, Globe, Star, Calendar, BarChart3 } from "lucide-react";
 import Link from "next/link";
-import { useAdvertiserStats, useUpdateBrandSettings } from "@/lib/client";
+import { useAdvertiserDashboard, useUpdateBrandSettings } from "@/lib/client";
 import { formatCurrency } from "@/lib/utils";
 import { BreadcrumbResponsive } from "@/components/layout/breadcrumbresponsive";
 import { brandSettingsSchema, type BrandSettingsFormData } from "@/lib/types";
@@ -33,7 +33,7 @@ import { useEffect } from "react";
 
 export default function BrandSettingsPage() {
   const { user } = useAuth();
-  const { data: advertiserStats } = useAdvertiserStats();
+  const { data: advertiserStats } = useAdvertiserDashboard();
   const updateBrandSettings = useUpdateBrandSettings();
 
   const form = useForm<BrandSettingsFormData>({

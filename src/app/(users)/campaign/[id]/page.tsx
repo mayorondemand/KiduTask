@@ -9,9 +9,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import {
   usePublicCampaign,
-  useSubmitCampaignRating,
-  useUserSubmissions,
-  useUserCampaignRating,
+  useRateCampaign,
+  useMySubmissions,
+  useMyCampaignRating,
 } from "@/lib/client";
 import { formatCurrency, getStatusColor } from "@/lib/utils";
 import {
@@ -39,7 +39,7 @@ export default function CampaignDetailsPage({
   const [userRating, setUserRating] = useState(0);
 
   // Fetch user's existing rating for this campaign
-  const { data: existingRating } = useUserCampaignRating(id);
+  const { data: existingRating } = useMyCampaignRating(id);
   // Fetch campaign data
   const {
     data: campaign,
@@ -49,13 +49,13 @@ export default function CampaignDetailsPage({
 
   // Fetch user's submissions for this campaign
   const { data: userSubmissions = [], isLoading: submissionsLoading } =
-    useUserSubmissions(id);
+    useMySubmissions(id);
 
   // Get the most recent submission
   const userSubmission = userSubmissions.length > 0 ? userSubmissions[0] : null;
 
   // Rating mutation
-  const ratingMutation = useSubmitCampaignRating();
+  const ratingMutation = useRateCampaign();
 
   const handleRatingSubmit = async () => {
     if (userRating === 0) {
