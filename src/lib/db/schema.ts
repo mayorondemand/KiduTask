@@ -22,6 +22,11 @@ export const transactionTypeEnum = pgEnum("transaction_type", [
   "spending",
   "campaign_creation",
 ]);
+export const proofTypeEnum = pgEnum("proof_type", [
+  "screenshot",
+  "link",
+  "text",
+]);
 
 export const user = pgTable("user", {
   id: text("id").primaryKey(),
@@ -209,7 +214,7 @@ export const submission = pgTable("submission", {
   status: statusEnum("status").notNull().default("pending"),
   statusUpdatedAt: timestamp("status_updated_at"),
   statusUpdatedBy: text("status_updated_by").references(() => user.id),
-  proofType: text("proof_type").notNull(),
+  proofType: proofTypeEnum("proof_type").notNull(),
   proofUrl: text("proof_url"),
   proofText: text("proof_text"),
   notes: text("notes"),

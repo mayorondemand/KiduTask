@@ -1,0 +1,2 @@
+CREATE TYPE "public"."proof_type" AS ENUM('screenshot', 'link', 'text');--> statement-breakpoint
+ALTER TABLE "submission" ALTER COLUMN "proof_type" SET DATA TYPE "public"."proof_type" USING "proof_type"::"public"."proof_type";
