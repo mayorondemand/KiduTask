@@ -11,7 +11,7 @@ import type {
   ReviewSubmissionData,
   SubmissionWithUser,
   UpdateCampaignActivityData as UpdateCampaignData,
-  CampaignWithSubmissions,
+  CampaignSubmissionAndCount,
 } from "@/lib/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
@@ -113,7 +113,7 @@ export const useCampaignSubmissions = (
 ) => {
   return useQuery({
     queryKey: ["campaign-submissions", campaignId, page, limit],
-    queryFn: async (): Promise<CampaignWithSubmissions> => {
+    queryFn: async (): Promise<CampaignSubmissionAndCount> => {
       const response = await axios.get(
         `/api/advertiser/campaigns/${campaignId}/submissions`,
         {

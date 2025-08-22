@@ -1,21 +1,26 @@
 import { db } from "@/lib/db";
 import {
-  campaign,
   advertiser,
+  campaign,
   submission,
   transaction,
   user,
 } from "@/lib/db/schema";
+import { BadRequestError } from "@/lib/error-handler";
+import { transactionService } from "@/lib/services/transaction-service";
+import { userService } from "@/lib/services/user-service";
 import {
   ACTIVITY_ENUM,
-  STATUS_ENUM,
-  type CreateCampaignData,
-  type CampaignWithCounts,
-  type CampaignWithSubmissions,
+  type ActivityEnum,
   type CampaignDB,
-  type TransactionDB,
   type CampaignQuery,
-  type SubmissionDB,
+  type CampaignSubmissionAndCount,
+  type CampaignWithCounts,
+  type CreateCampaignData,
+  type ReviewSubmissionData,
+  STATUS_ENUM,
+  TRANSACTION_TYPE_ENUM,
+  type TransactionDB,
 } from "@/lib/types";
 import {
   and,
@@ -281,226 +286,16 @@ class CampaignService {
     return { campaigns, totalCount };
   }
 
-  async getCampaignsWithSubmissions(
-    campaignQuery: CampaignQuery,
-  ): Promise<{ campaigns: CampaignWithSubmissions[]; totalCount: number }> {
-    const {
-      page,
-      limit,
-      search,
-      status,
-      activity,
-      advertiserId,
-      minPayout,
-      maxPayout,
-      minMaxUsers,
-      maxMaxUsers,
-      createdAfter,
-      createdBefore,
-      expiryAfter,
-      expiryBefore,
-      sortBy = "createdAt",
-      sortOrder = "desc",
-    } = campaignQuery;
-
-    // Build filter conditions
-    const conditions = [];
-
-    // Search in title and description
-    if (search) {
-      conditions.push(
-        or(
-          ilike(campaign.title, `%${search}%`),
-          ilike(campaign.description, `%${search}%`),
-        ),
-      );
-    }
-
-    // Status filter
-    if (status) {
-      conditions.push(eq(campaign.status, status));
-    }
-
-    // Activity filter
-    if (activity) {
-      conditions.push(eq(campaign.activity, activity));
-    }
-
-    // Advertiser filter
-    if (advertiserId) {
-      conditions.push(eq(campaign.createdBy, advertiserId));
-    }
-
-    // Payout range filters
-    if (minPayout !== undefined) {
-      conditions.push(gte(campaign.payoutPerUser, minPayout));
-    }
-    if (maxPayout !== undefined) {
-      conditions.push(lte(campaign.payoutPerUser, maxPayout));
-    }
-
-    // Max users range filters
-    if (minMaxUsers !== undefined) {
-      conditions.push(gte(campaign.maxUsers, minMaxUsers));
-    }
-    if (maxMaxUsers !== undefined) {
-      conditions.push(lte(campaign.maxUsers, maxMaxUsers));
-    }
-
-    // Date range filters
-    if (createdAfter) {
-      conditions.push(gte(campaign.createdAt, createdAfter));
-    }
-    if (createdBefore) {
-      conditions.push(lte(campaign.createdAt, createdBefore));
-    }
-    if (expiryAfter) {
-      conditions.push(gte(campaign.expiryDate, expiryAfter));
-    }
-    if (expiryBefore) {
-      conditions.push(lte(campaign.expiryDate, expiryBefore));
-    }
-
-    // Build the base query with left join to submissions
-    const sortColumn = campaign[sortBy as keyof typeof campaign] as SQLWrapper;
-    const sortDirection = sortOrder === "asc" ? asc : desc;
-
-    const query = db
-      .select({
-        // Campaign fields
-        id: campaign.id,
-        createdBy: campaign.createdBy,
-        title: campaign.title,
-        description: campaign.description,
-        instructions: campaign.instructions,
-        requirements: campaign.requirements,
-        payoutPerUser: campaign.payoutPerUser,
-        totalCost: campaign.totalCost,
-        maxUsers: campaign.maxUsers,
-        estimatedTimeMinutes: campaign.estimatedTimeMinutes,
-        image: campaign.image,
-        bannerImageUrl: campaign.bannerImageUrl,
-        expiryDate: campaign.expiryDate,
-        status: campaign.status,
-        activity: campaign.activity,
-        statusUpdatedAt: campaign.statusUpdatedAt,
-        statusUpdatedBy: campaign.statusUpdatedBy,
-        createdAt: campaign.createdAt,
-        updatedAt: campaign.updatedAt,
-
-        // Submission fields (will be null if no submissions)
-        submissionId: submission.id,
-        submissionCreatedBy: submission.createdBy,
-        submissionStatus: submission.status,
-        submissionStatusUpdatedAt: submission.statusUpdatedAt,
-        submissionStatusUpdatedBy: submission.statusUpdatedBy,
-        submissionProofType: submission.proofType,
-        submissionProofUrl: submission.proofUrl,
-        submissionProofText: submission.proofText,
-        submissionNotes: submission.notes,
-        submissionAdvertiserFeedback: submission.advertiserFeedback,
-        submissionAdvertiserRating: submission.advertiserRating,
-        submissionCreatedAt: submission.createdAt,
-        submissionUpdatedAt: submission.updatedAt,
-      })
-      .from(campaign)
-      .leftJoin(submission, eq(campaign.id, submission.campaignId))
-      .where(conditions.length > 0 ? and(...conditions) : undefined)
-      .orderBy(sortDirection(sortColumn));
-
-    // Get total count for pagination (counting distinct campaigns, not rows)
-    const countQuery = db
-      .selectDistinct({ count: count(campaign.id) })
-      .from(campaign)
-      .leftJoin(submission, eq(campaign.id, submission.campaignId))
-      .where(conditions.length > 0 ? and(...conditions) : undefined);
-
-    const [{ count: totalCount }] = await countQuery;
-
-    // Apply pagination and execute query
-    const results = await query.limit(limit).offset((page - 1) * limit);
-
-    // Group submissions by campaign
-    const campaignsWithSubmissions = results.reduce(
-      (acc, row) => {
-        const campaignId = row.id;
-
-        // Find existing campaign in accumulator
-        let existingCampaign = acc.find((c) => c.id === campaignId);
-
-        if (!existingCampaign) {
-          // Create new campaign entry
-          existingCampaign = {
-            id: row.id,
-            createdBy: row.createdBy,
-            title: row.title,
-            description: row.description,
-            instructions: row.instructions,
-            requirements: row.requirements,
-            payoutPerUser: row.payoutPerUser,
-            totalCost: row.totalCost,
-            maxUsers: row.maxUsers,
-            estimatedTimeMinutes: row.estimatedTimeMinutes,
-            image: row.image,
-            bannerImageUrl: row.bannerImageUrl,
-            expiryDate: row.expiryDate,
-            status: row.status,
-            activity: row.activity,
-            statusUpdatedAt: row.statusUpdatedAt,
-            statusUpdatedBy: row.statusUpdatedBy,
-            createdAt: row.createdAt,
-            updatedAt: row.updatedAt,
-            submissions: [],
-          };
-          acc.push(existingCampaign);
-        }
-
-        // Add submission if it exists
-        if (
-          row.submissionId &&
-          row.submissionCreatedBy &&
-          row.submissionStatus &&
-          row.submissionProofType &&
-          row.submissionCreatedAt &&
-          row.submissionUpdatedAt
-        ) {
-          existingCampaign.submissions.push({
-            id: row.submissionId,
-            campaignId: campaignId,
-            createdBy: row.submissionCreatedBy,
-            status: row.submissionStatus,
-            statusUpdatedAt: row.submissionStatusUpdatedAt,
-            statusUpdatedBy: row.submissionStatusUpdatedBy,
-            proofType: row.submissionProofType,
-            proofUrl: row.submissionProofUrl,
-            proofText: row.submissionProofText,
-            notes: row.submissionNotes,
-            advertiserFeedback: row.submissionAdvertiserFeedback,
-            advertiserRating: row.submissionAdvertiserRating,
-            createdAt: row.submissionCreatedAt,
-            updatedAt: row.submissionUpdatedAt,
-          });
-        }
-
-        return acc;
-      },
-      [] as Array<CampaignWithSubmissions>,
-    );
-
-    return { campaigns: campaignsWithSubmissions, totalCount };
-  }
-
   async getCampaignById(
     campaignId: string,
   ): Promise<CampaignWithCounts | null> {
-    const id = parseInt(campaignId);
-    if (Number.isNaN(id)) {
-      return null;
+    const parsedCampaignId = parseInt(campaignId);
+    if (Number.isNaN(parsedCampaignId)) {
+      throw new BadRequestError("Invalid campaign ID");
     }
 
     const result = await db
       .select({
-        // All campaign fields
         id: campaign.id,
         createdBy: campaign.createdBy,
         advertiserBrandName: advertiser.brandName,
@@ -534,7 +329,7 @@ class CampaignService {
       .from(campaign)
       .leftJoin(submission, eq(campaign.id, submission.campaignId))
       .leftJoin(advertiser, eq(campaign.createdBy, advertiser.userId))
-      .where(eq(campaign.id, id))
+      .where(eq(campaign.id, parsedCampaignId))
       .groupBy(
         campaign.id,
         advertiser.id,
@@ -547,14 +342,15 @@ class CampaignService {
     return result[0] || null;
   }
 
+  // Only advertiser can see submissions for their campaigns
   async getCampaignSubmissions(
     campaignId: string,
     page: number = 1,
     limit: number = 10,
-  ): Promise<{ submissions: SubmissionDB[]; totalCount: number }> {
-    const id = parseInt(campaignId);
-    if (Number.isNaN(id)) {
-      return { submissions: [], totalCount: 0 };
+  ): Promise<CampaignSubmissionAndCount> {
+    const parsedCampaignId = parseInt(campaignId);
+    if (Number.isNaN(parsedCampaignId)) {
+      throw new BadRequestError("Invalid campaign ID");
     }
 
     const offset = (page - 1) * limit;
@@ -583,7 +379,7 @@ class CampaignService {
       })
       .from(submission)
       .leftJoin(user, eq(submission.createdBy, user.id))
-      .where(eq(submission.campaignId, id))
+      .where(eq(submission.campaignId, parsedCampaignId))
       .orderBy(desc(submission.createdAt))
       .limit(limit)
       .offset(offset);
@@ -591,29 +387,138 @@ class CampaignService {
     const totalCountResult = await db
       .select({ count: count() })
       .from(submission)
-      .where(eq(submission.campaignId, id));
+      .where(eq(submission.campaignId, parsedCampaignId));
 
     const totalCount = totalCountResult[0]?.count || 0;
 
     return { submissions, totalCount };
   }
 
-  async updateSubmissionStatus(
-    submissionId: number,
-    status: "approved" | "rejected",
-    advertiserFeedback?: string,
-    advertiserRating?: number,
-  ): Promise<void> {
-    await db
-      .update(submission)
-      .set({
-        status:
-          status === "approved" ? STATUS_ENUM.APPROVED : STATUS_ENUM.REJECTED,
-        advertiserFeedback: advertiserFeedback || null,
-        advertiserRating: advertiserRating || null,
-        statusUpdatedAt: new Date(),
+  async reviewSubmission({
+    submissionId,
+    status,
+    advertiserRating,
+    advertiserFeedback,
+  }: ReviewSubmissionData): Promise<void> {
+    // Find existing submission
+    const existingSubmission = await db
+      .select({
+        id: submission.id,
+        status: submission.status,
+        createdBy: submission.createdBy,
+        campaignId: submission.campaignId,
+        payoutPerUser: campaign.payoutPerUser,
+        title: campaign.title,
+        maxUsers: campaign.maxUsers,
+        totalSubmissions: sql<number>`COALESCE(COUNT(${submission.id}), 0)`,
       })
-      .where(eq(submission.id, submissionId));
+      .from(submission)
+      .where(
+        and(
+          eq(submission.id, submissionId),
+          eq(submission.status, STATUS_ENUM.PENDING),
+        ),
+      )
+      .innerJoin(campaign, eq(submission.campaignId, campaign.id))
+      .groupBy(
+        submission.id,
+        submission.status,
+        submission.createdBy,
+        submission.campaignId,
+        campaign.payoutPerUser,
+        campaign.title,
+        campaign.maxUsers,
+      )
+      .limit(1);
+
+    if (existingSubmission.length === 0) {
+      throw new Error("Submission not found");
+    }
+
+    const submissionData = existingSubmission[0];
+
+    // Check if maxUsers is reached
+
+    const isNewApproval =
+      status === "approved" && submissionData.status !== STATUS_ENUM.APPROVED;
+
+    let newTransaction: TransactionDB | null = null;
+
+    if (isNewApproval) {
+      // TODO: Check if this is correct
+      if (
+        submissionData.maxUsers &&
+        submissionData.maxUsers <= submissionData.totalSubmissions
+      ) {
+        throw new Error("Max users reached for this campaign");
+      }
+
+      // Create a new transaction for the payout
+      newTransaction = await transactionService.createTransaction(
+        submissionData.createdBy,
+        submissionData.payoutPerUser,
+        TRANSACTION_TYPE_ENUM.EARNING,
+        `Payout for approved submission in campaign: ${submissionData.title}`,
+        STATUS_ENUM.PENDING,
+        submissionData.campaignId,
+      );
+    }
+
+    // Make the entire review and payout process a single transaction
+    await db.transaction(async (tx) => {
+      // Update submission status
+      await tx
+        .update(submission)
+        .set({
+          status:
+            status === "approved" ? STATUS_ENUM.APPROVED : STATUS_ENUM.REJECTED,
+          advertiserFeedback: advertiserFeedback || null,
+          advertiserRating: advertiserRating,
+        })
+        .where(eq(submission.id, submissionId));
+
+      // If this is a new approval, handle payout
+      if (isNewApproval) {
+        if (!newTransaction) {
+          throw new Error("Transaction not found");
+        }
+
+        // Get campaign details for payout amount
+        const payoutAmount = submissionData.payoutPerUser;
+
+        // Update user wallet balance
+        await userService.incrementUserBalance(
+          submissionData.createdBy,
+          payoutAmount,
+        );
+
+        // Create transaction record
+        await transactionService.updateTransaction(
+          newTransaction.id,
+          "approved",
+        );
+      }
+    });
+  }
+
+  async updateCampaign(
+    campaignId: string,
+    activity: ActivityEnum,
+    userId: string,
+  ): Promise<void> {
+    const id = parseInt(campaignId);
+    if (Number.isNaN(id)) {
+      throw new Error("Invalid campaign ID");
+    }
+
+    await db
+      .update(campaign)
+      .set({
+        activity:
+          activity === "active" ? ACTIVITY_ENUM.ACTIVE : ACTIVITY_ENUM.PAUSED,
+        updatedAt: new Date(),
+      })
+      .where(and(eq(campaign.id, id), eq(campaign.createdBy, userId)));
   }
 }
 export const campaignService = new CampaignService();

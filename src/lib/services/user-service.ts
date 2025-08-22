@@ -64,6 +64,16 @@ class UserService {
 
     return userWithKyc[0] || null;
   }
+
+  async incrementUserBalance(userId: string, amount: number): Promise<void> {
+    await db
+      .update(user)
+      .set({
+        walletBalance: sql`${user.walletBalance} + ${amount}`,
+        updatedAt: new Date(),
+      })
+      .where(eq(user.id, userId));
+  }
 }
 
 export const userService = new UserService();

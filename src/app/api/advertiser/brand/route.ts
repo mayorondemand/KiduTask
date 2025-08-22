@@ -4,6 +4,8 @@ import { advertiserService } from "@/lib/services/advertiser-service";
 import { userService } from "@/lib/services/user-service";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
+
+// Update brand settings
 export async function PATCH(request: NextRequest) {
   try {
     const user = await userService.validateSession(request);

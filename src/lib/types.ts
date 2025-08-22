@@ -182,13 +182,13 @@ export type CampaignWithCounts = CampaignDB & {
   advertiserBrandLogo: string | null;
 };
 
-export type CampaignWithSubmissions = {
+export type CampaignSubmissionAndCount = {
   submissions: SubmissionWithUser[];
   totalCount: number;
 };
 
 export const reviewSubmissionSchema = z.object({
-  status: z.enum(statusEnum.enumValues),
+  status: z.enum(["approved", "rejected"]),
   advertiserFeedback: z.string().optional(),
   advertiserRating: ratingSchema,
   submissionId: z.number(), // This is the submission ID
@@ -196,13 +196,13 @@ export const reviewSubmissionSchema = z.object({
 
 export type ReviewSubmissionData = z.infer<typeof reviewSubmissionSchema>;
 
-export const updateCampaignActivitySchema = z.object({
+export const updateCampaignSchema = z.object({
   campaignId: z.string(),
   activity: z.enum(activityEnum.enumValues),
 });
 
 export type UpdateCampaignActivityData = z.infer<
-  typeof updateCampaignActivitySchema
+  typeof updateCampaignSchema
 >;
 
 export const submissionFormSchema = z
