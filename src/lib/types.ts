@@ -1,5 +1,6 @@
 import {
   activityEnum,
+  proofTypeEnum,
   statusEnum,
   type transactionTypeEnum,
   type campaign,
@@ -9,11 +10,29 @@ import {
 } from "@/lib/db/schema";
 import { z } from "zod";
 
+export const ratingSchema = z
+  .number()
+  .min(1, "Rating must be between 1 and 5")
+  .max(5, "Rating must be between 1 and 5");
+
+export const ratingReviewSchema = z.object({
+  rating: ratingSchema,
+});
+
+export type RatingReviewData = z.infer<typeof ratingReviewSchema>;
+
 // DB Types
 export type CampaignDB = typeof campaign.$inferSelect;
 export type SubmissionDB = typeof submission.$inferSelect;
 export type UserDB = typeof user.$inferSelect;
 export type TransactionDB = typeof transaction.$inferSelect;
+
+// Extended types for joined data
+export type SubmissionWithUser = SubmissionDB & {
+  userName: string | null;
+  userEmail: string | null;
+  userImage: string | null;
+};
 
 // DB Enums
 export type StatusEnum = (typeof statusEnum.enumValues)[number];
@@ -38,6 +57,8 @@ export const TRANSACTION_TYPE_ENUM = {
   SPENDING: "spending",
   CAMPAIGN_CREATION: "campaign_creation",
 } satisfies Record<string, TransactionTypeEnum>;
+
+export type ProofTypeEnum = (typeof proofTypeEnum.enumValues)[number];
 
 //Schemas
 export const createCampaignSchema = z.object({
@@ -161,7 +182,63 @@ export type CampaignWithCounts = CampaignDB & {
   advertiserBrandLogo: string | null;
 };
 
-// Type for campaign with full submission data and submissions
-export type CampaignWithSubmissions = CampaignDB & {
-  submissions: Array<SubmissionDB>;
+export type CampaignWithSubmissions = {
+  submissions: SubmissionWithUser[];
+  totalCount: number;
 };
+
+export const reviewSubmissionSchema = z.object({
+  status: z.enum(statusEnum.enumValues),
+  advertiserFeedback: z.string().optional(),
+  advertiserRating: ratingSchema,
+  submissionId: z.number(), // This is the submission ID
+});
+
+export type ReviewSubmissionData = z.infer<typeof reviewSubmissionSchema>;
+
+export const updateCampaignActivitySchema = z.object({
+  campaignId: z.string(),
+  activity: z.enum(activityEnum.enumValues),
+});
+
+export type UpdateCampaignActivityData = z.infer<
+  typeof updateCampaignActivitySchema
+>;
+
+export const submissionFormSchema = z
+  .object({
+    proofType: z.enum(proofTypeEnum.enumValues),
+    proofUrl: z.string().optional(),
+    proofLink: z.string().optional(),
+    proofText: z.string().optional(),
+    notes: z.string().max(500, "Notes cannot exceed 500 characters").optional(),
+  })
+  .refine(
+    (data) => {
+      if (data.proofType === "screenshot" && !data.proofUrl) {
+        return false;
+      }
+      if (data.proofType === "link") {
+        if (!data.proofLink) return false;
+        try {
+          new URL(data.proofLink);
+          return true;
+        } catch {
+          return false;
+        }
+      }
+      if (
+        data.proofType === "text" &&
+        (!data.proofText || data.proofText.length < 10)
+      ) {
+        return false;
+      }
+      return true;
+    },
+    {
+      message: "Please provide the required proof based on your selection",
+      path: ["proofUrl"],
+    },
+  );
+
+export type SubmissionFormData = z.infer<typeof submissionFormSchema>;

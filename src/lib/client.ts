@@ -2,201 +2,23 @@
 import { useAuth } from "@/components/providers/auth-provider";
 import { errorHandler } from "@/lib/error-handler";
 import type { AdvertiserStats } from "@/lib/services/advertiser-service";
-import type { BrandSettingsFormData, CampaignFilters, CampaignWithCounts, CreateCampaignData, StatusEnum } from "@/lib/types";
+import type {
+  BrandSettingsFormData,
+  CampaignFilters,
+  CampaignWithCounts,
+  CreateCampaignData,
+  SubmissionFormData,
+  ReviewSubmissionData,
+  SubmissionWithUser,
+  UpdateCampaignActivityData as UpdateCampaignData,
+  CampaignWithSubmissions,
+} from "@/lib/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
-export interface Campaign {
-  id: string;
-  title: string;
-  description: string;
-  payout: number;
-  remainingSlots: number;
-  totalSlots: number;
-  category: string;
-  thumbnail: string;
-  advertiser: string;
-  difficulty: "easy" | "medium" | "hard";
-  estimatedTime: string;
-  rating: number;
-}
-
-// Mock data fetching function
-const fetchDashboardData = async (): Promise<{
-  trendingCampaigns: Campaign[];
-  activeCampaigns: Campaign[];
-}> => {
-  // Simulate 5-second delay
-  await new Promise((resolve) => setTimeout(resolve, 5000));
-
-  return {
-    trendingCampaigns: [
-      {
-        id: "1",
-        title: "Follow @TechStartup on Instagram",
-        description: "Follow our Instagram account and like the latest post",
-        payout: 150,
-        remainingSlots: 45,
-        totalSlots: 100,
-        category: "Social Media",
-        thumbnail:
-          "https://ik.imagekit.io/bluconvalley/kuditask/campaigns/instagram-follow-campaign.png",
-        advertiser: "TechStartup Inc",
-        difficulty: "easy" as const,
-        estimatedTime: "2 mins",
-        rating: 4.8,
-      },
-      {
-        id: "2",
-        title: "Write App Review on Play Store",
-        description: "Download our app and write a genuine 5-star review",
-        payout: 500,
-        remainingSlots: 12,
-        totalSlots: 50,
-        category: "App Review",
-        thumbnail:
-          "https://ik.imagekit.io/bluconvalley/kuditask/campaigns/app-review-playstore.png",
-        advertiser: "MobileApp Co",
-        difficulty: "medium" as const,
-        estimatedTime: "10 mins",
-        rating: 4.6,
-      },
-      {
-        id: "3",
-        title: "Share Facebook Post",
-        description: "Share our promotional post on your Facebook timeline",
-        payout: 200,
-        remainingSlots: 78,
-        totalSlots: 200,
-        category: "Social Media",
-        thumbnail:
-          "https://ik.imagekit.io/bluconvalley/kuditask/campaigns/facebook-share-post.png",
-        advertiser: "Brand Marketing",
-        difficulty: "easy" as const,
-        estimatedTime: "1 min",
-        rating: 4.9,
-      },
-      {
-        id: "4",
-        title: "YouTube Video Like & Subscribe",
-        description: "Like our latest video and subscribe to our channel",
-        payout: 300,
-        remainingSlots: 25,
-        totalSlots: 75,
-        category: "Video",
-        thumbnail:
-          "https://ik.imagekit.io/bluconvalley/kuditask/campaigns/youtube-subscribe-like.png",
-        advertiser: "Content Creator",
-        difficulty: "easy" as const,
-        estimatedTime: "3 mins",
-        rating: 4.7,
-      },
-      {
-        id: "5",
-        title: "Twitter Retweet Campaign",
-        description: "Retweet our announcement and tag 3 friends",
-        payout: 250,
-        remainingSlots: 60,
-        totalSlots: 150,
-        category: "Social Media",
-        thumbnail:
-          "https://ik.imagekit.io/bluconvalley/kuditask/campaigns/twitter-retweet-campaign.png",
-        advertiser: "Social Brand",
-        difficulty: "medium" as const,
-        estimatedTime: "5 mins",
-        rating: 4.5,
-      },
-      {
-        id: "6",
-        title: "TikTok Video Creation",
-        description: "Create a 30-second TikTok video showcasing our product",
-        payout: 800,
-        remainingSlots: 8,
-        totalSlots: 20,
-        category: "UGC",
-        thumbnail:
-          "https://ik.imagekit.io/bluconvalley/kuditask/campaigns/tiktok-video-creation.png",
-        advertiser: "Creative Agency",
-        difficulty: "hard" as const,
-        estimatedTime: "30 mins",
-        rating: 4.4,
-      },
-    ],
-    activeCampaigns: [
-      {
-        id: "7",
-        title: "LinkedIn Post Engagement",
-        description: "Like and comment on our LinkedIn company post",
-        payout: 180,
-        remainingSlots: 35,
-        totalSlots: 80,
-        category: "Social Media",
-        thumbnail:
-          "https://ik.imagekit.io/bluconvalley/kuditask/campaigns/linkedin-engagement.png",
-        advertiser: "B2B Solutions",
-        difficulty: "easy" as const,
-        estimatedTime: "3 mins",
-        rating: 4.6,
-      },
-      {
-        id: "8",
-        title: "Product Survey Completion",
-        description: "Complete a 5-minute survey about our new product",
-        payout: 400,
-        remainingSlots: 20,
-        totalSlots: 100,
-        category: "Survey",
-        thumbnail:
-          "https://ik.imagekit.io/bluconvalley/kuditask/campaigns/product-survey.png",
-        advertiser: "Market Research Co",
-        difficulty: "medium" as const,
-        estimatedTime: "8 mins",
-        rating: 4.3,
-      },
-      {
-        id: "9",
-        title: "Product Survey Completion",
-        description: "Complete a 5-minute survey about our new product",
-        payout: 400,
-        remainingSlots: 20,
-        totalSlots: 100,
-        category: "Survey",
-        thumbnail:
-          "https://ik.imagekit.io/bluconvalley/kuditask/campaigns/product-survey.png",
-        advertiser: "Market Research Co",
-        difficulty: "medium" as const,
-        estimatedTime: "8 mins",
-        rating: 4.3,
-      },
-      {
-        id: "10",
-        title: "Product Survey Completion",
-        description: "Complete a 5-minute survey about our new product",
-        payout: 400,
-        remainingSlots: 20,
-        totalSlots: 100,
-        category: "Survey",
-        thumbnail:
-          "https://ik.imagekit.io/bluconvalley/kuditask/campaigns/product-survey.png",
-        advertiser: "Market Research Co",
-        difficulty: "medium" as const,
-        estimatedTime: "8 mins",
-        rating: 4.3,
-      },
-    ],
-  };
-};
-
-export const useDashboardData = () => {
-  return useQuery({
-    queryKey: ["dashboard"],
-    queryFn: fetchDashboardData,
-  });
-};
-
-export const useAdvertiserRequest = () => {
+export const useAdvertiserAccess = () => {
   return useMutation({
     mutationFn: async () => {
       const response = await axios.post("/api/advertiser/request");
@@ -209,12 +31,11 @@ export const useAdvertiserRequest = () => {
   });
 };
 
-export const useAdvertiserStats = () => {
+export const useAdvertiserDashboard = () => {
   return useQuery({
-    queryKey: ["advertiser-stats"],
+    queryKey: ["advertiser-dashboard"],
     queryFn: async (): Promise<AdvertiserStats> => {
       const response = await axios.get("/api/advertiser/stats");
-      console.log(response.data);
       return response.data.stats;
     },
   });
@@ -245,6 +66,7 @@ export const usePlatformSettings = () => {
 export const useCreateCampaign = () => {
   const router = useRouter();
   const { refetch } = useAuth();
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (data: CreateCampaignData) => {
       const response = await axios.post("/api/campaigns/new", data);
@@ -254,6 +76,7 @@ export const useCreateCampaign = () => {
     onSuccess: (data) => {
       toast.success("Campaign created successfully");
       refetch();
+      queryClient.invalidateQueries({ queryKey: ["campaigns"] });
       router.push(`/advertisers/campaigns/${data.campaignId}`);
     },
     onError: errorHandler.handleQueryError,
@@ -272,7 +95,7 @@ export const useCampaigns = (filters: CampaignFilters) => {
   });
 };
 
-export const useCampaign = (id: string) => {
+export const useAdvertiserCampaign = (id: string) => {
   return useQuery({
     queryKey: ["campaign", id],
     queryFn: async (): Promise<CampaignWithCounts> => {
@@ -290,7 +113,7 @@ export const useCampaignSubmissions = (
 ) => {
   return useQuery({
     queryKey: ["campaign-submissions", campaignId, page, limit],
-    queryFn: async () => {
+    queryFn: async (): Promise<CampaignWithSubmissions> => {
       const response = await axios.get(
         `/api/advertiser/campaigns/${campaignId}/submissions`,
         {
@@ -303,7 +126,7 @@ export const useCampaignSubmissions = (
   });
 };
 
-export const useUpdateSubmission = () => {
+export const useReviewSubmission = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -312,12 +135,7 @@ export const useUpdateSubmission = () => {
       status,
       advertiserFeedback,
       advertiserRating,
-    }: {
-      submissionId: number;
-      status: StatusEnum;
-      advertiserFeedback?: string;
-      advertiserRating?: number;
-    }) => {
+    }: ReviewSubmissionData) => {
       const response = await axios.patch(
         `/api/advertiser/submissions/${submissionId}`,
         {
@@ -329,8 +147,29 @@ export const useUpdateSubmission = () => {
       return response.data;
     },
     onSuccess: (data) => {
-      // Invalidate and refetch campaign submissions
       queryClient.invalidateQueries({ queryKey: ["campaign-submissions"] });
+      queryClient.invalidateQueries({ queryKey: ["campaigns"] });
+      toast.success(data.message);
+    },
+    onError: errorHandler.handleQueryError,
+  });
+};
+
+export const useUpdateCampaign = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ campaignId, activity }: UpdateCampaignData) => {
+      const response = await axios.patch(
+        `/api/advertiser/campaigns/${campaignId}`,
+        { activity },
+      );
+      return response.data;
+    },
+    onSuccess: (data, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: ["campaign", variables.campaignId],
+      });
       queryClient.invalidateQueries({ queryKey: ["campaigns"] });
       toast.success(data.message);
     },
@@ -340,6 +179,7 @@ export const useUpdateSubmission = () => {
 
 export const useUpdateBrandSettings = () => {
   const { refetch } = useAuth();
+  const router = useRouter();
 
   return useMutation({
     mutationFn: async (data: BrandSettingsFormData) => {
@@ -349,7 +189,163 @@ export const useUpdateBrandSettings = () => {
     onSuccess: () => {
       toast.success("Brand settings updated successfully");
       refetch();
+      router.back();
     },
     onError: errorHandler.handleQueryError,
+  });
+};
+
+// Public campaign queries for regular users
+export const usePublicCampaign = (id: string) => {
+  return useQuery({
+    queryKey: ["public-campaign", id],
+    queryFn: async (): Promise<CampaignWithCounts> => {
+      const response = await axios.get(`/api/campaigns/${id}`);
+      return response.data.campaign;
+    },
+    enabled: !!id,
+  });
+};
+
+export const useMySubmissions = (campaignId: string) => {
+  return useQuery({
+    queryKey: ["user-submissions", campaignId],
+    queryFn: async (): Promise<SubmissionWithUser[]> => {
+      const response = await axios.get(
+        `/api/campaigns/${campaignId}/submissions`,
+      );
+      return response.data.submissions;
+    },
+    enabled: !!campaignId,
+  });
+};
+
+export const useSubmitTask = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      campaignId,
+      data,
+    }: {
+      campaignId: string;
+      data: {
+        proofType: "screenshot" | "link" | "text";
+        proofUrl?: string;
+        proofText: string;
+        notes?: string;
+      };
+    }) => {
+      const response = await axios.post(
+        `/api/campaigns/${campaignId}/submissions`,
+        data,
+      );
+      return response.data;
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: ["user-submissions", variables.campaignId],
+      });
+      toast.success("Task submitted successfully");
+    },
+    onError: errorHandler.handleQueryError,
+  });
+};
+
+export const useRateCampaign = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      campaignId,
+      rating,
+    }: {
+      campaignId: string;
+      rating: number;
+    }) => {
+      const response = await axios.post(`/api/campaigns/${campaignId}/rating`, {
+        rating,
+      });
+      return response.data;
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: ["user-campaign-rating", variables.campaignId],
+      });
+      toast.success(
+        "Campaign rating submitted successfully. You cannot change this rating.",
+      );
+    },
+    onError: errorHandler.handleQueryError,
+  });
+};
+
+export const useMyCampaignRating = (campaignId: string) => {
+  return useQuery({
+    queryKey: ["user-campaign-rating", campaignId],
+    queryFn: async () => {
+      const response = await axios.get(`/api/campaigns/${campaignId}/rating`);
+      return response.data.rating;
+    },
+    enabled: !!campaignId,
+  });
+};
+
+export const useMySubmission = (campaignId: string, submissionId: string) => {
+  return useQuery({
+    queryKey: ["submission", campaignId, submissionId],
+    queryFn: async () => {
+      const response = await axios.get(
+        `/api/campaigns/${campaignId}/submissions/${submissionId}`,
+      );
+      return response.data.submission;
+    },
+    enabled: !!campaignId && !!submissionId,
+  });
+};
+
+export const useResubmitSubmission = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      campaignId,
+      submissionId,
+      data,
+    }: {
+      campaignId: string;
+      submissionId: number;
+      data: SubmissionFormData;
+    }) => {
+      const response = await axios.patch(
+        `/api/campaigns/${campaignId}/submissions/${submissionId}`,
+        data,
+      );
+      return response.data;
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: ["user-submissions", variables.campaignId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [
+          "submission",
+          variables.campaignId,
+          String(variables.submissionId),
+        ],
+      });
+      toast.success("Submission resubmitted successfully");
+    },
+    onError: errorHandler.handleQueryError,
+  });
+};
+
+export const useUploadAuth = () => {
+  return useQuery({
+    queryKey: ["upload-auth"],
+    queryFn: async () => {
+      const response = await axios.get("/api/upload-auth");
+      return response.data;
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 };

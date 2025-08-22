@@ -161,13 +161,13 @@ export const errorHandler = {
   handleQueryError(error: unknown) {
     let message = "An unexpected error occurred.";
     let description = "Please try again later.";
-    if (error instanceof Error) {
+    if (error instanceof AxiosError) {
+      description = error.message;
+      message = error.response?.data.error.message;
+    } else if (error instanceof Error) {
       message = error.message;
     } else if (typeof error === "string") {
       message = error;
-    } else if (error instanceof AxiosError) {
-      description = error.message;
-      message = error.response?.data.error.message;
     }
     toast.error(message, {
       description,
