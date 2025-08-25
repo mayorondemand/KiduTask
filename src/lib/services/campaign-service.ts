@@ -492,6 +492,7 @@ class CampaignService {
 
         // Update user wallet balance
         await userService.incrementUserBalance(
+          tx,
           submissionData.createdBy,
           payoutAmount,
         );

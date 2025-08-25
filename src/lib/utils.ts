@@ -19,8 +19,20 @@ export const formatCurrency = (amount: number | unknown) => {
   }).format(amount);
 };
 
+export const formatDate = (date: Date) => {
+  return new Date(date).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
+
 export const getStatusColor = (
-  status: (typeof statusEnum.enumValues)[number] | (typeof activityEnum.enumValues)[number],
+  status:
+    | (typeof statusEnum.enumValues)[number]
+    | (typeof activityEnum.enumValues)[number],
 ) => {
   switch (status) {
     case "active":

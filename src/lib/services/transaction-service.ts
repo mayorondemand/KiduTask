@@ -1,9 +1,11 @@
 import { db } from "@/lib/db";
 import { transaction } from "@/lib/db/schema";
 import type {
+  Db,
   StatusEnum,
   TransactionDB,
   TransactionTypeEnum,
+  Tx,
 } from "@/lib/types";
 
 import { desc, eq } from "drizzle-orm";
@@ -35,8 +37,9 @@ class TransactionService {
   async updateTransaction(
     transactionId: number,
     status: StatusEnum,
+    client: Tx | Db = db,
   ): Promise<TransactionDB> {
-    const result = await db
+    const result = await client
       .update(transaction)
       .set({
         status,

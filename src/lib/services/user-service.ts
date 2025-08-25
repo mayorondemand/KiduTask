@@ -4,7 +4,7 @@ import { advertiser, kyc, user } from "@/lib/db/schema";
 import { NotAuthorizedError, NotFoundError } from "@/lib/error-handler";
 import { eq, getTableColumns, sql } from "drizzle-orm";
 import type { NextRequest } from "next/server";
-import type { StatusEnum, UserDB } from "@/lib/types";
+import type { Db, StatusEnum, Tx, UserDB } from "@/lib/types";
 
 export type UserDetails = UserDB & {
   isKycVerified: boolean;
@@ -44,6 +44,18 @@ class UserService {
     return user;
   }
 
+  async validateUserFromHeaders(headers: Headers): Promise<UserDetails> {
+    const session = await auth.api.getSession({ headers });
+    if (!session?.user?.id) {
+      throw new NotAuthorizedError("Authentication required");
+    }
+    const foundUser = await this.getUser(session.user.id);
+    if (!foundUser) {
+      throw new NotFoundError("User not found");
+    }
+    return foundUser;
+  }
+
   async getUser(userId: string): Promise<UserDetails | null> {
     // Get the user
     const userWithKyc = await db
@@ -65,8 +77,12 @@ class UserService {
     return userWithKyc[0] || null;
   }
 
-  async incrementUserBalance(userId: string, amount: number): Promise<void> {
-    await db
+  async incrementUserBalance(
+    client: Db | Tx,
+    userId: string,
+    amount: number,
+  ): Promise<void> {
+    await client
       .update(user)
       .set({
         walletBalance: sql`${user.walletBalance} + ${amount}`,

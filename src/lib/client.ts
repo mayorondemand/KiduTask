@@ -12,6 +12,8 @@ import type {
   SubmissionWithUser,
   UpdateCampaignActivityData as UpdateCampaignData,
   CampaignSubmissionAndCount,
+  TransactionTypeEnum,
+  TransactionDB,
 } from "@/lib/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
@@ -46,19 +48,15 @@ export interface PlatformSettings {
   minimumWithdrawal: number;
   maximumWithdrawal: number;
   minimumDeposit: number;
+  withdrawalFee: number;
 }
 
 export const usePlatformSettings = () => {
   return useQuery({
     queryKey: ["platform-settings"],
     queryFn: async (): Promise<PlatformSettings> => {
-      await new Promise((resolve) => setTimeout(resolve, 5000));
-      return {
-        platformFee: 10500,
-        minimumWithdrawal: 1000,
-        maximumWithdrawal: 1000000,
-        minimumDeposit: 500,
-      };
+      const response = await axios.get("/api/platform-settings");
+      return response.data;
     },
   });
 };
@@ -306,5 +304,49 @@ export const useUploadAuth = () => {
       return response.data;
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+};
+
+export const useInitiateDeposit = () => {
+  return useMutation({
+    mutationFn: async (amount: number) => {
+      const response = await axios.post("/api/wallet/deposit", { amount });
+      return response.data as {
+        link: string;
+      };
+    },
+    onError: errorHandler.handleQueryError,
+  });
+};
+
+export const useCreateWithdrawal = () => {
+  return useMutation({
+    mutationFn: async (amount: number) => {
+      const response = await axios.post("/api/wallet/withdraw", { amount });
+      return response.data;
+    },
+    onError: errorHandler.handleQueryError,
+  });
+};
+
+export type TransactionClient = {
+  id: number;
+  type: TransactionTypeEnum;
+  amount: number;
+  status: string;
+  description: string;
+  createdAt: string;
+  fee?: number | null;
+};
+
+export const useTransactions = (limit: number = 50) => {
+  return useQuery({
+    queryKey: ["wallet-transactions", limit],
+    queryFn: async (): Promise<TransactionDB[]> => {
+      const response = await axios.get("/api/wallet/transactions", {
+        params: { limit },
+      });
+      return response.data.transactions;
+    },
   });
 };

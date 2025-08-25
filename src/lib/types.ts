@@ -9,6 +9,14 @@ import {
   type user,
 } from "@/lib/db/schema";
 import { z } from "zod";
+import type { PgTransaction } from "drizzle-orm/pg-core";
+import type {
+  PostgresJsDatabase,
+  PostgresJsQueryResultHKT,
+} from "drizzle-orm/postgres-js";
+
+export type Db = PostgresJsDatabase;
+export type Tx = PgTransaction<PostgresJsQueryResultHKT>;
 
 export const ratingSchema = z
   .number()

@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useAuth } from "@/components/providers/auth-provider";
 import { Navbar } from "@/components/layout/navbar";
+import { useAuth } from "@/components/providers/auth-provider";
+import { StatusBadge } from "@/components/status-icon";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -10,18 +11,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import {
   Dialog,
   DialogContent,
@@ -31,40 +20,64 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
-  Wallet,
-  Plus,
-  Minus,
-  ArrowUpRight,
-  ArrowDownLeft,
-  CreditCard,
-  Building2,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  useCreateWithdrawal,
+  useInitiateDeposit,
+  usePlatformSettings,
+  useTransactions,
+} from "@/lib/client";
+import type { TransactionTypeEnum } from "@/lib/types";
+import { formatCurrency, formatDate } from "@/lib/utils";
+import {
   AlertCircle,
+  ArrowDownLeft,
+  ArrowUpRight,
+  Building2,
   CheckCircle,
-  TrendingUp,
+  CreditCard,
   DollarSign,
+  Loader2,
+  Megaphone,
+  Minus,
+  Plus,
+  TrendingUp,
+  Wallet,
 } from "lucide-react";
-import { toast } from "sonner";
-import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 export default function WalletPage() {
   const { user } = useAuth();
+  const router = useRouter();
 
-  const queryClient = useQueryClient();
   const [depositDialogOpen, setDepositDialogOpen] = useState(false);
   const [withdrawDialogOpen, setWithdrawDialogOpen] = useState(false);
   const [depositAmount, setDepositAmount] = useState("");
   const [withdrawAmount, setWithdrawAmount] = useState("");
-  const [isLoadingBankDetails, setIsLoadingBankDetails] = useState(false);
 
   // Mock user bank details from settings
-  const [userBankDetails, setUserBankDetails] = useState(null);
+  const [userBankDetails, setUserBankDetails] = useState<{
+    bankName: string;
+    accountNumber: string;
+    accountName: string;
+    isVerified: boolean;
+  } | null>(null);
 
   useEffect(() => {
     // Simulate fetching user bank details from settings
     const fetchBankDetails = async () => {
-      setIsLoadingBankDetails(true);
       // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
@@ -75,265 +88,106 @@ export default function WalletPage() {
         accountName: "John Doe",
         isVerified: true,
       });
-      setIsLoadingBankDetails(false);
     };
 
     fetchBankDetails();
   }, []);
 
-  // Remove these hardcoded constants:
-  // const WITHDRAWAL_FEE = 100
-  // const MINIMUM_WITHDRAWAL = 1000
-  // const MINIMUM_DEPOSIT = 500
-  // const MAXIMUM_DEPOSIT = 1000000
+  const { data: platformSettings } = usePlatformSettings();
+  const { data: transactions = [] } = useTransactions(50);
 
-  // Add this function to fetch settings from backend:
-  const fetchPlatformSettings = async () => {
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    return {
-      withdrawalFee: 100,
-      minimumWithdrawal: 1000,
-      minimumDeposit: 500,
-      maximumDeposit: 1000000,
-      campaignCreationFee: 5000,
-    };
-  };
+  const depositMutation = useInitiateDeposit();
 
-  const { data: platformSettings, isLoading: settingsLoading } = useQuery({
-    queryKey: ["platform-settings"],
-    queryFn: fetchPlatformSettings,
-  });
-
-  // Constants
-  // const WITHDRAWAL_FEE = 100
-  // const MINIMUM_WITHDRAWAL = 1000
-  // const MINIMUM_DEPOSIT = 500
-  // const MAXIMUM_DEPOSIT = 1000000
-
-  // Mock transaction history
-  const transactions = [
-    {
-      id: "txn-1",
-      type: "deposit",
-      amount: 10000,
-      fee: 0,
-      status: "completed",
-      description: "Wallet deposit",
-      createdAt: "2024-01-15T10:30:00Z",
-    },
-    {
-      id: "txn-2",
-      type: "earning",
-      amount: 500,
-      fee: 0,
-      status: "completed",
-      description: "Task completion reward",
-      createdAt: "2024-01-15T09:15:00Z",
-    },
-    {
-      id: "txn-3",
-      type: "withdrawal",
-      amount: 5000,
-      fee: 100,
-      status: "pending",
-      description: "Bank withdrawal",
-      createdAt: "2024-01-14T16:20:00Z",
-    },
-    {
-      id: "txn-4",
-      type: "earning",
-      amount: 300,
-      fee: 0,
-      status: "completed",
-      description: "Task completion reward",
-      createdAt: "2024-01-14T14:45:00Z",
-    },
-    {
-      id: "txn-5",
-      type: "withdrawal",
-      amount: 2000,
-      fee: 100,
-      status: "completed",
-      description: "Bank withdrawal",
-      createdAt: "2024-01-13T11:30:00Z",
-    },
-  ];
-
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat("en-NG", {
-      style: "currency",
-      currency: "NGN",
-      minimumFractionDigits: 0,
-    }).format(amount);
-  };
-
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
-
-  const depositMutation = useMutation({
-    mutationFn: async (amount) => {
-      // Simulate deposit processing
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      return { success: true, amount };
-    },
-    onSuccess: (data) => {
-      toast({
-        title: "Deposit Successful! 🎉",
-        description: `${formatCurrency(data.amount)} has been added to your wallet`,
-      });
-      setDepositAmount("");
-      setDepositDialogOpen(false);
-      queryClient.invalidateQueries(["wallet"]);
-    },
-    onError: () => {
-      toast({
-        title: "Deposit Failed",
-        description:
-          "There was an error processing your deposit. Please try again.",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const withdrawMutation = useMutation({
-    mutationFn: async (amount) => {
-      // Simulate withdrawal processing
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      return { success: true, amount };
-    },
-    onSuccess: (data) => {
-      toast({
-        title: "Withdrawal Submitted! 📤",
-        description: `Your withdrawal of ${formatCurrency(data.amount)} is being processed`,
-      });
-      setWithdrawAmount("");
-      setWithdrawDialogOpen(false);
-      queryClient.invalidateQueries(["wallet"]);
-    },
-    onError: () => {
-      toast({
-        title: "Withdrawal Failed",
-        description:
-          "There was an error processing your withdrawal. Please try again.",
-        variant: "destructive",
-      });
-    },
-  });
+  const withdrawMutation = useCreateWithdrawal();
 
   const handleDeposit = () => {
     const amount = Number.parseFloat(depositAmount);
     if (!amount || amount < (platformSettings?.minimumDeposit || 500)) {
-      toast({
-        title: "Invalid Amount",
-        description: `Minimum deposit is ${formatCurrency(platformSettings?.minimumDeposit || 500)}`,
-        variant: "destructive",
-      });
+      toast.error(
+        `Minimum deposit is ${formatCurrency(platformSettings?.minimumDeposit || 500)}`,
+      );
       return;
     }
-    if (amount > (platformSettings?.maximumDeposit || 1000000)) {
-      toast({
-        title: "Amount Too High",
-        description: `Maximum deposit is ${formatCurrency(platformSettings?.maximumDeposit || 1000000)}`,
-        variant: "destructive",
-      });
-      return;
-    }
-    depositMutation.mutate(amount);
-  };
-
-  const getWithdrawalError = () => {
-    if (!user?.kycVerified) {
-      return "KYC verification required. Complete your identity verification in Settings to enable withdrawals.";
-    }
-    if (!userBankDetails?.isVerified) {
-      return "Bank account verification required. Add and verify your bank account in Settings to enable withdrawals.";
-    }
-    if (user.walletBalance < (platformSettings?.minimumWithdrawal || 1000)) {
-      return `Insufficient balance. You need at least ${formatCurrency(platformSettings?.minimumWithdrawal || 1000)} to make a withdrawal.`;
-    }
-    return null;
+    depositMutation.mutate(amount, {
+      onSuccess: (data) => {
+        const link = data.link;
+        console.log("link response", link);
+        if (link) router.push(link);
+        toast.info("Deposit initiated. Complete payment in the opened tab");
+        setDepositAmount("");
+        setDepositDialogOpen(false);
+      },
+    });
   };
 
   const handleWithdraw = () => {
-    const amount = Number.parseFloat(withdrawAmount);
-    const totalDeduction = amount + (platformSettings?.withdrawalFee || 100);
-
-    if (!amount || amount < (platformSettings?.minimumWithdrawal || 1000)) {
-      toast({
-        title: "Invalid Amount",
-        description: `Minimum withdrawal is ${formatCurrency(platformSettings?.minimumWithdrawal || 1000)}`,
-        variant: "destructive",
+    if (!platformSettings || !user?.walletBalance) {
+      toast.info("Please wait", {
+        description: "If this does not resolve, contact support",
       });
+      return;
+    }
+    const amount = Number.parseFloat(withdrawAmount);
+    const totalDeduction = amount + platformSettings.withdrawalFee;
+
+    if (!amount || amount < platformSettings.minimumWithdrawal) {
+      toast.error(
+        `Minimum withdrawal is ${formatCurrency(platformSettings?.minimumWithdrawal)}`,
+      );
       return;
     }
 
     if (totalDeduction > user.walletBalance) {
-      toast({
-        title: "Insufficient Balance",
-        description: `You need ${formatCurrency(totalDeduction)} (including ${formatCurrency(platformSettings?.withdrawalFee || 100)} fee) but only have ${formatCurrency(user.walletBalance)}`,
-        variant: "destructive",
-      });
+      toast.error(
+        `You need ${formatCurrency(totalDeduction)} (including ${formatCurrency(platformSettings.withdrawalFee)} fee) but only have ${formatCurrency(user.walletBalance)}`,
+      );
       return;
     }
 
-    withdrawMutation.mutate(amount);
+    withdrawMutation.mutate(amount, {
+      onSuccess: () => {
+        setWithdrawAmount("");
+        setWithdrawDialogOpen(false);
+      },
+    });
   };
 
-  const getTransactionIcon = (type) => {
+  const getTransactionIcon = (type: TransactionTypeEnum) => {
     switch (type) {
       case "deposit":
         return <ArrowDownLeft className="h-4 w-4 text-green-600" />;
       case "withdrawal":
         return <ArrowUpRight className="h-4 w-4 text-red-600" />;
       case "earning":
-        return <TrendingUp className="h-4 w-4 text-blue-600" />;
+        return <TrendingUp className="h-4 w-4 text-green-600" />;
+      case "campaign_creation":
+        return <Megaphone className="h-4 w-4 text-primary" />;
       default:
         return <DollarSign className="h-4 w-4 text-gray-600" />;
     }
   };
 
-  const getStatusBadge = (status) => {
-    switch (status) {
-      case "completed":
-        return (
-          <Badge className="bg-green-100 text-green-800 hover:bg-green-100">
-            Completed
-          </Badge>
-        );
-      case "pending":
-        return (
-          <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100">
-            Pending
-          </Badge>
-        );
-      case "failed":
-        return (
-          <Badge className="bg-red-100 text-red-800 hover:bg-red-100">
-            Failed
-          </Badge>
-        );
-      default:
-        return <Badge variant="secondary">{status}</Badge>;
-    }
-  };
+  const quickDepositAmounts = [10000, 25000, 50000, 100000, 250000, 300000];
 
-  const quickDepositAmounts = [1000, 2500, 5000, 10000];
-
-  const canWithdraw = userBankDetails?.isVerified && user?.kycVerified;
+  const canWithdraw = userBankDetails?.isVerified && user?.isKycVerified;
 
   if (!user) {
-    return null;
+    return (
+      <div className="min-h-screen pt-20 bg-gray-50">
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <Loader2 className="animate-spin  border-primary mx-auto mb-4" />
+              <p className="text-muted-foreground">Loading Wallet...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen pt-20 bg-gray-50">
       <Navbar />
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
@@ -344,7 +198,7 @@ export default function WalletPage() {
         </div>
 
         {/* Wallet Balance Card */}
-        <Card className="mb-8">
+        <Card className="mb-8 shadow-none rounded-lg">
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
               <Wallet className="h-6 w-6" />
@@ -410,12 +264,6 @@ export default function WalletPage() {
                           ))}
                         </div>
                       </div>
-                      <div className="bg-blue-50 p-3 rounded-lg">
-                        <p className="text-sm text-blue-800">
-                          <strong>Note:</strong> Deposits are processed
-                          instantly via secure payment gateway.
-                        </p>
-                      </div>
                     </div>
                     <DialogFooter>
                       <Button
@@ -441,11 +289,7 @@ export default function WalletPage() {
                   onOpenChange={setWithdrawDialogOpen}
                 >
                   <DialogTrigger asChild>
-                    <Button
-                      variant="outline"
-                      disabled={!canWithdraw || isLoadingBankDetails}
-                      className="bg-transparent"
-                    >
+                    <Button variant="outline" className="bg-transparent">
                       <Minus className="h-4 w-4 mr-2" />
                       Withdraw
                     </Button>
@@ -471,7 +315,9 @@ export default function WalletPage() {
                                 Cannot Withdraw
                               </h4>
                               <p className="text-sm text-yellow-700 mt-1">
-                                {getWithdrawalError()}
+                                {!userBankDetails?.isVerified
+                                  ? "You have not set your bank details"
+                                  : "You have not completed KYC verification"}
                               </p>
                             </div>
                           </div>
@@ -573,16 +419,14 @@ export default function WalletPage() {
                       >
                         Cancel
                       </Button>
-                      {canWithdraw && (
-                        <Button
-                          onClick={handleWithdraw}
-                          disabled={withdrawMutation.isPending}
-                        >
-                          {withdrawMutation.isPending
-                            ? "Processing..."
-                            : "Withdraw"}
-                        </Button>
-                      )}
+                      <Button
+                        onClick={handleWithdraw}
+                        disabled={withdrawMutation.isPending}
+                      >
+                        {withdrawMutation.isPending
+                          ? "Processing..."
+                          : "Withdraw"}
+                      </Button>
                     </DialogFooter>
                   </DialogContent>
                 </Dialog>
@@ -592,7 +436,7 @@ export default function WalletPage() {
         </Card>
 
         {/* Transaction History */}
-        <Card>
+        <Card className="shadow-none rounded-lg">
           <CardHeader>
             <CardTitle>Transaction History</CardTitle>
             <CardDescription>Your recent wallet transactions</CardDescription>
@@ -605,18 +449,19 @@ export default function WalletPage() {
                     <TableHead>Type</TableHead>
                     <TableHead>Description</TableHead>
                     <TableHead>Amount</TableHead>
-                    <TableHead>Fee</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Date</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {transactions.map((transaction) => (
-                    <TableRow key={transaction.id}>
+                    <TableRow className="h-14" key={transaction.id}>
                       <TableCell>
                         <div className="flex items-center space-x-2">
                           {getTransactionIcon(transaction.type)}
-                          <span className="capitalize">{transaction.type}</span>
+                          <span className="uppercase">
+                            {String(transaction.type)}
+                          </span>
                         </div>
                       </TableCell>
                       <TableCell>{transaction.description}</TableCell>
@@ -631,19 +476,20 @@ export default function WalletPage() {
                                 : ""
                           }
                         >
-                          {transaction.type === "withdrawal" ? "-" : "+"}
+                          {transaction.type === "withdrawal" ||
+                          transaction.type === "campaign_creation"
+                            ? "-"
+                            : "+"}
                           {formatCurrency(transaction.amount)}
                         </span>
                       </TableCell>
+
                       <TableCell>
-                        {transaction.fee > 0
-                          ? formatCurrency(transaction.fee)
-                          : "-"}
+                        <StatusBadge status={transaction.status} />
                       </TableCell>
                       <TableCell>
-                        {getStatusBadge(transaction.status)}
+                        {formatDate(new Date(transaction.createdAt))}
                       </TableCell>
-                      <TableCell>{formatDate(transaction.createdAt)}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>

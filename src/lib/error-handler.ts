@@ -145,7 +145,7 @@ export const errorHandler = {
       return NextResponse.json(
         {
           error: {
-            message: error.message,
+            message: "An unknown error occured",
             code: "INTERNAL_ERROR",
           },
         },
