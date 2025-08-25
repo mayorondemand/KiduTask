@@ -120,14 +120,20 @@ export const errorHandler = {
     }
 
     if (error instanceof ZodError) {
+      const formatted = (error as ZodError).issues
+        .map((issue) => {
+          const label = issue.path.length
+            ? issue.path
+                .map((p) => (typeof p === "number" ? `[${p + 1}]` : p))
+                .join(" > ")
+            : "Field";
+          return `${label}: ${issue.message}`;
+        })
+        .join(". ");
       return NextResponse.json(
         {
           error: {
-            message: (error as ZodError).issues
-              .map((issue) => {
-                return `-> ${issue.path.join(">")}: ${issue.message}`;
-              })
-              .join(", "),
+            message: formatted,
             code: "VALIDATION_ERROR",
           },
         },

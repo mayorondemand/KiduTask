@@ -201,43 +201,34 @@ export const updateCampaignSchema = z.object({
   activity: z.enum(activityEnum.enumValues),
 });
 
-export type UpdateCampaignActivityData = z.infer<
-  typeof updateCampaignSchema
->;
+export type UpdateCampaignActivityData = z.infer<typeof updateCampaignSchema>;
 
 export const submissionFormSchema = z
   .object({
-    proofType: z.enum(proofTypeEnum.enumValues),
+    proofType: z.enum(proofTypeEnum.enumValues), // required
     proofUrl: z.string().optional(),
-    proofLink: z.string().optional(),
     proofText: z.string().optional(),
     notes: z.string().max(500, "Notes cannot exceed 500 characters").optional(),
   })
   .refine(
     (data) => {
-      if (data.proofType === "screenshot" && !data.proofUrl) {
+      if (!data.proofType) {
         return false;
+      }
+      if (data.proofType === "screenshot") {
+        return !!data.proofUrl;
       }
       if (data.proofType === "link") {
-        if (!data.proofLink) return false;
-        try {
-          new URL(data.proofLink);
-          return true;
-        } catch {
-          return false;
-        }
+        return !!data.proofText;
       }
-      if (
-        data.proofType === "text" &&
-        (!data.proofText || data.proofText.length < 10)
-      ) {
-        return false;
+      if (data.proofType === "text") {
+        return !!data.proofText;
       }
       return true;
     },
     {
       message: "Please provide the required proof based on your selection",
-      path: ["proofUrl"],
+      path: ["proofType"],
     },
   );
 

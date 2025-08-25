@@ -69,7 +69,7 @@ export const useCreateCampaign = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (data: CreateCampaignData) => {
-      const response = await axios.post("/api/campaigns/new", data);
+      const response = await axios.post("/api/advertiser/campaigns", data);
 
       return response.data;
     },
@@ -83,9 +83,9 @@ export const useCreateCampaign = () => {
   });
 };
 
-export const useCampaigns = (filters: CampaignFilters) => {
+export const useAdvertiserCampaigns = (filters: CampaignFilters) => {
   return useQuery({
-    queryKey: ["campaigns", filters],
+    queryKey: ["advertiser-campaigns", filters],
     queryFn: async (): Promise<CampaignWithCounts[]> => {
       const response = await axios.get("/api/advertiser/campaigns", {
         params: filters,
@@ -196,6 +196,18 @@ export const useUpdateBrandSettings = () => {
 };
 
 // Public campaign queries for regular users
+export const usePublicCampaigns = (filters: CampaignFilters) => {
+  return useQuery({
+    queryKey: ["campaigns", filters],
+    queryFn: async (): Promise<CampaignWithCounts[]> => {
+      const response = await axios.get("/api/campaigns", {
+        params: filters,
+      });
+      return response.data.campaigns;
+    },
+  });
+};
+
 export const usePublicCampaign = (id: string) => {
   return useQuery({
     queryKey: ["public-campaign", id],
@@ -229,12 +241,7 @@ export const useSubmitTask = () => {
       data,
     }: {
       campaignId: string;
-      data: {
-        proofType: "screenshot" | "link" | "text";
-        proofUrl?: string;
-        proofText: string;
-        notes?: string;
-      };
+      data: SubmissionFormData;
     }) => {
       const response = await axios.post(
         `/api/campaigns/${campaignId}/submissions`,
@@ -287,55 +294,6 @@ export const useMyCampaignRating = (campaignId: string) => {
       return response.data.rating;
     },
     enabled: !!campaignId,
-  });
-};
-
-export const useMySubmission = (campaignId: string, submissionId: string) => {
-  return useQuery({
-    queryKey: ["submission", campaignId, submissionId],
-    queryFn: async () => {
-      const response = await axios.get(
-        `/api/campaigns/${campaignId}/submissions/${submissionId}`,
-      );
-      return response.data.submission;
-    },
-    enabled: !!campaignId && !!submissionId,
-  });
-};
-
-export const useResubmitSubmission = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async ({
-      campaignId,
-      submissionId,
-      data,
-    }: {
-      campaignId: string;
-      submissionId: number;
-      data: SubmissionFormData;
-    }) => {
-      const response = await axios.patch(
-        `/api/campaigns/${campaignId}/submissions/${submissionId}`,
-        data,
-      );
-      return response.data;
-    },
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({
-        queryKey: ["user-submissions", variables.campaignId],
-      });
-      queryClient.invalidateQueries({
-        queryKey: [
-          "submission",
-          variables.campaignId,
-          String(variables.submissionId),
-        ],
-      });
-      toast.success("Submission resubmitted successfully");
-    },
-    onError: errorHandler.handleQueryError,
   });
 };
 

@@ -6,7 +6,11 @@ import {
   transaction,
   user,
 } from "@/lib/db/schema";
-import { BadRequestError } from "@/lib/error-handler";
+import {
+  BadRequestError,
+  NotFoundError,
+  TooManyRequestsError,
+} from "@/lib/error-handler";
 import { transactionService } from "@/lib/services/transaction-service";
 import { userService } from "@/lib/services/user-service";
 import {
@@ -432,7 +436,7 @@ class CampaignService {
       .limit(1);
 
     if (existingSubmission.length === 0) {
-      throw new Error("Submission not found");
+      throw new NotFoundError("Submission not found");
     }
 
     const submissionData = existingSubmission[0];
@@ -450,7 +454,7 @@ class CampaignService {
         submissionData.maxUsers &&
         submissionData.maxUsers <= submissionData.totalSubmissions
       ) {
-        throw new Error("Max users reached for this campaign");
+        throw new TooManyRequestsError("Max users reached for this campaign");
       }
 
       // Create a new transaction for the payout
@@ -480,7 +484,7 @@ class CampaignService {
       // If this is a new approval, handle payout
       if (isNewApproval) {
         if (!newTransaction) {
-          throw new Error("Transaction not found");
+          throw new NotFoundError("Transaction not found");
         }
 
         // Get campaign details for payout amount
@@ -508,7 +512,7 @@ class CampaignService {
   ): Promise<void> {
     const id = parseInt(campaignId);
     if (Number.isNaN(id)) {
-      throw new Error("Invalid campaign ID");
+      throw new BadRequestError("Invalid campaign ID");
     }
 
     await db
