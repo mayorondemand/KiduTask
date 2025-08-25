@@ -4,6 +4,7 @@ import {
   timestamp,
   boolean,
   integer,
+  jsonb,
 } from "drizzle-orm/pg-core";
 
 import { pgEnum } from "drizzle-orm/pg-core";
@@ -234,6 +235,7 @@ export const platformSettings = pgTable("platform_settings", {
   minimumWithdrawal: integer("minimum_withdrawal").notNull(),
   maximumWithdrawal: integer("maximum_withdrawal").notNull(),
   minimumDeposit: integer("minimum_deposit").notNull(),
+  withdrawalFee: integer("withdrawal_fee"),
   createdAt: timestamp("created_at")
     .$defaultFn(() => /* @__PURE__ */ new Date())
     .notNull(),
@@ -260,4 +262,18 @@ export const transaction = pgTable("transaction", {
     .$defaultFn(() => /* @__PURE__ */ new Date())
     .notNull(),
   updatedBy: text("updated_by").references(() => user.id),
+});
+
+// Persisted payment/webhook logs for auditing and debugging
+export const paymentLog = pgTable("payment_log", {
+  id: integer("id").generatedByDefaultAsIdentity().primaryKey(),
+  provider: text("provider").notNull(),
+  eventType: text("event_type").notNull(),
+  transactionId: integer("transaction_id").references(() => transaction.id),
+  userId: text("user_id").references(() => user.id),
+  amount: integer("amount"),
+  payLoad: jsonb("payload").notNull(),
+  createdAt: timestamp("created_at")
+    .$defaultFn(() => /* @__PURE__ */ new Date())
+    .notNull(),
 });
