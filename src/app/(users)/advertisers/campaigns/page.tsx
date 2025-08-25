@@ -24,7 +24,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useCampaigns } from "@/lib/client";
+import { useAdvertiserCampaigns } from "@/lib/client";
 import type { CampaignFilters, CampaignQuery } from "@/lib/types";
 import { cn, formatCurrency, getStatusColor } from "@/lib/utils";
 import { useDebounce } from "@uidotdev/usehooks";
@@ -92,7 +92,7 @@ export default function CampaignsPage() {
     error,
     refetch,
     isError,
-  } = useCampaigns(queryParams);
+  } = useAdvertiserCampaigns(queryParams);
   const campaigns = campaignsData || [];
   const totalCount = campaignsData?.length || 0;
 

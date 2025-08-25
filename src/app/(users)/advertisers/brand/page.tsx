@@ -99,7 +99,7 @@ export default function BrandSettingsPage() {
                   <CardHeader>
                     <CardTitle>Brand Identity</CardTitle>
                     <CardDescription>
-                      Your brand's visual identity and basic information
+                      Your brand&apos;s visual identity and basic information
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-6">

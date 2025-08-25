@@ -1,6 +1,5 @@
 "use client";
 
-import { Navbar } from "@/components/layout/navbar";
 import { StatusIcon } from "@/components/status-icon";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
@@ -24,11 +23,9 @@ import { ImageUploader } from "@/components/ui/image-uploader";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  useSubmitTask,
-  usePublicCampaign,
-  useResubmitSubmission,
-  useMySubmission,
   useMySubmissions,
+  usePublicCampaign,
+  useSubmitTask,
 } from "@/lib/client";
 import { submissionFormSchema, type SubmissionFormData } from "@/lib/types";
 import { formatCurrency, getStatusColor } from "@/lib/utils";
@@ -41,11 +38,9 @@ import {
   FileText,
   History,
   LinkIcon,
-  XCircle,
 } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
@@ -64,14 +59,9 @@ export default function SubmitTaskPage() {
     error: campaignError,
   } = usePublicCampaign(campaignId);
 
-  // Fetch existing submission when editing
-  const { data: existingSubmission, isLoading: isLoadingSubmission } =
-    useMySubmission(params.id as string, editSubmissionId || "");
-
   // Fetch user's submission history for this campaign
-  const { data: userSubmissions = [] } = useMySubmissions(
-    params.id as string,
-  );
+  const { data: userSubmissions = [], isLoading: isLoadingSubmissions } =
+    useMySubmissions(params.id as string);
 
   const removeSpaces = (text: string) => {
     return text.replace(/\s/g, "-");
@@ -82,7 +72,6 @@ export default function SubmitTaskPage() {
     defaultValues: {
       proofType: "screenshot",
       proofUrl: "",
-      proofLink: "",
       proofText: "",
       notes: "",
     },
@@ -94,64 +83,35 @@ export default function SubmitTaskPage() {
     formState: { isSubmitting },
     setValue,
     watch,
-    reset,
   } = form;
   const proofType = watch("proofType");
 
   // Mutation hooks
   const createSubmissionMutation = useSubmitTask();
-  const resubmitSubmissionMutation = useResubmitSubmission();
-
-  // Pre-fill form when editing
-  useEffect(() => {
-    if (existingSubmission && isEditing) {
-      reset({
-        proofType: existingSubmission.proofType,
-        proofUrl:
-          existingSubmission.proofType === "screenshot"
-            ? existingSubmission.proofUrl || ""
-            : "",
-        proofLink:
-          existingSubmission.proofType === "link"
-            ? existingSubmission.proofUrl || ""
-            : "",
-        proofText: existingSubmission.proofText || "",
-        notes: existingSubmission.notes || "",
-      });
-    }
-  }, [existingSubmission, isEditing, reset]);
 
   const onSubmit = async (data: SubmissionFormData) => {
+    const validatedData = submissionFormSchema.safeParse(data);
+    if (!validatedData.success) {
+      toast.error("Invalid data", {
+        description: validatedData.error.message,
+      });
+      return;
+    }
+    const { proofType, proofUrl, proofText, notes } = validatedData.data;
     try {
       const submissionData = {
-        proofType: data.proofType,
-        proofUrl:
-          data.proofType === "screenshot"
-            ? data.proofUrl
-            : data.proofType === "link"
-              ? data.proofLink
-              : "",
+        proofType,
+        proofUrl: proofType === "screenshot" ? proofUrl : "",
         proofText:
-          data.proofType === "text"
-            ? data.proofText || ""
-            : data.proofText || "Task completed as instructed",
-        notes: data.notes,
+          proofType === "text" || proofType === "link" ? proofText : "",
+        notes,
       };
 
-      if (isEditing && editSubmissionId) {
-        // Update existing submission
-        await resubmitSubmissionMutation.mutateAsync({
-          campaignId: params.id as string,
-          submissionId: Number(editSubmissionId),
-          data: submissionData,
-        });
-      } else {
-        // Create new submission
-        await createSubmissionMutation.mutateAsync({
-          campaignId: params.id as string,
-          data: submissionData,
-        });
-      }
+      // Create new submission
+      await createSubmissionMutation.mutateAsync({
+        campaignId: params.id as string,
+        data: submissionData,
+      });
 
       router.push(`/campaign/${params.id}`);
     } catch (error) {
@@ -174,12 +134,11 @@ export default function SubmitTaskPage() {
     setValue("proofUrl", "");
   };
 
-  const isLoading = campaignLoading || (isEditing && isLoadingSubmission);
+  const isLoading = campaignLoading || (isEditing && isLoadingSubmissions);
 
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <Navbar />
         <div className="container mx-auto px-4 py-8">
           <div className="max-w-2xl mx-auto">
             <div className="animate-pulse space-y-6">
@@ -197,7 +156,6 @@ export default function SubmitTaskPage() {
   if (campaignError || !campaign) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <Navbar />
         <div className="container mx-auto px-4 py-8">
           <div className="max-w-2xl mx-auto">
             <div className="text-center py-12">
@@ -240,18 +198,18 @@ export default function SubmitTaskPage() {
               {isEditing
                 ? "Update your submission for"
                 : "Complete your submission for"}{" "}
-              "{campaign.title}"
+              {campaign.title}
             </p>
           </div>
 
           {/* Editing Notice */}
-          {isEditing && existingSubmission && (
+          {isEditing && (
             <Alert className="mb-6 border-orange-200 bg-orange-50">
               <History className="h-4 w-4" />
               <AlertDescription className="text-orange-800">
-                <strong>Editing Previous Submission:</strong> You're updating a
-                rejected submission. Your previous submission history will be
-                preserved for reference.
+                <strong>Editing Previous Submission:</strong> You&apos;re
+                updating a rejected submission. Your previous submission history
+                will be preserved for reference.
               </AlertDescription>
             </Alert>
           )}
@@ -358,28 +316,6 @@ export default function SubmitTaskPage() {
             </CardContent>
           </Card>
 
-          {/* Previous Feedback */}
-          {isEditing && existingSubmission?.advertiserFeedback && (
-            <Card className="mb-8 border-red-200">
-              <CardHeader>
-                <CardTitle className="flex items-center text-red-800">
-                  <XCircle className="h-5 w-5 mr-2" />
-                  Previous Feedback
-                </CardTitle>
-                <CardDescription>
-                  Address this feedback in your new submission
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                  <p className="text-red-800">
-                    {existingSubmission.advertiserFeedback}
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
           {/* Submission Form */}
           <Card>
             <CardHeader>
@@ -413,8 +349,9 @@ export default function SubmitTaskPage() {
                               }`}
                               onClick={() => {
                                 field.onChange("screenshot");
+                                setValue("proofType", "screenshot");
+                                setValue("proofText", "");
                                 setValue("proofUrl", "");
-                                setValue("proofLink", "");
                               }}
                             >
                               <div className="flex items-center space-x-3">
@@ -437,8 +374,9 @@ export default function SubmitTaskPage() {
                               }`}
                               onClick={() => {
                                 field.onChange("link");
+                                setValue("proofType", "link");
+                                setValue("proofText", "");
                                 setValue("proofUrl", "");
-                                setValue("proofLink", "");
                               }}
                             >
                               <div className="flex items-center space-x-3">
@@ -461,8 +399,9 @@ export default function SubmitTaskPage() {
                               }`}
                               onClick={() => {
                                 field.onChange("text");
+                                setValue("proofType", "text");
                                 setValue("proofUrl", "");
-                                setValue("proofLink", "");
+                                setValue("proofText", "");
                               }}
                             >
                               <div className="flex items-center space-x-3">
@@ -511,7 +450,7 @@ export default function SubmitTaskPage() {
                   {proofType === "link" && (
                     <FormField
                       control={control}
-                      name="proofLink"
+                      name="proofText"
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Proof URL</FormLabel>
@@ -590,14 +529,10 @@ export default function SubmitTaskPage() {
                       type="submit"
                       className="flex-1"
                       disabled={
-                        isSubmitting ||
-                        createSubmissionMutation.isPending ||
-                        resubmitSubmissionMutation.isPending
+                        isSubmitting || createSubmissionMutation.isPending
                       }
                     >
-                      {isSubmitting ||
-                      createSubmissionMutation.isPending ||
-                      resubmitSubmissionMutation.isPending
+                      {isSubmitting || createSubmissionMutation.isPending
                         ? isEditing
                           ? "Resubmitting..."
                           : "Submitting..."

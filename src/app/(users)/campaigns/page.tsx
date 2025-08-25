@@ -13,12 +13,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useCampaigns } from "@/lib/client";
+import { usePublicCampaigns } from "@/lib/client";
 import type { CampaignFilters, CampaignWithCounts } from "@/lib/types";
 import { useDebounce } from "@uidotdev/usehooks";
 import { Bookmark, Loader2, Search, X } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState, Suspense } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 
 // Filter badge component for active filters
 function FilterBadge({
@@ -149,7 +149,7 @@ function CampaignsPageContent() {
     sortOrder,
   ]);
 
-  const { data: campaigns, isLoading } = useCampaigns(queryParams);
+  const { data: campaigns, isLoading } = usePublicCampaigns(queryParams);
 
   const clearAllFilters = () => {
     setSearchQuery("");
@@ -432,7 +432,13 @@ function CampaignsPageContent() {
 
 export default function CampaignsPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen pt-20 bg-gray-50 flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div>}>
+    <Suspense
+      fallback={
+        <div className="min-h-screen pt-20 bg-gray-50 flex items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin" />
+        </div>
+      }
+    >
       <CampaignsPageContent />
     </Suspense>
   );

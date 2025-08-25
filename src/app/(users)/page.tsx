@@ -717,8 +717,8 @@ export default function LandingPage() {
             How it works?
           </h2>
           <p className="text-center text-gray-600 mb-16">
-            From campaign creation to scaling your brand - here's your complete
-            journey
+            From campaign creation to scaling your brand - here&apos;s your
+            complete journey
           </p>
           <Carousel
             className="max-w-6xl mx-auto"

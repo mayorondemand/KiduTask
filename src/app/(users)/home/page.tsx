@@ -11,7 +11,7 @@ import {
   CarouselItem,
 } from "@/components/ui/carousel";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useCampaigns } from "@/lib/client";
+import { usePublicCampaigns } from "@/lib/client";
 import type { CampaignWithCounts } from "@/lib/types";
 import { formatCurrency } from "@/lib/utils";
 import Autoplay from "embla-carousel-autoplay";
@@ -103,14 +103,14 @@ export default function TaskerDashboard() {
   const { user } = useAuth();
   const [showKycAlert, setShowKycAlert] = useState(true);
   const { data: moreCampaigns, isLoading: isLoadingMoreCampaigns } =
-    useCampaigns({
+    usePublicCampaigns({
       page: 1,
       limit: 6,
       status: "approved",
       activity: "active",
     });
   const { data: trendingCampaigns, isLoading: isLoadingTrendingCampaigns } =
-    useCampaigns({
+    usePublicCampaigns({
       page: 1,
       limit: 6,
       status: "approved",

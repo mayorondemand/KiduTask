@@ -32,11 +32,7 @@ import {
   useReviewSubmission,
   useUpdateCampaign,
 } from "@/lib/client";
-import {
-  STATUS_ENUM,
-  type StatusEnum,
-  type SubmissionWithUser,
-} from "@/lib/types";
+import type { SubmissionWithUser } from "@/lib/types";
 import { formatCurrency, getStatusColor } from "@/lib/utils";
 import {
   BarChart3,
@@ -81,9 +77,9 @@ export default function CampaignDetailsPage({
 
   const [selectedSubmission, setSelectedSubmission] =
     useState<SubmissionWithUser | null>(null);
-  const [reviewDecision, setReviewDecision] = useState<StatusEnum>(
-    STATUS_ENUM.PENDING,
-  );
+  const [reviewDecision, setReviewDecision] = useState<
+    "approved" | "rejected" | undefined
+  >(undefined);
   const [feedback, setFeedback] = useState("");
   const [rating, setRating] = useState(0);
 
@@ -119,7 +115,7 @@ export default function CampaignDetailsPage({
 
     // Reset form
     setSelectedSubmission(null);
-    setReviewDecision(STATUS_ENUM.PENDING);
+    setReviewDecision(undefined);
     setFeedback("");
     setRating(0);
   };
@@ -137,7 +133,7 @@ export default function CampaignDetailsPage({
 
   const openReviewDialog = (submission: SubmissionWithUser) => {
     setSelectedSubmission(submission);
-    setReviewDecision(STATUS_ENUM.PENDING);
+    setReviewDecision(undefined);
     setFeedback("");
     setRating(0);
   };
@@ -184,8 +180,8 @@ export default function CampaignDetailsPage({
               <BarChart3 className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
               <h3 className="text-lg font-semibold mb-2">Campaign not found</h3>
               <p className="text-muted-foreground mb-4">
-                The campaign you're looking for doesn't exist or you don't have
-                permission to view it.
+                The campaign you&apos;re looking for doesn&apos;t exist or you
+                don&aspos;t have permission to view it.
               </p>
               <Link href="/advertisers/campaigns">
                 <Button>Back to Campaigns</Button>
@@ -491,7 +487,7 @@ export default function CampaignDetailsPage({
                                 <DialogTitle>Review Submission</DialogTitle>
                                 <DialogDescription>
                                   Review {submission.userName || "this user"}
-                                  's submission and provide your decision
+                                  &apos;s submission and provide your decision
                                 </DialogDescription>
                               </DialogHeader>
 
@@ -507,10 +503,7 @@ export default function CampaignDetailsPage({
                                   <div>
                                     <Label>Proof</Label>
                                     <Image
-                                      src={
-                                        submission.proofUrl ||
-                                        "/placeholder.svg"
-                                      }
+                                      src={submission.proofUrl || ""}
                                       alt="Submission proof"
                                       width={400}
                                       height={200}
@@ -609,7 +602,7 @@ export default function CampaignDetailsPage({
                                   variant="outline"
                                   onClick={() => {
                                     setSelectedSubmission(null);
-                                    setReviewDecision("pending");
+                                    setReviewDecision(undefined);
                                     setFeedback("");
                                     setRating(0);
                                   }}
