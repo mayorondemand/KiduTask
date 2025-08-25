@@ -1,16 +1,11 @@
 "use client";
 
+import { BreadcrumbResponsive } from "@/components/layout/breadcrumbresponsive";
 import { Navbar } from "@/components/layout/navbar";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import {
@@ -30,7 +25,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useCampaigns } from "@/lib/client";
-import type { CampaignQuery } from "@/lib/types";
+import type { CampaignFilters, CampaignQuery } from "@/lib/types";
 import { cn, formatCurrency, getStatusColor } from "@/lib/utils";
 import { useDebounce } from "@uidotdev/usehooks";
 import {
@@ -41,26 +36,24 @@ import {
   Calendar,
   ChevronDown,
   ChevronUp,
-  Eye,
-  MoreHorizontal,
-  Pause,
-  Play,
   Plus,
   RefreshCw,
   Search,
   Users,
-  WifiOff
+  WifiOff,
 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 export default function CampaignsPage() {
+  const router = useRouter();
   const [searchInput, setSearchInput] = useState("");
   const searchTerm = useDebounce(searchInput, 500);
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [activityFilter, setActivityFilter] = useState<string>("all");
-  const [sortBy, setSortBy] = useState<string>("createdAt");
+  const [sortBy, setSortBy] = useState<CampaignFilters["sortBy"]>("createdAt");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [currentPage, setCurrentPage] = useState(1);
   const [limit] = useState(10);
@@ -132,7 +125,7 @@ export default function CampaignsPage() {
     if (sortBy === field) {
       setSortOrder(sortOrder === "asc" ? "desc" : "asc");
     } else {
-      setSortBy(field);
+      setSortBy(field as CampaignFilters["sortBy"]);
       setSortOrder("desc");
     }
   };
@@ -172,6 +165,7 @@ export default function CampaignsPage() {
 
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
+        <BreadcrumbResponsive />
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">My Campaigns</h1>
@@ -308,13 +302,20 @@ export default function CampaignsPage() {
                       <SortButton field="createdAt">Created</SortButton>
                     </TableHead>
                     <TableHead>Progress</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {!isLoading
                     ? campaigns.map((campaign) => (
-                        <TableRow key={campaign.id}>
+                        <TableRow
+                          onClick={() => {
+                            router.push(
+                              `/advertisers/campaigns/${campaign.id}`,
+                            );
+                          }}
+                          key={campaign.id}
+                          className="cursor-pointer hover:bg-muted"
+                        >
                           <TableCell colSpan={4}>
                             <div className="flex flex-col gap-2">
                               <div className="font-medium">
@@ -365,7 +366,7 @@ export default function CampaignsPage() {
                                   {campaign.totalSubmissions > 0
                                     ? Math.round(
                                         (campaign.approvedSubmissions /
-                                          campaign.totalSubmissions) *
+                                          campaign.maxUsers) *
                                           100,
                                       )
                                     : 0}
@@ -376,43 +377,13 @@ export default function CampaignsPage() {
                                 value={
                                   campaign.totalSubmissions > 0
                                     ? (campaign.approvedSubmissions /
-                                        campaign.totalSubmissions) *
+                                        campaign.maxUsers) *
                                       100
                                     : 0
                                 }
                                 className="h-2"
                               />
                             </div>
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="sm">
-                                  <MoreHorizontal className="h-4 w-4" />
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
-                                <DropdownMenuItem asChild>
-                                  <Link
-                                    href={`/advertisers/campaigns/${campaign.id}`}
-                                  >
-                                    <Eye className="mr-2 h-4 w-4" />
-                                    View Details
-                                  </Link>
-                                </DropdownMenuItem>
-                                {campaign.activity === "active" ? (
-                                  <DropdownMenuItem>
-                                    <Pause className="mr-2 h-4 w-4" />
-                                    Pause Campaign
-                                  </DropdownMenuItem>
-                                ) : campaign.activity === "paused" ? (
-                                  <DropdownMenuItem>
-                                    <Play className="mr-2 h-4 w-4" />
-                                    Resume Campaign
-                                  </DropdownMenuItem>
-                                ) : null}
-                              </DropdownMenuContent>
-                            </DropdownMenu>
                           </TableCell>
                         </TableRow>
                       ))
