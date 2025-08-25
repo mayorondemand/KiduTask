@@ -159,10 +159,11 @@ export const useUpdateCampaign = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ campaignId, activity }: UpdateCampaignData) => {
+    mutationFn: async (data: UpdateCampaignData) => {
+      const { campaignId, ...body } = data;
       const response = await axios.patch(
         `/api/advertiser/campaigns/${campaignId}`,
-        { activity },
+        body,
       );
       return response.data;
     },

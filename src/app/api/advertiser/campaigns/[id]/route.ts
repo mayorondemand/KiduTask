@@ -59,11 +59,14 @@ export async function PATCH(
     }
 
     const campaignId = (await params).id;
-    const body = await request.json();
+    const rawBody = await request.json();
 
-    // Add campaignId to the body to avoid zod validation error
+    if (rawBody.expiryDate) {
+      rawBody.expiryDate = new Date(rawBody.expiryDate);
+    }
+
     const validatedBody = updateCampaignSchema.parse({
-      ...body,
+      ...rawBody,
       campaignId,
     });
 
@@ -78,16 +81,11 @@ export async function PATCH(
       throw new NotAuthorizedError("You can only modify your own campaigns");
     }
 
-    // Update campaign activity
-    await campaignService.updateCampaign(
-      campaignId,
-      validatedBody.activity,
-      user.id,
-    );
+    await campaignService.updateCampaign(campaignId, user.id, validatedBody);
 
     return NextResponse.json(
       {
-        message: `Campaign ${validatedBody.activity === "active" ? "activated" : "paused"} successfully`,
+        message: "Campaign updated successfully",
       },
       {
         status: 200,

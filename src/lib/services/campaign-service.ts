@@ -15,7 +15,6 @@ import { transactionService } from "@/lib/services/transaction-service";
 import { userService } from "@/lib/services/user-service";
 import {
   ACTIVITY_ENUM,
-  type ActivityEnum,
   type CampaignDB,
   type CampaignQuery,
   type CampaignSubmissionAndCount,
@@ -25,6 +24,7 @@ import {
   STATUS_ENUM,
   TRANSACTION_TYPE_ENUM,
   type TransactionDB,
+  type UpdateCampaignActivityData,
 } from "@/lib/types";
 import {
   and,
@@ -507,21 +507,43 @@ class CampaignService {
 
   async updateCampaign(
     campaignId: string,
-    activity: ActivityEnum,
     userId: string,
+    data: UpdateCampaignActivityData,
   ): Promise<void> {
     const id = parseInt(campaignId);
     if (Number.isNaN(id)) {
       throw new BadRequestError("Invalid campaign ID");
     }
 
+    const updatePayload: Record<string, unknown> = {
+      updatedAt: new Date(),
+    };
+
+    if (data.activity) {
+      updatePayload.activity =
+        data.activity === "active"
+          ? ACTIVITY_ENUM.ACTIVE
+          : ACTIVITY_ENUM.PAUSED;
+    }
+    if (data.title !== undefined) updatePayload.title = data.title;
+    if (data.description !== undefined)
+      updatePayload.description = data.description;
+    if (data.instructions) {
+      updatePayload.instructions = data.instructions.map((i) => i.instruction);
+    }
+    if (data.requirements) {
+      updatePayload.requirements = data.requirements.map((r) => r.requirement);
+    }
+    if (data.estimatedTimeMinutes !== undefined)
+      updatePayload.estimatedTimeMinutes = data.estimatedTimeMinutes;
+    if (data.expiryDate !== undefined)
+      updatePayload.expiryDate = data.expiryDate;
+    if (data.bannerImageUrl !== undefined)
+      updatePayload.bannerImageUrl = data.bannerImageUrl;
+
     await db
       .update(campaign)
-      .set({
-        activity:
-          activity === "active" ? ACTIVITY_ENUM.ACTIVE : ACTIVITY_ENUM.PAUSED,
-        updatedAt: new Date(),
-      })
+      .set(updatePayload)
       .where(and(eq(campaign.id, id), eq(campaign.createdBy, userId)));
   }
 }
