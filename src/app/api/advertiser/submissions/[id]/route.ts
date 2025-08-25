@@ -23,7 +23,11 @@ export async function PATCH(
     const submissionId = parseInt(params.id);
     const body = await request.json();
 
-    const validatedBody = reviewSubmissionSchema.parse(body);
+    // Add submissionId to the body to avoid zod validation error
+    const validatedBody = reviewSubmissionSchema.parse({
+      ...body,
+      submissionId,
+    });
 
     // Validate that feedback is provided when rejecting
     if (

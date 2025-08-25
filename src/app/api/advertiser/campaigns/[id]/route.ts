@@ -60,7 +60,12 @@ export async function PATCH(
 
     const campaignId = (await params).id;
     const body = await request.json();
-    const validatedBody = updateCampaignSchema.parse(body);
+
+    // Add campaignId to the body to avoid zod validation error
+    const validatedBody = updateCampaignSchema.parse({
+      ...body,
+      campaignId,
+    });
 
     // Verify the campaign exists and belongs to the user
     const campaign = await campaignService.getCampaignById(campaignId);

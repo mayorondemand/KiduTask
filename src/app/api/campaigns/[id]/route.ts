@@ -1,6 +1,7 @@
 import { errorHandler, NotFoundError } from "@/lib/error-handler";
 import { campaignService } from "@/lib/services/campaign-service";
 import { userService } from "@/lib/services/user-service";
+import { ACTIVITY_ENUM, STATUS_ENUM } from "@/lib/types";
 import { type NextRequest, NextResponse } from "next/server";
 
 export async function GET(
@@ -18,7 +19,10 @@ export async function GET(
     }
 
     // Only return approved and active campaigns to regular users
-    if (campaign.status !== "approved" || campaign.activity !== "active") {
+    if (
+      campaign.status !== STATUS_ENUM.APPROVED ||
+      campaign.activity !== ACTIVITY_ENUM.ACTIVE
+    ) {
       throw new NotFoundError("Campaign not available");
     }
 
