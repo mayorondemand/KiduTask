@@ -169,7 +169,7 @@ export default function AdvertiserDashboard() {
             icon={Target}
             title="Success Rate"
             value={
-              mockStats?.approvalRate ? `${mockStats.approvalRate}%` : "0%"
+              mockStats?.approvalRate ? `${mockStats.approvalRate.toFixed(2)}%` : "0%"
             }
             subtitle="Task approval rate"
             loading={isStatsLoading}
