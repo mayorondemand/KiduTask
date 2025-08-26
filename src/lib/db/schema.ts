@@ -51,6 +51,8 @@ export const user = pgTable("user", {
 
   //Additional fields
   walletBalance: integer("wallet_balance").notNull().default(0),
+  phoneNumber: text("phone_number"),
+  address: text("address"),
 });
 
 export const kyc = pgTable("kyc", {
@@ -61,11 +63,9 @@ export const kyc = pgTable("kyc", {
   idType: kycTypeEnum("id_type").notNull(),
   idNumber: text("id_number").notNull(),
   idUrl: text("id_url").notNull(),
-  firstName: text("first_name").notNull(),
-  lastName: text("last_name").notNull(),
-  phoneNumber: text("phone_number").notNull(),
-  address: text("address").notNull(),
-  country: text("country").notNull(),
+  bankAccountName: text("bank_account_name"),
+  bankAccountNumber: text("bank_account_number"),
+  bankName: text("bank_name"),
   status: statusEnum("status").notNull().default("pending"),
   createdAt: timestamp("created_at")
     .$defaultFn(() => /* @__PURE__ */ new Date())
