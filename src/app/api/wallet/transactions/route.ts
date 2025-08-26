@@ -9,6 +9,6 @@ export async function GET(request: NextRequest) {
     const data = await transactionService.getUserTransactions(user.id);
     return NextResponse.json({ transactions: data });
   } catch {
-    errorHandler.handleServerError;
+    return errorHandler.handleServerError;
   }
 }

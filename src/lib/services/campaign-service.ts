@@ -2,6 +2,7 @@ import { db } from "@/lib/db";
 import {
   advertiser,
   campaign,
+  campaignView,
   submission,
   transaction,
   user,
@@ -547,5 +548,59 @@ class CampaignService {
       .set(updatePayload)
       .where(and(eq(campaign.id, id), eq(campaign.createdBy, userId)));
   }
+
+  async logCampaignView(campaignId: string, userId: string): Promise<void> {
+    try {
+      const parsedCampaignId = parseInt(campaignId);
+      if (Number.isNaN(parsedCampaignId)) {
+        throw new BadRequestError("Invalid campaign ID");
+      }
+
+      await db
+        .insert(campaignView)
+        .values({
+          campaignId: parsedCampaignId,
+          userId: userId,
+        })
+        .onConflictDoNothing();
+    } catch (error) {
+      // Log the error but don't throw
+      console.warn("Failed to log campaign view:", error);
+    }
+  }
+
+  // async getCampaignViewCount(campaignId: string): Promise<number> {
+  //   const parsedCampaignId = parseInt(campaignId);
+  //   if (Number.isNaN(parsedCampaignId)) {
+  //     throw new BadRequestError("Invalid campaign ID");
+  //   }
+
+  //   const result = await db
+  //     .select({ count: count() })
+  //     .from(campaignView)
+  //     .where(eq(campaignView.campaignId, parsedCampaignId));
+
+  //   return result[0]?.count || 0;
+  // }
+
+  // async getCampaignViewsByAdvertiser(advertiserId: string): Promise<{ campaignId: number; campaignTitle: string; viewCount: number; }[]> {
+  //   const result = await db
+  //     .select({
+  //       campaignId: campaign.id,
+  //       campaignTitle: campaign.title,
+  //       viewCount: count(campaignView.id),
+  //     })
+  //     .from(campaign)
+  //     .leftJoin(campaignView, eq(campaign.id, campaignView.campaignId))
+  //     .where(eq(campaign.createdBy, advertiserId))
+  //     .groupBy(campaign.id, campaign.title)
+  //     .orderBy(desc(count(campaignView.id)));
+
+  //   return result.map(row => ({
+  //     campaignId: row.campaignId,
+  //     campaignTitle: row.campaignTitle,
+  //     viewCount: row.viewCount || 0,
+  //   }));
+  // }
 }
 export const campaignService = new CampaignService();

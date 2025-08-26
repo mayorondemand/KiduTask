@@ -9,7 +9,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    await userService.validateSession(request);
+    const user = await userService.validateSession(request);
     const campaignId = (await params).id;
 
     const campaign = await campaignService.getCampaignById(campaignId);
@@ -25,6 +25,9 @@ export async function GET(
     ) {
       throw new NotFoundError("Campaign not available");
     }
+
+    // Log the campaign view without waiting
+    campaignService.logCampaignView(campaignId, user.id);
 
     return NextResponse.json(
       {
