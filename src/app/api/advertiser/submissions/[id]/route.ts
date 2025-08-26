@@ -10,7 +10,7 @@ import { type NextRequest, NextResponse } from "next/server";
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const user = await userService.validateSession(request);
@@ -20,7 +20,7 @@ export async function PATCH(
       throw new NotAuthorizedError("User is not an advertiser");
     }
 
-    const submissionId = parseInt(params.id);
+    const submissionId = parseInt((await params).id);
     const body = await request.json();
 
     // Add submissionId to the body to avoid zod validation error
