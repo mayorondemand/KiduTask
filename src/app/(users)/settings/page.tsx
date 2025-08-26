@@ -36,6 +36,7 @@ import {
   useUpdateProfile,
 } from "@/lib/client";
 import {
+  type StatusEnum,
   updateBankAccountSchema,
   updateKycDetailsSchema,
   updateProfileSchema,
@@ -125,9 +126,9 @@ export default function SettingsPage() {
     await kycMutation.mutateAsync(data);
   };
 
-  const getKYCStatusBadge = (status: string) => {
+  const getKYCStatusBadge = (status: StatusEnum) => {
     switch (status) {
-      case "verified":
+      case "approved":
         return (
           <Badge className="bg-green-100 text-green-800">
             <CheckCircle className="h-3 w-3 mr-1" />
@@ -175,7 +176,7 @@ export default function SettingsPage() {
       resetKYCForm({
         idNumber: user.kycIdNumber,
         idType: user.kycIdType ?? "national_id",
-        idUrl: user.kycIdType,
+        idUrl: user.kycIdUrl,
       });
     }
   }, [user, resetProfileForm, resetBankForm, resetKYCForm]);
@@ -310,12 +311,6 @@ export default function SettingsPage() {
                       <CreditCard className="h-5 w-5 mr-2" />
                       Bank Account Details
                     </div>
-                    {Boolean(user?.bankAccountNumber) && (
-                      <Badge className="bg-green-100 text-green-800">
-                        <CheckCircle className="h-3 w-3 mr-1" />
-                        Verified
-                      </Badge>
-                    )}
                   </CardTitle>
                   <CardDescription>
                     Add your bank account for withdrawals.
@@ -413,19 +408,20 @@ export default function SettingsPage() {
                         approved.
                       </AlertDescription>
                     </Alert>
-                  ) : user?.kycStatus === "rejected" ? (
-                    <Alert className="border-red-200 bg-red-50">
-                      <AlertCircle className="h-4 w-4 text-red-600" />
-                      <AlertDescription className="text-red-800">
-                        Your KYC verification was rejected. Please review your
-                        information and resubmit with correct details.
-                      </AlertDescription>
-                    </Alert>
                   ) : (
                     <form
                       onSubmit={handleKYCSubmit(onKYCSubmit)}
                       className="space-y-6"
                     >
+                      {user?.kycStatus === "rejected" && (
+                        <Alert className="border-red-200 bg-red-50">
+                          <AlertCircle className="h-4 w-4 text-red-600" />
+                          <AlertDescription className="text-red-800">
+                            Your KYC verification was rejected. Please review
+                            your information and resubmit with correct details.
+                          </AlertDescription>
+                        </Alert>
+                      )}
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
                           <Label htmlFor="idType">ID Type</Label>
@@ -481,7 +477,7 @@ export default function SettingsPage() {
                         <ImageUploader
                           nameToUse={`kyc_${user?.id}`}
                           folderToUse="/kuditask/kyc-images"
-                          currentImageUrl={newKYCUrl}
+                          currentImageUrl={newKYCUrl ?? ""}
                           onUploadSuccess={(url: string) =>
                             setKYCValue("idUrl", url, {
                               shouldDirty: true,

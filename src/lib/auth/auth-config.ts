@@ -48,11 +48,18 @@ export const auth = betterAuth({
         user: {
           ...user,
           isKycVerified: userDetails?.isKycVerified,
+          kycStatus: userDetails?.kycStatus,
+          kycIdType: userDetails?.kycIdType,
+          kycIdNumber: userDetails?.kycIdNumber,
+          kycIdUrl: userDetails?.kycIdUrl,
           advertiserRequestStatus: userDetails?.advertiserRequestStatus,
           advertiserBrand: userDetails?.advertiserBrand,
           advertiserDescription: userDetails?.advertiserDescription,
           advertiserWebsite: userDetails?.advertiserWebsite,
           advertiserLogo: userDetails?.advertiserLogo,
+          bankName: userDetails?.bankName,
+          bankAccountNumber: userDetails?.bankAccountNumber,
+          bankAccountName: userDetails?.bankAccountName,
         },
         session,
       };
@@ -76,6 +83,14 @@ export const auth = betterAuth({
     additionalFields: {
       walletBalance: {
         type: "number",
+        input: false,
+      },
+      phoneNumber: {
+        type: "string",
+        input: false,
+      },
+      address: {
+        type: "string",
         input: false,
       },
     },
