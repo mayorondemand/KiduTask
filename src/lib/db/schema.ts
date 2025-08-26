@@ -5,6 +5,7 @@ import {
   boolean,
   integer,
   jsonb,
+  uniqueIndex,
 } from "drizzle-orm/pg-core";
 
 import { pgEnum } from "drizzle-orm/pg-core";
@@ -168,24 +169,27 @@ export const campaign = pgTable("campaign", {
     .notNull(),
 });
 
-export const campaignView = pgTable("campaign_view", {
-  id: integer("id").generatedByDefaultAsIdentity().primaryKey(),
-  campaignId: integer("campaign_id")
-    .notNull()
-    .references(() => campaign.id),
-  userId: text("user_id")
-    .notNull()
-    .references(() => user.id),
-  advertiserId: text("advertiser_id")
-    .notNull()
-    .references(() => advertiser.userId),
-  createdAt: timestamp("created_at")
-    .$defaultFn(() => /* @__PURE__ */ new Date())
-    .notNull(),
-  updatedAt: timestamp("updated_at")
-    .$defaultFn(() => /* @__PURE__ */ new Date())
-    .notNull(),
-});
+export const campaignView = pgTable(
+  "campaign_view",
+  {
+    id: integer("id").generatedByDefaultAsIdentity().primaryKey(),
+    campaignId: integer("campaign_id")
+      .notNull()
+      .references(() => campaign.id),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id),
+    createdAt: timestamp("created_at")
+      .$defaultFn(() => /* @__PURE__ */ new Date())
+      .notNull(),
+  },
+  (table) => [
+    uniqueIndex("unique_user_campaign_index").on(
+      table.campaignId,
+      table.userId,
+    ),
+  ],
+);
 
 export const campaignRating = pgTable("campaign_rating", {
   id: integer("id").generatedByDefaultAsIdentity().primaryKey(),
