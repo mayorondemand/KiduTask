@@ -1,20 +1,21 @@
 import {
   activityEnum,
+  type campaignRating,
   kycTypeEnum,
   proofTypeEnum,
   statusEnum,
-  type transactionTypeEnum,
   type campaign,
   type submission,
   type transaction,
+  type transactionTypeEnum,
   type user,
 } from "@/lib/db/schema";
-import { z } from "zod";
 import type { PgTransaction } from "drizzle-orm/pg-core";
 import type {
   PostgresJsDatabase,
   PostgresJsQueryResultHKT,
 } from "drizzle-orm/postgres-js";
+import { z } from "zod";
 
 export type Db = PostgresJsDatabase;
 export type Tx = PgTransaction<PostgresJsQueryResultHKT>;
@@ -35,6 +36,7 @@ export type CampaignDB = typeof campaign.$inferSelect;
 export type SubmissionDB = typeof submission.$inferSelect;
 export type UserDB = typeof user.$inferSelect;
 export type TransactionDB = typeof transaction.$inferSelect;
+export type CampaignRatingDB = typeof campaignRating.$inferSelect;
 
 // Extended types for joined data
 export type SubmissionWithUser = SubmissionDB & {
@@ -75,6 +77,11 @@ export const updateProfileSchema = z
   .object({
     name: z.string().min(2, "Name must be at least 2 characters").max(100),
     image: z.url().optional(),
+    phoneNumber: z
+      .string()
+      .regex(/^\d+$/, "Phone number must contain digits only")
+      .optional(),
+    address: z.string().optional(),
   })
   .strict();
 
@@ -292,3 +299,24 @@ export const submissionFormSchema = z
   .strict();
 
 export type SubmissionFormData = z.infer<typeof submissionFormSchema>;
+
+// User profile aggregates for profile page
+export type UserStats = {
+  totalEarnings: number;
+  completedTasks: number;
+  successRate: number; // integer percentage 0-100
+  averageRating: number; // up to 1 decimal place
+};
+
+export type RecentActivityItem = Pick<CampaignDB, "title" | "payoutPerUser"> &
+  Pick<
+    SubmissionDB,
+    | "id"
+    | "campaignId"
+    | "status"
+    | "createdAt"
+    | "statusUpdatedAt"
+    | "advertiserFeedback"
+    | "advertiserRating"
+  > &
+  Pick<CampaignRatingDB, "rating">;

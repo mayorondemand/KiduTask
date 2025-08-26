@@ -14,3 +14,19 @@ export async function PATCH(request: NextRequest) {
     return errorHandler.handleServerError(error, "PATCH /api/user/profile");
   }
 }
+
+export async function GET(request: NextRequest) {
+  try {
+    const user = await userService.validateSession(request);
+
+    //TODO: Optimize into one query
+    const [stats, recent] = await Promise.all([
+      userService.getUserStats(user.id),
+      userService.getRecentActivity(user.id, 10),
+    ]);
+
+    return NextResponse.json({ stats, recentActivity: recent });
+  } catch (error) {
+    return errorHandler.handleServerError(error, "GET /api/user/profile");
+  }
+}

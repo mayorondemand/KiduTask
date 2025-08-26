@@ -1,9 +1,9 @@
 "use client";
 
 import { useAuth } from "@/components/providers/auth-provider";
+import { StatusBadge } from "@/components/status-icon";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -36,7 +36,6 @@ import {
   useUpdateProfile,
 } from "@/lib/client";
 import {
-  type StatusEnum,
   updateBankAccountSchema,
   updateKycDetailsSchema,
   updateProfileSchema,
@@ -78,6 +77,8 @@ export default function SettingsPage() {
     defaultValues: {
       name: "",
       image: "",
+      phoneNumber: "",
+      address: "",
     },
   });
 
@@ -126,45 +127,14 @@ export default function SettingsPage() {
     await kycMutation.mutateAsync(data);
   };
 
-  const getKYCStatusBadge = (status: StatusEnum) => {
-    switch (status) {
-      case "approved":
-        return (
-          <Badge className="bg-green-100 text-green-800">
-            <CheckCircle className="h-3 w-3 mr-1" />
-            Verified
-          </Badge>
-        );
-      case "pending":
-        return (
-          <Badge className="bg-yellow-100 text-yellow-800">
-            <AlertCircle className="h-3 w-3 mr-1" />
-            Pending Review
-          </Badge>
-        );
-      case "rejected":
-        return (
-          <Badge className="bg-red-100 text-red-800">
-            <AlertCircle className="h-3 w-3 mr-1" />
-            Rejected
-          </Badge>
-        );
-      default:
-        return (
-          <Badge variant="secondary">
-            <AlertCircle className="h-3 w-3 mr-1" />
-            Not Started
-          </Badge>
-        );
-    }
-  };
-
   useEffect(() => {
     //Reset form on user load
     if (user) {
       resetProfileForm({
         name: user.name,
         image: user.image || undefined,
+        phoneNumber: user.phoneNumber ?? "",
+        address: user.address ?? "",
       });
 
       resetBankForm({
@@ -281,11 +251,40 @@ export default function SettingsPage() {
                           type="email"
                           value={user?.email || ""}
                           disabled
+                          readOnly
                         />
                       </div>
-                    </div>
 
-                    {/* Only name and image are editable. Email is shown disabled. */}
+                      <div className="space-y-2">
+                        <Label htmlFor="phoneNumber">Phone Number</Label>
+                        <Input
+                          id="phoneNumber"
+                          type="tel"
+                          {...registerProfile("phoneNumber")}
+                          defaultValue={user?.phoneNumber || ""}
+                        />
+                        {profileErrors.phoneNumber && (
+                          <p className="text-sm text-destructive">
+                            {profileErrors.phoneNumber.message}
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="address">Address</Label>
+                        <Input
+                          id="address"
+                          type="text"
+                          {...registerProfile("address")}
+                          defaultValue={user?.address || ""}
+                        />
+                        {profileErrors.address && (
+                          <p className="text-sm text-destructive">
+                            {profileErrors.address.message}
+                          </p>
+                        )}
+                      </div>
+                    </div>
 
                     <Button
                       type="submit"
@@ -383,7 +382,7 @@ export default function SettingsPage() {
                       <FileText className="h-5 w-5 mr-2" />
                       KYC Verification
                     </div>
-                    {getKYCStatusBadge(user?.kycStatus || "pending")}
+                    <StatusBadge status={user?.kycStatus ?? ""} />
                   </CardTitle>
                   <CardDescription>
                     Complete your identity verification to enable withdrawals

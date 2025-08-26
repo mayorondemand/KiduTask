@@ -18,6 +18,7 @@ import type {
   UpdateBankAccountData,
   UpdateKycDetailsData,
 } from "@/lib/types";
+import type { UserStats, RecentActivityItem } from "@/lib/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import { useRouter } from "next/navigation";
@@ -395,6 +396,21 @@ export const useTransactions = (limit: number = 50) => {
         params: { limit },
       });
       return response.data.transactions;
+    },
+  });
+};
+
+export type UserProfileResponse = {
+  stats: UserStats;
+  recentActivity: RecentActivityItem[];
+};
+
+export const useUserProfile = () => {
+  return useQuery({
+    queryKey: ["user-profile"],
+    queryFn: async (): Promise<UserProfileResponse> => {
+      const response = await axios.get("/api/user/profile");
+      return response.data as UserProfileResponse;
     },
   });
 };
