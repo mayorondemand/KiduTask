@@ -2,18 +2,17 @@ import { auth } from "@/lib/auth/auth-config";
 import { db } from "@/lib/db";
 import { advertiser, kyc, user } from "@/lib/db/schema";
 import { NotAuthorizedError, NotFoundError } from "@/lib/error-handler";
+import type {
+  Db,
+  Tx,
+  UpdateBankAccountData,
+  UpdateKycDetailsData,
+  UpdateProfileData,
+} from "@/lib/types";
 import { eq, getTableColumns, sql } from "drizzle-orm";
 import type { NextRequest } from "next/server";
-import type { Db, StatusEnum, Tx, UserDB } from "@/lib/types";
 
-export type UserDetails = UserDB & {
-  isKycVerified: boolean;
-  advertiserRequestStatus: StatusEnum | null;
-  advertiserBrand: string | null;
-  advertiserDescription: string | null;
-  advertiserWebsite: string | null;
-  advertiserLogo: string | null;
-};
+export type UserDetails = Awaited<ReturnType<UserService["getUser"]>>;
 
 class UserService {
   async validateSession(request: NextRequest): Promise<UserDetails> {
@@ -44,29 +43,24 @@ class UserService {
     return user;
   }
 
-  async validateUserFromHeaders(headers: Headers): Promise<UserDetails> {
-    const session = await auth.api.getSession({ headers });
-    if (!session?.user?.id) {
-      throw new NotAuthorizedError("Authentication required");
-    }
-    const foundUser = await this.getUser(session.user.id);
-    if (!foundUser) {
-      throw new NotFoundError("User not found");
-    }
-    return foundUser;
-  }
-
-  async getUser(userId: string): Promise<UserDetails | null> {
+  async getUser(userId: string) {
     // Get the user
     const userWithKyc = await db
       .select({
         ...getTableColumns(user),
         isKycVerified: sql<boolean>`CASE WHEN ${kyc.status} = 'approved' THEN true ELSE false END`,
+        kycStatus: kyc.status,
         advertiserRequestStatus: advertiser.status,
         advertiserBrand: advertiser.brandName,
         advertiserDescription: advertiser.brandDescription,
         advertiserWebsite: advertiser.brandWebsite,
         advertiserLogo: advertiser.brandLogo,
+        bankAccountName: kyc.bankAccountName,
+        bankAccountNumber: kyc.bankAccountNumber,
+        bankName: kyc.bankName,
+        kycIdType: kyc.idType,
+        kycIdNumber: kyc.idNumber,
+        kycIdUrl: kyc.idUrl,
       })
       .from(user)
       .leftJoin(kyc, eq(user.id, kyc.userId))
@@ -89,6 +83,54 @@ class UserService {
         updatedAt: new Date(),
       })
       .where(eq(user.id, userId));
+  }
+
+  async updateProfile(userId: string, data: UpdateProfileData) {
+    await db
+      .update(user)
+      .set({
+        name: data.name,
+        image: data.image,
+        updatedAt: new Date(),
+      })
+      .where(eq(user.id, userId));
+    return this.getUser(userId);
+  }
+
+  async updateBankAccount(userId: string, data: UpdateBankAccountData) {
+    await db
+      .update(kyc)
+      .set({
+        bankAccountName: data.bankAccountName,
+        bankAccountNumber: data.bankAccountNumber,
+        bankName: data.bankName,
+        updatedAt: new Date(),
+      })
+      .where(eq(kyc.userId, userId));
+  }
+
+  async updateKycDetails(userId: string, data: UpdateKycDetailsData) {
+    await db
+      .insert(kyc)
+      .values({
+        userId,
+        idType: data.idType,
+        idNumber: data.idNumber,
+        idUrl: data.idUrl,
+        status: "pending",
+        updatedAt: new Date(),
+      })
+      .onConflictDoUpdate({
+        target: kyc.userId,
+        set: {
+          idType: data.idType,
+          idNumber: data.idNumber,
+          idUrl: data.idUrl,
+          status: "pending",
+          updatedAt: new Date(),
+        },
+      });
+    return this.getUser(userId);
   }
 }
 

@@ -1,5 +1,6 @@
 import {
   activityEnum,
+  kycTypeEnum,
   proofTypeEnum,
   statusEnum,
   type transactionTypeEnum,
@@ -67,8 +68,40 @@ export const TRANSACTION_TYPE_ENUM = {
 } satisfies Record<string, TransactionTypeEnum>;
 
 export type ProofTypeEnum = (typeof proofTypeEnum.enumValues)[number];
+export type KycTypeEnum = (typeof kycTypeEnum.enumValues)[number];
 
 //Schemas
+export const updateProfileSchema = z
+  .object({
+    name: z.string().min(2, "Name must be at least 2 characters").max(100),
+    image: z.url().optional(),
+  })
+  .strict();
+
+export type UpdateProfileData = z.infer<typeof updateProfileSchema>;
+
+export const updateBankAccountSchema = z
+  .object({
+    bankAccountName: z.string().min(2, "Account name is required").max(200),
+    bankAccountNumber: z
+      .string()
+      .regex(/^\d{10,}$/, "Account number must be at least 10 digits"),
+    bankName: z.string().min(2, "Bank name is required").max(200),
+  })
+  .strict();
+
+export type UpdateBankAccountData = z.infer<typeof updateBankAccountSchema>;
+
+export const updateKycDetailsSchema = z
+  .object({
+    idType: z.enum(kycTypeEnum.enumValues),
+    idNumber: z.string().min(3, "ID number is required").max(100),
+    idUrl: z.url("A valid document URL is required"),
+  })
+  .strict();
+
+export type UpdateKycDetailsData = z.infer<typeof updateKycDetailsSchema>;
+
 export const createCampaignSchema = z
   .object({
     title: z

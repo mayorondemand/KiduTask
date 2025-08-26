@@ -14,6 +14,9 @@ import type {
   CampaignSubmissionAndCount,
   TransactionTypeEnum,
   TransactionDB,
+  UpdateProfileData,
+  UpdateBankAccountData,
+  UpdateKycDetailsData,
 } from "@/lib/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
@@ -324,6 +327,51 @@ export const useCreateWithdrawal = () => {
     mutationFn: async (amount: number) => {
       const response = await axios.post("/api/wallet/withdraw", { amount });
       return response.data;
+    },
+    onError: errorHandler.handleQueryError,
+  });
+};
+
+export const useUpdateProfile = () => {
+  const { refetch } = useAuth();
+  return useMutation({
+    mutationFn: async (data: UpdateProfileData) => {
+      const response = await axios.patch("/api/user/profile", data);
+      return response.data;
+    },
+    onSuccess: async () => {
+      refetch();
+      toast.success("Profile updated");
+    },
+    onError: errorHandler.handleQueryError,
+  });
+};
+
+export const useUpdateBankAccount = () => {
+  const { refetch } = useAuth();
+  return useMutation({
+    mutationFn: async (data: UpdateBankAccountData) => {
+      const response = await axios.patch("/api/user/bank", data);
+      return response.data;
+    },
+    onSuccess: async () => {
+      refetch();
+      toast.success("Bank account updated");
+    },
+    onError: errorHandler.handleQueryError,
+  });
+};
+
+export const useUpdateKycDetails = () => {
+  const { refetch } = useAuth();
+  return useMutation({
+    mutationFn: async (data: UpdateKycDetailsData) => {
+      const response = await axios.patch("/api/user/kyc", data);
+      return response.data;
+    },
+    onSuccess: async () => {
+      refetch();
+      toast.success("KYC submitted");
     },
     onError: errorHandler.handleQueryError,
   });
