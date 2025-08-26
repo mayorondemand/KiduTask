@@ -56,9 +56,9 @@ export const user = pgTable("user", {
 });
 
 export const kyc = pgTable("kyc", {
-  id: integer("id").generatedByDefaultAsIdentity().primaryKey(),
   userId: text("user_id")
     .notNull()
+    .primaryKey()
     .references(() => user.id, { onDelete: "no action" }),
   idType: kycTypeEnum("id_type").notNull(),
   idNumber: text("id_number").notNull(),

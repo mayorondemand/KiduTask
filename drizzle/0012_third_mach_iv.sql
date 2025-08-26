@@ -1,0 +1,1 @@
+ALTER TABLE "kyc" DROP COLUMN "id";

@@ -1,0 +1,1 @@
+ALTER TABLE "kyc" ADD PRIMARY KEY ("user_id");
