@@ -37,7 +37,7 @@ class AdvertiserService {
         activeCampaigns: sql<number>`COUNT(DISTINCT ${campaign.id}) FILTER (WHERE ${campaign.activity} = ${sql.param(ACTIVITY_ENUM.ACTIVE)})`,
         pendingApprovals: sql<number>`COUNT(DISTINCT ${campaign.id}) FILTER (WHERE ${campaign.status} = ${sql.param(STATUS_ENUM.PENDING)})`,
         totalSpentMonth: sql<number>`SUM(CASE WHEN ${campaign.createdAt} >= ${startOfMonth} THEN ${campaign.totalCost} ELSE 0 END)`,
-        totalReach: sql<number>`COUNT(${campaignView.id})`,
+        totalReach: sql<number>`COUNT( DISTINCT(${campaignView.id}))`,
         submissionsCount: sql<number>`COUNT(${submission.id})`,
         approvedSubmissions: sql<number>`COUNT(${submission.id}) FILTER (WHERE ${submission.status} = ${sql.param(STATUS_ENUM.APPROVED)})`,
         totalCampaigns: sql<number>`COUNT(DISTINCT ${campaign.id})`,
@@ -48,10 +48,12 @@ class AdvertiserService {
       .leftJoin(submission, eq(submission.campaignId, campaign.id))
       .where(eq(campaign.createdBy, advertiserId));
 
-    const conversionRate =
+    const conversionRateRaw =
       result.totalReach > 0
         ? (result.submissionsCount / result.totalReach) * 100
         : 0;
+
+    const conversionRate = Math.max(0, Math.min(100, conversionRateRaw));
 
     const approvalRate =
       result.submissionsCount > 0
