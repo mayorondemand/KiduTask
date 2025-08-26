@@ -5,6 +5,7 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
       new URL("https://ik.imagekit.io/bluconvalley/kuditask/**"),
+      new URL("https://lh3.googleusercontent.com"),
     ],
   },
   eslint: {
