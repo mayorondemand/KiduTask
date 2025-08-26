@@ -12,7 +12,7 @@ import { formatCurrency } from "@/lib/utils";
 
 export async function POST(request: NextRequest) {
   try {
-    const user = await userService.validateSession(request);
+    const user = await userService.validateUser(request);
     const body = await request.json();
 
     if (!user.isKycVerified) {

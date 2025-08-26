@@ -64,7 +64,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const user = await userService.validateSession(request);
+    const user = await userService.validateUser(request);
 
     // Check if user is an advertiser
     if (user.advertiserRequestStatus !== STATUS_ENUM.APPROVED) {
