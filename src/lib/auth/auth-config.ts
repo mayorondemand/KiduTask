@@ -21,7 +21,7 @@ export const auth = betterAuth({
       ...schema,
     },
   }),
-  trustedOrigins: ["*.kuditask.com"],
+  trustedOrigins: ["https://admin.kuditask.com"],
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: true,
@@ -97,7 +97,7 @@ export const auth = betterAuth({
 
 export const adminAuth = betterAuth({
   secret: process.env.BETTER_AUTH_ADMIN_SECRET,
-  trustedOrigins: ["*.kuditask.com"],
+  trustedOrigins: ["https://admin.kuditask.com"],
   database: drizzleAdapter(db, {
     provider: "pg",
     schema: {
