@@ -14,6 +14,70 @@ if (!process.env.BETTER_AUTH_ADMIN_SECRET) {
   throw new Error("BETTER_AUTH_ADMIN_SECRET is not set");
 }
 
+export const adminAuth = betterAuth({
+  secret: process.env.BETTER_AUTH_ADMIN_SECRET,
+  trustedOrigins: ["https://admin.kuditask.com"],
+  basePath: "/api/admin/auth",
+  database: drizzleAdapter(db, {
+    provider: "pg",
+    schema: {
+      ...schema,
+      user: schema.admin_user,
+      session: schema.admin_session,
+      account: schema.admin_account,
+      verification: schema.admin_verification,
+    },
+  }),
+  emailAndPassword: {
+    enabled: true,
+    sendResetPassword: async ({ user, url }) => {
+      await emailService.sendForgotPassEmail(user.email, user.name, url);
+    },
+    onPasswordReset: async ({ user }) => {
+      await emailService.sendResetPasswordEmail(user.email, user.name);
+    },
+  },
+  user: {
+    additionalFields: {
+      role: {
+        type: "string",
+        input: false,
+      },
+    },
+  },
+  advanced: {
+    cookiePrefix: "kudi-admin",
+  },
+  // plugins: [
+  //   customSession(async ({ user, session }) => {
+  //     const userDetails = await userService.getUser(session.userId);
+  //     return {
+  //       user: {
+  //         ...user,
+  //         isKycVerified: userDetails?.isKycVerified,
+  //         kycStatus: userDetails?.kycStatus,
+  //         kycIdType: userDetails?.kycIdType,
+  //         kycIdNumber: userDetails?.kycIdNumber,
+  //         kycIdUrl: userDetails?.kycIdUrl,
+  //         advertiserRequestStatus: userDetails?.advertiserRequestStatus,
+  //         advertiserBrand: userDetails?.advertiserBrand,
+  //         advertiserDescription: userDetails?.advertiserDescription,
+  //         advertiserWebsite: userDetails?.advertiserWebsite,
+  //         advertiserLogo: userDetails?.advertiserLogo,
+  //         bankName: userDetails?.bankName,
+  //         bankAccountNumber: userDetails?.bankAccountNumber,
+  //         bankAccountName: userDetails?.bankAccountName,
+  //       },
+  //       session,
+  //     };
+  //   }),
+  // ],
+  session: {
+    expiresIn: 60 * 30, // 30 Minutes
+    updateAge: 60 * 10, // 10 minutes
+  },
+});
+
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
     provider: "pg",
@@ -92,65 +156,5 @@ export const auth = betterAuth({
         input: false,
       },
     },
-  },
-});
-
-export const adminAuth = betterAuth({
-  secret: process.env.BETTER_AUTH_ADMIN_SECRET,
-  trustedOrigins: ["https://admin.kuditask.com"],
-  database: drizzleAdapter(db, {
-    provider: "pg",
-    schema: {
-      ...schema,
-      user: schema.admin_user,
-      session: schema.admin_user,
-      account: schema.admin_account,
-      verification: schema.admin_verification,
-    },
-  }),
-  emailAndPassword: {
-    enabled: true,
-    sendResetPassword: async ({ user, url }) => {
-      await emailService.sendForgotPassEmail(user.email, user.name, url);
-    },
-    onPasswordReset: async ({ user }) => {
-      await emailService.sendResetPasswordEmail(user.email, user.name);
-    },
-  },
-  user: {
-    additionalFields: {
-      role: {
-        type: "string",
-        input: false,
-      },
-    },
-  },
-  // plugins: [
-  //   customSession(async ({ user, session }) => {
-  //     const userDetails = await userService.getUser(session.userId);
-  //     return {
-  //       user: {
-  //         ...user,
-  //         isKycVerified: userDetails?.isKycVerified,
-  //         kycStatus: userDetails?.kycStatus,
-  //         kycIdType: userDetails?.kycIdType,
-  //         kycIdNumber: userDetails?.kycIdNumber,
-  //         kycIdUrl: userDetails?.kycIdUrl,
-  //         advertiserRequestStatus: userDetails?.advertiserRequestStatus,
-  //         advertiserBrand: userDetails?.advertiserBrand,
-  //         advertiserDescription: userDetails?.advertiserDescription,
-  //         advertiserWebsite: userDetails?.advertiserWebsite,
-  //         advertiserLogo: userDetails?.advertiserLogo,
-  //         bankName: userDetails?.bankName,
-  //         bankAccountNumber: userDetails?.bankAccountNumber,
-  //         bankAccountName: userDetails?.bankAccountName,
-  //       },
-  //       session,
-  //     };
-  //   }),
-  // ],
-  session: {
-    expiresIn: 60 * 30, // 30 Minutes
-    updateAge: 60 * 10, // 10 minutes
   },
 });

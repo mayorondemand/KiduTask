@@ -50,23 +50,12 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
-
 export default function AdminPayouts() {
   const { user } = useAuth();
   const router = useRouter();
 
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-
-  useEffect(() => {
-    if (!user || user.role !== "admin") {
-      router.push("/login");
-    }
-  }, [user, router]);
-
-  if (!user || user.role !== "admin") {
-    return null;
-  }
 
   // Mock payout requests data
   const payouts = [

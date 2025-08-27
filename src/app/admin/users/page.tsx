@@ -114,13 +114,6 @@ export default function AdminUsersPage() {
   const [selectedUser, setSelectedUser] = useState(null);
   const [userDetailsDialog, setUserDetailsDialog] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-
-  useEffect(() => {
-    if (!user || user.role !== "admin") {
-      router.push("/login");
-    }
-  }, [user, router]);
-
   // Filter users based on search and filters
   useEffect(() => {
     let filtered = allUsers;
@@ -357,13 +350,9 @@ export default function AdminUsersPage() {
     </div>
   );
 
-  if (!user || user.role !== "admin") {
-    return null;
-  }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navbar />
+    <div className="min-h-screen pt-20 bg-gray-50">
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">User Management</h1>
