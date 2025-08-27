@@ -21,13 +21,10 @@ export const auth = betterAuth({
       ...schema,
     },
   }),
+  trustedOrigins: ["*.kuditask.com"],
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: true,
-    trustedOrigins: [
-      "https://admin.kuditask.com",
-      "https://ondevelopment.kuditask.com",
-    ],
     sendResetPassword: async ({ user, url }) => {
       await emailService.sendForgotPassEmail(user.email, user.name, url);
     },
@@ -100,10 +97,7 @@ export const auth = betterAuth({
 
 export const adminAuth = betterAuth({
   secret: process.env.BETTER_AUTH_ADMIN_SECRET,
-  trustedOrigins: [
-    "https://admin.kuditask.com",
-    "https://ondevelopment.kuditask.com",
-  ],
+  trustedOrigins: ["*.kuditask.com"],
   database: drizzleAdapter(db, {
     provider: "pg",
     schema: {
