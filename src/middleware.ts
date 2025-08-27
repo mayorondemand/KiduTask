@@ -7,10 +7,6 @@ export function middleware(req: NextRequest) {
   const hostname = req.headers.get("host") || "";
   const baseHost = hostname.split(":")[0]; // strip port for localhost
 
-  console.log("[Middleware] Incoming Request");
-  console.log("[Middleware] Hostname:", hostname);
-  console.log("[Middleware] Path:", url.pathname);
-
   const isAdminDomain = baseHost.startsWith("admin.");
   const isAdminPath = url.pathname.startsWith("/admin");
 
@@ -19,13 +15,17 @@ export function middleware(req: NextRequest) {
     if (!isAdminPath) {
       // rewrite any non-/admin path to /admin + preserve subpath
       url.pathname = `/admin${url.pathname === "/" ? "" : url.pathname}`;
-      console.log("[Middleware] Admin domain rewrite to:", url.pathname);
+      // console.log("[Middleware] Admin domain rewrite to:", url.pathname);
       return NextResponse.rewrite(url);
     }
   }
 
   // --- NORMAL DOMAIN LOGIC ---
   if (!isAdminDomain) {
+    console.log("[Middleware] Incoming Request");
+    console.log("[Middleware] Hostname:", hostname);
+    console.log("[Middleware] Path:", url.pathname);
+
     // block /admin paths
     if (isAdminPath) {
       console.log("[Middleware] Normal domain tried to access /admin ❌ → 404");
@@ -33,7 +33,7 @@ export function middleware(req: NextRequest) {
     }
 
     // allow normal paths
-    console.log("[Middleware] Normal domain accessing normal path ✅");
+    // console.log("[Middleware] Normal domain accessing normal path ✅");
     return NextResponse.next();
   }
 
