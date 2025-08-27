@@ -7,6 +7,7 @@ const allowedOrigins = ["https://admin.kuditask.com"];
 const corsOptions = {
   "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type, Authorization",
+  "Access-Control-Allow-Credentials": "true",
 };
 
 export function middleware(request: NextRequest) {
@@ -55,6 +56,7 @@ export function middleware(request: NextRequest) {
       response.headers.set(key, value);
     });
     console.log("[Middleware][API] Response headers set for CORS");
+    console.log("[Middleware][API] corsOptions:", JSON.stringify(corsOptions));
 
     return response;
   }
