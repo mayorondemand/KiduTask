@@ -27,19 +27,12 @@ import { useEffect } from "react";
 import Link from "next/link";
 
 export default function AdminDashboard() {
-  const { user } = useAuth();
-  const router = useRouter();
 
-  useEffect(() => {
-    if (!user || user.role !== "admin") {
-      router.push("/login");
-    }
-  }, [user, router]);
-
-  if (!user || user.role !== "admin") {
-    return null;
-  }
-
+  return (
+    <div>
+        <p>You have hit the admin page</p>
+    </div>
+  )
   // Mock dashboard data
   const stats = {
     totalUsers: 12847,
