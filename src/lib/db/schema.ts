@@ -117,7 +117,7 @@ export const admin_session = pgTable("admin_session", {
   updatedAt: timestamp("updated_at").notNull(),
   ipAddress: text("ip_address"),
   userAgent: text("user_agent"),
-  adminUserId: text("admin_user_id")
+  userId: text("user_id")
     .notNull()
     .references(() => admin_user.id, { onDelete: "cascade" }),
   impersonatedBy: text("impersonated_by"),
