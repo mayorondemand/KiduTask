@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useAuth } from "@/components/providers/auth-provider";
+import { useAuth } from "@/components/providers/admin-auth-provider";
 import { Navbar } from "@/components/layout/navbar";
 import {
   Card,

@@ -1,6 +1,6 @@
 "use client";
 
-import { useAuth } from "@/components/providers/auth-provider";
+import { useAuth } from "@/components/providers/admin-auth-provider";
 import {
   Card,
   CardContent,
