@@ -99,6 +99,13 @@
       "when": 1756211304428,
       "tag": "0013_early_boomer",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1756295080816,
+      "tag": "0014_classy_longshot",
+      "breakpoints": true
     }
   ]
 }
