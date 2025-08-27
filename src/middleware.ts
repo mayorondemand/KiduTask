@@ -10,44 +10,34 @@ export function middleware(req: NextRequest) {
   console.log("[Middleware] Incoming Request");
   console.log("[Middleware] Hostname:", hostname);
   console.log("[Middleware] Path:", url.pathname);
-  console.log("--------------");
 
   const isAdminDomain = baseHost.startsWith("admin.");
-  // const isAdminDomain = true
-
   const isAdminPath = url.pathname.startsWith("/admin");
 
   // --- ADMIN DOMAIN LOGIC ---
   if (isAdminDomain) {
-    // allow /admin/* pages
-    if (isAdminPath) {
-      console.log("[Middleware] Admin domain accessing admin page ✅");
-      return NextResponse.next();
+    if (!isAdminPath) {
+      // rewrite any non-/admin path to /admin + preserve subpath
+      url.pathname = `/admin${url.pathname === "/" ? "" : url.pathname}`;
+      console.log("[Middleware] Admin domain rewrite to:", url.pathname);
+      return NextResponse.rewrite(url);
     }
-
-    // block everything else on admin domain
-    console.log(
-      "[Middleware] Admin domain tried to access normal page ❌ → 404",
-    );
-    return NextResponse.rewrite(new URL("/404", req.url));
   }
 
   // --- NORMAL DOMAIN LOGIC ---
   if (!isAdminDomain) {
-    // block /admin pages
+    // block /admin paths
     if (isAdminPath) {
-      console.log(
-        "[Middleware] Normal domain tried to access admin page ❌ → 404",
-      );
+      console.log("[Middleware] Normal domain tried to access /admin ❌ → 404");
       return NextResponse.rewrite(new URL("/404", req.url));
     }
 
-    // allow normal pages
-    console.log("[Middleware] Normal domain accessing normal page ✅");
+    // allow normal paths
+    console.log("[Middleware] Normal domain accessing normal path ✅");
     return NextResponse.next();
   }
 
-  // fallback
+  // safety net
   return NextResponse.next();
 }
 
