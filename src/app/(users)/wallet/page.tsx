@@ -35,7 +35,7 @@ import {
   useInitiateDeposit,
   usePlatformSettings,
   useTransactions,
-} from "@/lib/client";
+} from "@/lib/public-client";
 import type { TransactionTypeEnum } from "@/lib/types";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import {

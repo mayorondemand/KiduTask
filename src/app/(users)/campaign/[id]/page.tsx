@@ -12,7 +12,7 @@ import {
   useRateCampaign,
   useMySubmissions,
   useMyCampaignRating,
-} from "@/lib/client";
+} from "@/lib/public-client";
 import { formatCurrency, getStatusColor } from "@/lib/utils";
 import {
   Activity,

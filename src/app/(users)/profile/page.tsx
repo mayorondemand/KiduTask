@@ -13,7 +13,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { useUserProfile } from "@/lib/client";
+import { useUserProfile } from "@/lib/public-client";
 import { formatCurrency } from "@/lib/utils";
 import {
   Activity,

@@ -31,7 +31,7 @@ import {
   useCampaignSubmissions,
   useReviewSubmission,
   useUpdateCampaign,
-} from "@/lib/client";
+} from "@/lib/public-client";
 import type { SubmissionWithUser } from "@/lib/types";
 import { formatCurrency, getStatusColor } from "@/lib/utils";
 import {

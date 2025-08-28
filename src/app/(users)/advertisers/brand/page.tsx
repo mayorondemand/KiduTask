@@ -16,7 +16,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Building, Globe, Star, Calendar, BarChart3 } from "lucide-react";
 import Link from "next/link";
-import { useAdvertiserDashboard, useUpdateBrandSettings } from "@/lib/client";
+import { useAdvertiserDashboard, useUpdateBrandSettings } from "@/lib/public-client";
 import { formatCurrency } from "@/lib/utils";
 import { BreadcrumbResponsive } from "@/components/layout/breadcrumbresponsive";
 import { brandSettingsSchema, type BrandSettingsFormData } from "@/lib/types";

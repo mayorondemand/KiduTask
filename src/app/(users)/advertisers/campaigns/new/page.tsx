@@ -24,7 +24,7 @@ import { ImageUploader } from "@/components/ui/image-uploader";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { useCreateCampaign, usePlatformSettings } from "@/lib/client";
+import { useCreateCampaign, usePlatformSettings } from "@/lib/public-client";
 import { createCampaignSchema, type CreateCampaignData } from "@/lib/types";
 import { formatCurrency } from "@/lib/utils";
 import { DndContext } from "@dnd-kit/core";

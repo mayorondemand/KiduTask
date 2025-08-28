@@ -11,7 +11,7 @@ import {
   CarouselItem,
 } from "@/components/ui/carousel";
 import { Skeleton } from "@/components/ui/skeleton";
-import { usePublicCampaigns } from "@/lib/client";
+import { usePublicCampaigns } from "@/lib/public-client";
 import type { CampaignWithCounts } from "@/lib/types";
 import { formatCurrency } from "@/lib/utils";
 import Autoplay from "embla-carousel-autoplay";

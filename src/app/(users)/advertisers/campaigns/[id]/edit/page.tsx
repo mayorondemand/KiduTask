@@ -16,7 +16,7 @@ import { ImageUploader } from "@/components/ui/image-uploader";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { useAdvertiserCampaign, useUpdateCampaign } from "@/lib/client";
+import { useAdvertiserCampaign, useUpdateCampaign } from "@/lib/public-client";
 import {
   STATUS_ENUM,
   updateCampaignSchema,

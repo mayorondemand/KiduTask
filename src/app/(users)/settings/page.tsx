@@ -34,7 +34,7 @@ import {
   useUpdateBankAccount,
   useUpdateKycDetails,
   useUpdateProfile,
-} from "@/lib/client";
+} from "@/lib/public-client";
 import {
   updateBankAccountSchema,
   updateKycDetailsSchema,

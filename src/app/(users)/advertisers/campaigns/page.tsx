@@ -24,7 +24,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useAdvertiserCampaigns } from "@/lib/client";
+import { useAdvertiserCampaigns } from "@/lib/public-client";
 import type { CampaignFilters, CampaignQuery } from "@/lib/types";
 import { cn, formatCurrency, getStatusColor } from "@/lib/utils";
 import { useDebounce } from "@uidotdev/usehooks";

@@ -13,7 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { usePublicCampaigns } from "@/lib/client";
+import { usePublicCampaigns } from "@/lib/public-client";
 import type { CampaignFilters, CampaignWithCounts } from "@/lib/types";
 import { useDebounce } from "@uidotdev/usehooks";
 import { Bookmark, Loader2, Search, X } from "lucide-react";

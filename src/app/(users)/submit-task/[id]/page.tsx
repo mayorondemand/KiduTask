@@ -26,7 +26,7 @@ import {
   useMySubmissions,
   usePublicCampaign,
   useSubmitTask,
-} from "@/lib/client";
+} from "@/lib/public-client";
 import { submissionFormSchema, type SubmissionFormData } from "@/lib/types";
 import { formatCurrency, getStatusColor } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";

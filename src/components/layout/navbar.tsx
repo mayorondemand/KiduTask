@@ -21,7 +21,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { useAdvertiserAccess } from "@/lib/client";
+import { useAdvertiserAccess } from "@/lib/public-client";
 import {
   BarChart3,
   Briefcase,

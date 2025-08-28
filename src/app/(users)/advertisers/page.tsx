@@ -29,7 +29,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { formatCurrency, getStatusColor } from "@/lib/utils";
-import { useAdvertiserDashboard, useAdvertiserCampaigns } from "@/lib/client";
+import { useAdvertiserDashboard, useAdvertiserCampaigns } from "@/lib/public-client";
 
 export default function AdvertiserDashboard() {
   const { user } = usePublicAuth();
