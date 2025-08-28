@@ -120,7 +120,8 @@ export function AdminSidebar({ children }: AdminSidebarProps) {
           <SidebarTrigger />
           <div className="font-medium">{navItems.find(n => pathname?.startsWith(n.href))?.label ?? "Admin"}</div>
         </div>
-        <div className="p-3 md:p-6">{children}</div>
+        <div className="">{children}</div>
+        {/* <div className="p-3 md:p-6">{children}</div> */}
       </SidebarInset>
     </SidebarProvider>
   );

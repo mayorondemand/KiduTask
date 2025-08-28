@@ -464,15 +464,6 @@ export default function UserDetailPage({ params }) {
                   </Button>
                 )}
 
-                <Button
-                  variant="outline"
-                  onClick={() => handleUserAction("ban")}
-                  disabled={actionLoading}
-                  className="text-red-600 border-red-200 hover:bg-red-50"
-                >
-                  <Ban className="h-4 w-4 mr-2" />
-                  Ban User
-                </Button>
               </div>
             </div>
           </CardContent>

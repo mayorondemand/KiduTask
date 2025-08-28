@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { useAdminAuth } from "@/components/providers/admin-auth-provider";
-import { Navbar } from "@/components/layout/navbar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -10,9 +11,22 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -22,39 +36,24 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
+  AlertTriangle,
   Building2,
-  Search,
-  Download,
-  Eye,
   CheckCircle,
-  XCircle,
-  Clock,
   ChevronLeft,
   ChevronRight,
-  UserCheck,
-  AlertTriangle,
+  Clock,
   DollarSign,
+  Download,
+  Eye,
+  Search,
   TrendingUp,
+  UserCheck,
+  XCircle,
 } from "lucide-react";
-import { toast } from "sonner";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 // Generate mock advertiser data
 const generateMockAdvertisers = () => {
@@ -115,12 +114,6 @@ export default function AdminAdvertisersPage() {
   const [selectedAdvertiser, setSelectedAdvertiser] = useState(null);
   const [advertiserDetailsDialog, setAdvertiserDetailsDialog] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-
-  useEffect(() => {
-    if (!user || user.role !== "admin") {
-      router.push("/login");
-    }
-  }, [user, router]);
 
   // Filter advertisers based on search and filters
   useEffect(() => {
@@ -343,13 +336,9 @@ export default function AdminAdvertisersPage() {
     </div>
   );
 
-  if (!user || user.role !== "admin") {
-    return null;
-  }
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navbar />
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">

@@ -62,16 +62,6 @@ export default function AdminCampaigns() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
 
-  useEffect(() => {
-    if (!user || user.role !== "admin") {
-      router.push("/login");
-    }
-  }, [user, router]);
-
-  if (!user || user.role !== "admin") {
-    return null;
-  }
-
   // Mock campaigns data
   const campaigns = [
     {

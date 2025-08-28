@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { useAdminAuth } from "@/components/providers/admin-auth-provider";
-import { Navbar } from "@/components/layout/navbar";
 import {
   Card,
   CardContent,
@@ -230,12 +229,6 @@ export default function AdminSettingsPage() {
     name: "",
     roleId: "",
   });
-
-  useEffect(() => {
-    if (!user || user.role !== "admin") {
-      router.push("/login");
-    }
-  }, [user, router]);
 
   // Pagination logic
   const totalPages = Math.ceil(allAdmins.length / itemsPerPage);
@@ -513,13 +506,8 @@ export default function AdminSettingsPage() {
     </div>
   );
 
-  if (!user || user.role !== "admin") {
-    return null;
-  }
-
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navbar />
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Admin Settings</h1>
@@ -533,9 +521,8 @@ export default function AdminSettingsPage() {
           onValueChange={setActiveTab}
           className="space-y-6"
         >
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="financial">Financial</TabsTrigger>
-            <TabsTrigger value="security">Security</TabsTrigger>
             <TabsTrigger value="roles">Roles & Permissions</TabsTrigger>
           </TabsList>
 
@@ -690,38 +677,6 @@ export default function AdminSettingsPage() {
                   <Save className="h-4 w-4 mr-2" />
                   {isLoading ? "Saving..." : "Save Financial Settings"}
                 </Button>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Security Settings */}
-          <TabsContent value="security">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Shield className="h-5 w-5 mr-2" />
-                  Password Reset
-                </CardTitle>
-                <CardDescription>Reset your admin password</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="bg-blue-50 p-4 rounded-lg">
-                    <h4 className="font-medium text-blue-900 mb-2">
-                      Password Reset Process
-                    </h4>
-                    <ul className="text-sm text-blue-800 space-y-1">
-                      <li>• A secure reset link will be sent to your email</li>
-                      <li>• The link expires in 1 hour for security</li>
-                      <li>• You'll be able to set a new password</li>
-                      <li>• All active sessions will be logged out</li>
-                    </ul>
-                  </div>
-                  <Button onClick={handlePasswordReset} disabled={isLoading}>
-                    <Mail className="h-4 w-4 mr-2" />
-                    {isLoading ? "Sending..." : "Send Password Reset Email"}
-                  </Button>
-                </div>
               </CardContent>
             </Card>
           </TabsContent>
