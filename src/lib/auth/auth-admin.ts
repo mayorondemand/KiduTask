@@ -6,7 +6,7 @@ if (!process.env.NEXT_PUBLIC_APP_URL) {
 }
 
 export const authClient = createAuthClient({
-  baseURL: `${process.env.NEXT_PUBLIC_APP_URL}/api/admin/auth`,
+  baseURL: `${process.env.NEXT_PUBLIC_ADMIN_APP_URL}/api/admin/auth`,
 });
 
 export const {
