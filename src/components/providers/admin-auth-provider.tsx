@@ -154,13 +154,6 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    // if (user.role === undefined) {
-    //   console.warn(
-    //     `[AdminProvider] ${pathname} -> Home <Not Public, Not Admin>`,
-    //   );
-    //   logoutMutation.mutate();
-    // }
-
     const publicPaths = ["/", "/forgot-password", "/reset-password"];
     const isPublicPath = publicPaths.includes(pathname);
 
@@ -175,7 +168,7 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
       console.warn(`[AdminProvider] ${pathname} -> Home <User, Login>`);
       router.push("/dashboard");
     }
-  }, [user, loading, pathname, router, logoutMutation]);
+  }, [user, loading, pathname, router]);
 
   return (
     <AuthContext.Provider
@@ -195,7 +188,7 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function useAuth() {
+export function useAdminAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {
     throw new Error("useAuth must be used within an AdminProvider");

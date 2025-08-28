@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useAuth } from "@/components/providers/admin-auth-provider";
+import { useAdminAuth } from "@/components/providers/admin-auth-provider";
 import { Navbar } from "@/components/layout/navbar";
 import {
   Card,
@@ -149,7 +149,7 @@ const generateMockAdmins = () => {
 };
 
 export default function AdminSettingsPage() {
-  const { user } = useAuth();
+  const { user } = useAdminAuth();
   const router = useRouter();
 
   const [activeTab, setActiveTab] = useState("financial");

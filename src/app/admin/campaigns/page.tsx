@@ -1,6 +1,6 @@
 "use client";
 
-import { useAuth } from "@/components/providers/admin-auth-provider";
+import { useAdminAuth } from "@/components/providers/admin-auth-provider";
 import {
   Card,
   CardContent,
@@ -55,7 +55,7 @@ import { toast } from "sonner";
 import Link from "next/link";
 
 export default function AdminCampaigns() {
-  const { user } = useAuth();
+  const { user } = useAdminAuth();
   const router = useRouter();
 
   const [searchTerm, setSearchTerm] = useState("");

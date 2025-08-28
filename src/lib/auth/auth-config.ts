@@ -16,8 +16,10 @@ if (!process.env.BETTER_AUTH_ADMIN_SECRET) {
 
 export const adminAuth = betterAuth({
   secret: process.env.BETTER_AUTH_ADMIN_SECRET,
-  trustedOrigins: ["https://admin.kuditask.com"],
+  // trustedOrigins: ["https://admin.kuditask.com"],
+  baseURL: process.env.BETTER_AUTH_ADMIN_URL,
   basePath: "/api/admin/auth",
+
   database: drizzleAdapter(db, {
     provider: "pg",
     schema: {
@@ -48,30 +50,6 @@ export const adminAuth = betterAuth({
   advanced: {
     cookiePrefix: "kudi-admin",
   },
-  // plugins: [
-  //   customSession(async ({ user, session }) => {
-  //     const userDetails = await userService.getUser(session.userId);
-  //     return {
-  //       user: {
-  //         ...user,
-  //         isKycVerified: userDetails?.isKycVerified,
-  //         kycStatus: userDetails?.kycStatus,
-  //         kycIdType: userDetails?.kycIdType,
-  //         kycIdNumber: userDetails?.kycIdNumber,
-  //         kycIdUrl: userDetails?.kycIdUrl,
-  //         advertiserRequestStatus: userDetails?.advertiserRequestStatus,
-  //         advertiserBrand: userDetails?.advertiserBrand,
-  //         advertiserDescription: userDetails?.advertiserDescription,
-  //         advertiserWebsite: userDetails?.advertiserWebsite,
-  //         advertiserLogo: userDetails?.advertiserLogo,
-  //         bankName: userDetails?.bankName,
-  //         bankAccountNumber: userDetails?.bankAccountNumber,
-  //         bankAccountName: userDetails?.bankAccountName,
-  //       },
-  //       session,
-  //     };
-  //   }),
-  // ],
   session: {
     expiresIn: 60 * 30, // 30 Minutes
     updateAge: 60 * 10, // 10 minutes
@@ -85,7 +63,7 @@ export const auth = betterAuth({
       ...schema,
     },
   }),
-  trustedOrigins: ["https://admin.kuditask.com"],
+  // trustedOrigins: ["https://admin.kuditask.com"],
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: true,

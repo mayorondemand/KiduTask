@@ -1,6 +1,6 @@
 "use client";
 
-  import { useAuth } from "@/components/providers/admin-auth-provider";
+  import { useAdminAuth } from "@/components/providers/admin-auth-provider";
 import {
   Card,
   CardContent,
@@ -51,7 +51,7 @@ import { useEffect, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
 export default function AdminPayouts() {
-  const { user } = useAuth();
+  const { user } = useAdminAuth();
   const router = useRouter();
 
   const [searchTerm, setSearchTerm] = useState("");

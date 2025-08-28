@@ -1,6 +1,6 @@
 "use client";
 
-import { useAuth } from "@/components/providers/admin-auth-provider";
+import { useAdminAuth } from "@/components/providers/admin-auth-provider";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -51,7 +51,7 @@ const loginSchema = z.object({
 type LoginForm = z.infer<typeof loginSchema>;
 
 export default function AdminLogin() {
-  const { loginMutation } = useAuth();
+  const { loginMutation } = useAdminAuth();
 
   const {
     register,
@@ -79,7 +79,7 @@ export default function AdminLogin() {
             <div className="h-10 w-10 rounded-lg bg-primary flex items-center justify-center">
               <span className="text-primary-foreground font-bold">KT</span>
             </div>
-            <span className="font-bold text-2xl">KudiTask Admini</span>
+            <span className="font-bold text-2xl">KudiTask Admin</span>
           </div>
           <h2 className="text-3xl font-bold text-gray-900">Welcome back</h2>
           <p className="mt-2 text-sm text-gray-600">

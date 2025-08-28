@@ -1,6 +1,6 @@
 "use client";
 
-import { useAuth } from "@/components/providers/admin-auth-provider";
+import { useAdminAuth } from "@/components/providers/admin-auth-provider";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -56,7 +56,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 export default function UserDetailPage({ params }) {
-  const { user } = useAuth();
+  const { user } = useAdminAuth();
   const router = useRouter();
 
   const [selectedUser, setSelectedUser] = useState(null);
