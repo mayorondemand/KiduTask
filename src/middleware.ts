@@ -12,7 +12,6 @@ export function middleware(request: NextRequest) {
   const baseHost = hostname.split(":")[0];
 
   const isAdminDomain = baseHost.startsWith("admin.");
-  // const isAdminDomain = true;
   const isAdminPath = url.pathname.startsWith("/admin");
 
   if (isAdminDomain) {

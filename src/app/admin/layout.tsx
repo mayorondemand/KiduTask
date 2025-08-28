@@ -5,6 +5,7 @@ import type { Metadata } from "next";
 import { Manrope } from "next/font/google";
 import type React from "react";
 import "../globals.css";
+import AdminSidebar from "@/components/layout/admin-sidebar";
 
 const inter = Manrope({ subsets: ["latin"] });
 
@@ -22,7 +23,7 @@ export default function AdminLayout({
       <body className={inter.className}>
         <QueryProvider>
           <AdminAuthProvider>
-            <main>{children}</main>
+            <AdminSidebar>{children}</AdminSidebar>
             <Toaster richColors />
           </AdminAuthProvider>
         </QueryProvider>
