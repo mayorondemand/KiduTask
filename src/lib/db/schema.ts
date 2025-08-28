@@ -29,6 +29,25 @@ export const proofTypeEnum = pgEnum("proof_type", [
   "link",
   "text",
 ]);
+export const permissionEnum = pgEnum("permission", [
+  "view_users",
+  "manage_users",
+  "view_kyc",
+  "manage_kyc",
+  "manage_wallets",
+  "view_advertisers",
+  "manage_advertisers",
+  "view_campaigns",
+  "manage_campaigns",
+  "view_payouts",
+  "manage_payouts",
+  "view_settings",
+  "manage_settings",
+  "view_admins",
+  "manage_admins",
+  "super_admin",
+  "assign_super_admin",
+]);
 
 export const user = pgTable("user", {
   id: text("id").primaryKey(),
@@ -72,7 +91,7 @@ export const admin_user = pgTable("admin_user", {
   role: text("role"),
   banned: boolean("banned"),
   banReason: text("ban_reason"),
-  banExpires: timestamp("ban_expires")
+  banExpires: timestamp("ban_expires"),
 });
 
 export const kyc = pgTable("kyc", {
@@ -343,6 +362,27 @@ export const paymentLog = pgTable("payment_log", {
   amount: integer("amount"),
   payLoad: jsonb("payload").notNull(),
   createdAt: timestamp("created_at")
+    .$defaultFn(() => /* @__PURE__ */ new Date())
+    .notNull(),
+});
+
+export const adminRoles = pgTable("admin_roles", {
+  id: integer("id").generatedByDefaultAsIdentity().primaryKey(),
+  adminId: text("admin_id")
+    .notNull()
+    .references(() => admin_user.id),
+  permissions: permissionEnum("permissions").array().notNull(),
+  name: text("name").notNull(),
+  createdBy: text("created_by")
+    .references(() => admin_user.id)
+    .notNull(),
+  updatedBy: text("updated_by")
+    .references(() => admin_user.id)
+    .notNull(),
+  createdAt: timestamp("created_at")
+    .$defaultFn(() => /* @__PURE__ */ new Date())
+    .notNull(),
+  updatedAt: timestamp("updated_at")
     .$defaultFn(() => /* @__PURE__ */ new Date())
     .notNull(),
 });
