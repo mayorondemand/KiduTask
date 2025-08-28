@@ -89,7 +89,6 @@ export function middleware(request: NextRequest) {
   return NextResponse.next();
 }
 
-// Apply to API (for CORS) and to app routes (excluding Next static assets)
 export const config = {
-  matcher: ["/api/:path*", "/((?!_next/static|_next/image|favicon.ico).*)"],
+  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
 };
