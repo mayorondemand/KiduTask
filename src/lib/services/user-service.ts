@@ -1,4 +1,4 @@
-import { auth } from "@/lib/auth/auth-config";
+import { publicAuthConfig } from "@/lib/auth/auth-config";
 import { db } from "@/lib/db";
 import {
   advertiser,
@@ -35,7 +35,7 @@ export type UserDetails = Awaited<ReturnType<UserService["getUser"]>>;
 
 class UserService {
   async validateSession(request: NextRequest): Promise<UserDetails> {
-    const session = await auth.api.getSession({
+    const session = await publicAuthConfig.api.getSession({
       headers: request.headers,
     });
 
@@ -47,7 +47,7 @@ class UserService {
   }
 
   async validateUser(request: NextRequest): Promise<UserDetails> {
-    const session = await auth.api.getSession({
+    const session = await publicAuthConfig.api.getSession({
       headers: request.headers,
     });
 

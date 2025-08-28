@@ -12,9 +12,9 @@ import {
   requestPasswordReset,
   sendVerificationEmail,
   resetPassword,
-} from "@/lib/auth/auth-client";
+} from "@/lib/auth/public-auth-client";
 
-import type { UserSession, Session } from "@/lib/auth/auth-client";
+import type { UserSession, Session } from "@/lib/auth/public-auth-client";
 import { errorHandler } from "@/lib/error-handler";
 import { toast } from "sonner";
 
@@ -67,7 +67,7 @@ type AuthContextType = {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
+export function PublicAuthProvider({ children }: { children: React.ReactNode }) {
   const { data, isPending: loading, refetch } = useSession();
   const session = data as Session | null;
   const router = useRouter();
@@ -283,10 +283,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function useAuth() {
+export function usePublicAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error("useAuth must be used within an AuthProvider");
+    throw new Error("usePublicAuth must be used within an PublicAuthProvider");
   }
   return context;
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import Google from "@/components/logos/google";
-import { useAuth } from "@/components/providers/auth-provider";
+import { usePublicAuth } from "@/components/providers/public-auth-provider";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -52,7 +52,7 @@ const loginSchema = z.object({
 type LoginForm = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
-  const { loginMutation, googleAuthMutation } = useAuth();
+  const { loginMutation, googleAuthMutation } = usePublicAuth();
 
   const {
     register,

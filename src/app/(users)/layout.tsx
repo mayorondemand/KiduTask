@@ -5,7 +5,7 @@ import "../globals.css";
 import type { Metadata } from "next";
 import { Manrope } from "next/font/google";
 import { QueryProvider } from "@/components/providers/query-provider";
-import { AuthProvider } from "@/components/providers/auth-provider";
+import { PublicAuthProvider } from "@/components/providers/public-auth-provider";
 import { Toaster } from "@/components/ui/sonner";
 
 const inter = Manrope({ subsets: ["latin"] });
@@ -25,12 +25,12 @@ export default function UsersLayout({
     <html lang="en">
       <body className={inter.className}>
         <QueryProvider>
-          <AuthProvider>
+          <PublicAuthProvider>
             <Navbar />
             <main>{children}</main>
             <Footer />
             <Toaster richColors />
-          </AuthProvider>
+          </PublicAuthProvider>
         </QueryProvider>
       </body>
     </html>

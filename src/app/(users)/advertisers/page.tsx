@@ -1,6 +1,6 @@
 "use client";
 
-import { useAuth } from "@/components/providers/auth-provider";
+import { usePublicAuth } from "@/components/providers/public-auth-provider";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -32,7 +32,7 @@ import { formatCurrency, getStatusColor } from "@/lib/utils";
 import { useAdvertiserDashboard, useAdvertiserCampaigns } from "@/lib/client";
 
 export default function AdvertiserDashboard() {
-  const { user } = useAuth();
+  const { user } = usePublicAuth();
   const { data: mockStats, isLoading: isStatsLoading } = useAdvertiserDashboard();
   const { data: campaigns, isLoading: isCampaignsLoading } = useAdvertiserCampaigns({
     limit: 5,

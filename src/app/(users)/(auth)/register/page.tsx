@@ -1,6 +1,6 @@
 "use client";
 
-import { useAuth } from "@/components/providers/auth-provider";
+import { usePublicAuth } from "@/components/providers/public-auth-provider";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -32,7 +32,7 @@ const registerSchema = z
 type RegisterForm = z.infer<typeof registerSchema>;
 
 export default function RegisterPage() {
-  const { signupMutation } = useAuth();
+  const { signupMutation } = usePublicAuth();
 
   const {
     reset,

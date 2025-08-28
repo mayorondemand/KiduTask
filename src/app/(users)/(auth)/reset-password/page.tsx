@@ -1,6 +1,6 @@
 "use client";
 
-import { useAuth } from "@/components/providers/auth-provider";
+import { usePublicAuth } from "@/components/providers/public-auth-provider";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -51,7 +51,7 @@ export default function ResetPasswordPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isValidToken, setIsValidToken] = useState(true);
   const [token, setToken] = useState<string | null>(null);
-  const { resetPasswordMutation } = useAuth();
+  const { resetPasswordMutation } = usePublicAuth();
 
   const {
     register,

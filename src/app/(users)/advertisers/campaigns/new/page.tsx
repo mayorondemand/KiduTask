@@ -1,7 +1,7 @@
 "use client";
 
 import { BreadcrumbResponsive } from "@/components/layout/breadcrumbresponsive";
-import { useAuth } from "@/components/providers/auth-provider";
+import { usePublicAuth } from "@/components/providers/public-auth-provider";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -45,7 +45,7 @@ import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 export default function NewCampaignPage() {
-  const { user } = useAuth();
+  const { user } = usePublicAuth();
   const [bannerImageUrl, setBannerImageUrl] = useState<string | null>(null);
   const [showTransactionDialog, setShowTransactionDialog] = useState(false);
   const { data: platformSettings, isLoading: isPlatformSettingsLoading } =

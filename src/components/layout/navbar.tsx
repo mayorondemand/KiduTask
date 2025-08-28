@@ -1,6 +1,6 @@
 "use client";
 
-import { useAuth } from "@/components/providers/auth-provider";
+import { usePublicAuth } from "@/components/providers/public-auth-provider";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -42,7 +42,7 @@ import { usePathname } from "next/navigation";
 import { formatCurrency } from "@/lib/utils";
 
 export function Navbar() {
-  const { user, logoutMutation } = useAuth();
+  const { user, logoutMutation } = usePublicAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [advertiserDialogOpen, setAdvertiserDialogOpen] = useState(false);
   const pathname = usePathname();

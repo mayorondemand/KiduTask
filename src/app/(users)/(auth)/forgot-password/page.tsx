@@ -1,6 +1,6 @@
 "use client";
 
-import { useAuth } from "@/components/providers/auth-provider";
+import { usePublicAuth } from "@/components/providers/public-auth-provider";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -25,7 +25,7 @@ const forgotPasswordSchema = z.object({
 type ForgotPasswordForm = z.infer<typeof forgotPasswordSchema>;
 
 export default function ForgotPasswordPage() {
-  const { requestPasswordResetMutation } = useAuth();
+  const { requestPasswordResetMutation } = usePublicAuth();
   const [submittedEmail, setSubmittedEmail] = useState<string>();
 
   const {

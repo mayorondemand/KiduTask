@@ -1,6 +1,6 @@
 "use client";
 
-import { useAuth } from "@/components/providers/auth-provider";
+import { usePublicAuth } from "@/components/providers/public-auth-provider";
 import { StatusBadge } from "@/components/status-icon";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -56,7 +56,7 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 
 export default function SettingsPage() {
-  const { user } = useAuth();
+  const { user } = usePublicAuth();
   const [activeTab, setActiveTab] = useState("profile");
 
   const updateProfileMutation = useUpdateProfile();

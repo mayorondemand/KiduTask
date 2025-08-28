@@ -1,7 +1,7 @@
 "use client";
 
 import { Navbar } from "@/components/layout/navbar";
-import { useAuth } from "@/components/providers/auth-provider";
+import { usePublicAuth } from "@/components/providers/public-auth-provider";
 import { StatusBadge } from "@/components/status-icon";
 import { Button } from "@/components/ui/button";
 import {
@@ -59,7 +59,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 export default function WalletPage() {
-  const { user } = useAuth();
+  const { user } = usePublicAuth();
   const router = useRouter();
 
   const [depositDialogOpen, setDepositDialogOpen] = useState(false);

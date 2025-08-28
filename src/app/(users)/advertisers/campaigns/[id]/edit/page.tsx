@@ -1,7 +1,7 @@
 "use client";
 
 import { BreadcrumbResponsive } from "@/components/layout/breadcrumbresponsive";
-import { useAuth } from "@/components/providers/auth-provider";
+import { usePublicAuth } from "@/components/providers/public-auth-provider";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -34,7 +34,7 @@ export default function EditCampaignPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const { user } = useAuth();
+  const { user } = usePublicAuth();
   const { id } = use(params);
   const { data: campaign, isLoading } = useAdvertiserCampaign(id);
   const updateMutation = useUpdateCampaign();

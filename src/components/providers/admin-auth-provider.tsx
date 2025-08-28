@@ -6,13 +6,13 @@ import {
   signIn,
   signOut,
   useSession,
-} from "@/lib/auth/auth-admin";
+} from "@/lib/auth/admin-auth-client";
 import { useMutation } from "@tanstack/react-query";
 import { usePathname, useRouter } from "next/navigation";
 import type React from "react";
 import { createContext, useContext, useEffect } from "react";
 
-import type { Session, UserSession } from "@/lib/auth/auth-admin";
+import type { Session, UserSession } from "@/lib/auth/admin-auth-client";
 import { errorHandler } from "@/lib/error-handler";
 import { toast } from "sonner";
 
@@ -191,7 +191,7 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
 export function useAdminAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error("useAuth must be used within an AdminProvider");
+    throw new Error("useAdminAuth must be used within an AdminAuthProvider");
   }
   return context;
 }

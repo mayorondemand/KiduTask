@@ -1,7 +1,7 @@
 "use client";
 
 import { CampaignCard, CampaignSkeleton } from "@/components/campaign-card";
-import { useAuth } from "@/components/providers/auth-provider";
+import { usePublicAuth } from "@/components/providers/public-auth-provider";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -100,7 +100,7 @@ function TrendingCampaignSkeleton() {
 }
 
 export default function TaskerDashboard() {
-  const { user } = useAuth();
+  const { user } = usePublicAuth();
   const [showKycAlert, setShowKycAlert] = useState(true);
   const { data: moreCampaigns, isLoading: isLoadingMoreCampaigns } =
     usePublicCampaigns({

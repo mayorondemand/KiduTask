@@ -1,6 +1,6 @@
 "use client";
 
-import { useAuth } from "@/components/providers/auth-provider";
+import { usePublicAuth } from "@/components/providers/public-auth-provider";
 import { StarRating } from "@/components/star-rating";
 import { StatusBadge } from "@/components/status-icon";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -34,7 +34,7 @@ import Link from "next/link";
 
 export default function ProfilePage() {
   const { data } = useUserProfile();
-  const { user } = useAuth();
+  const { user } = usePublicAuth();
 
   const stats = data?.stats ?? {
     totalEarnings: 0,

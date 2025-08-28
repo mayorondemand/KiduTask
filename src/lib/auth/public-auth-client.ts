@@ -1,4 +1,4 @@
-import type { auth } from "@/lib/auth/auth-config";
+import type { publicAuthConfig } from "@/lib/auth/auth-config";
 import { createAuthClient } from "better-auth/react";
 import type { StatusEnum, KycTypeEnum } from "@/lib/types";
 
@@ -21,7 +21,7 @@ export const {
   resetPassword,
 } = authClient;
 
-export type Session = typeof auth.$Infer.Session;
+export type Session = typeof publicAuthConfig.$Infer.Session;
 export type UserSession = Session["user"] & {
   isKycVerified: boolean;
   kycStatus?: StatusEnum;

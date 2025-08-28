@@ -1,5 +1,5 @@
 "use client";
-import { useAuth } from "@/components/providers/auth-provider";
+import { usePublicAuth } from "@/components/providers/public-auth-provider";
 import { errorHandler } from "@/lib/error-handler";
 import type { AdvertiserStats } from "@/lib/services/advertiser-service";
 import type {
@@ -67,7 +67,7 @@ export const usePlatformSettings = () => {
 
 export const useCreateCampaign = () => {
   const router = useRouter();
-  const { refetch } = useAuth();
+  const { refetch } = usePublicAuth();
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (data: CreateCampaignData) => {
@@ -181,7 +181,7 @@ export const useUpdateCampaign = () => {
 };
 
 export const useUpdateBrandSettings = () => {
-  const { refetch } = useAuth();
+  const { refetch } = usePublicAuth();
   const router = useRouter();
 
   return useMutation({
@@ -334,7 +334,7 @@ export const useCreateWithdrawal = () => {
 };
 
 export const useUpdateProfile = () => {
-  const { refetch } = useAuth();
+  const { refetch } = usePublicAuth();
   return useMutation({
     mutationFn: async (data: UpdateProfileData) => {
       const response = await axios.patch("/api/user/profile", data);
@@ -349,7 +349,7 @@ export const useUpdateProfile = () => {
 };
 
 export const useUpdateBankAccount = () => {
-  const { refetch } = useAuth();
+  const { refetch } = usePublicAuth();
   return useMutation({
     mutationFn: async (data: UpdateBankAccountData) => {
       const response = await axios.patch("/api/user/bank", data);
@@ -364,7 +364,7 @@ export const useUpdateBankAccount = () => {
 };
 
 export const useUpdateKycDetails = () => {
-  const { refetch } = useAuth();
+  const { refetch } = usePublicAuth();
   return useMutation({
     mutationFn: async (data: UpdateKycDetailsData) => {
       const response = await axios.patch("/api/user/kyc", data);

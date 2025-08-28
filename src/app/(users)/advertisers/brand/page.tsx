@@ -2,7 +2,7 @@
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useAuth } from "@/components/providers/auth-provider";
+import { usePublicAuth } from "@/components/providers/public-auth-provider";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -32,7 +32,7 @@ import {
 import { useEffect } from "react";
 
 export default function BrandSettingsPage() {
-  const { user } = useAuth();
+  const { user } = usePublicAuth();
   const { data: advertiserStats } = useAdvertiserDashboard();
   const updateBrandSettings = useUpdateBrandSettings();
 

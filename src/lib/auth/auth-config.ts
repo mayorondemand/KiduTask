@@ -9,17 +9,14 @@ import { bearer, customSession, openAPI } from "better-auth/plugins";
 if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
   throw new Error("GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET is not set");
 }
-
 if (!process.env.BETTER_AUTH_ADMIN_SECRET) {
   throw new Error("BETTER_AUTH_ADMIN_SECRET is not set");
 }
 
-export const adminAuth = betterAuth({
+export const adminAuthConfig = betterAuth({
   secret: process.env.BETTER_AUTH_ADMIN_SECRET,
-  // trustedOrigins: ["https://admin.kuditask.com"],
   baseURL: process.env.BETTER_AUTH_ADMIN_URL,
   basePath: "/api/admin/auth",
-
   database: drizzleAdapter(db, {
     provider: "pg",
     schema: {
@@ -56,14 +53,16 @@ export const adminAuth = betterAuth({
   },
 });
 
-export const auth = betterAuth({
+export const publicAuthConfig = betterAuth({
+  secret: process.env.BETTER_AUTH_SECRET,
+  baseURL: process.env.BETTER_AUTH_URL,
+  basePath: "/api/auth",
   database: drizzleAdapter(db, {
     provider: "pg",
     schema: {
       ...schema,
     },
   }),
-  // trustedOrigins: ["https://admin.kuditask.com"],
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: true,
