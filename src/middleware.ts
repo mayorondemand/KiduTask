@@ -15,51 +15,51 @@ export function middleware(request: NextRequest) {
   console.log("[Middleware] →", request.method, url.pathname);
 
   // CORS handling for API routes
-  const isApiRoute = url.pathname.startsWith("/api");
-  if (isApiRoute) {
-    console.log("[Middleware][API] Handling API route");
-    // Check the origin from the request
-    const origin = request.headers.get("origin") ?? "";
-    const isAllowedOrigin = allowedOrigins.includes(origin);
-    console.log(
-      "[Middleware][API] Origin:",
-      origin || "<none>",
-      "Allowed:",
-      isAllowedOrigin,
-    );
+  // const isApiRoute = url.pathname.startsWith("/api");
+  // if (isApiRoute) {
+  //   console.log("[Middleware][API] Handling API route");
+  //   // Check the origin from the request
+  //   const origin = request.headers.get("origin") ?? "";
+  //   const isAllowedOrigin = allowedOrigins.includes(origin);
+  //   console.log(
+  //     "[Middleware][API] Origin:",
+  //     origin || "<none>",
+  //     "Allowed:",
+  //     isAllowedOrigin,
+  //   );
 
-    // Handle preflighted requests
-    const isPreflight = request.method === "OPTIONS";
-    if (isPreflight)
-      console.log("[Middleware][API] Preflight request detected");
+  //   // Handle preflighted requests
+  //   const isPreflight = request.method === "OPTIONS";
+  //   if (isPreflight)
+  //     console.log("[Middleware][API] Preflight request detected");
 
-    if (isPreflight) {
-      const preflightHeaders = {
-        ...(isAllowedOrigin && { "Access-Control-Allow-Origin": origin }),
-        ...corsOptions,
-      };
-      console.log(
-        "[Middleware][API] Responding to preflight with headers:",
-        preflightHeaders,
-      );
-      return NextResponse.json({}, { headers: preflightHeaders });
-    }
+  //   if (isPreflight) {
+  //     const preflightHeaders = {
+  //       ...(isAllowedOrigin && { "Access-Control-Allow-Origin": origin }),
+  //       ...corsOptions,
+  //     };
+  //     console.log(
+  //       "[Middleware][API] Responding to preflight with headers:",
+  //       preflightHeaders,
+  //     );
+  //     return NextResponse.json({}, { headers: preflightHeaders });
+  //   }
 
-    // Handle simple requests
-    const response = NextResponse.next();
+  //   // Handle simple requests
+  //   const response = NextResponse.next();
 
-    if (isAllowedOrigin) {
-      response.headers.set("Access-Control-Allow-Origin", origin);
-    }
+  //   if (isAllowedOrigin) {
+  //     response.headers.set("Access-Control-Allow-Origin", origin);
+  //   }
 
-    Object.entries(corsOptions).forEach(([key, value]) => {
-      response.headers.set(key, value);
-    });
-    console.log("[Middleware][API] Response headers set for CORS");
-    console.log("[Middleware][API] corsOptions:", JSON.stringify(corsOptions));
+  //   Object.entries(corsOptions).forEach(([key, value]) => {
+  //     response.headers.set(key, value);
+  //   });
+  //   console.log("[Middleware][API] Response headers set for CORS");
+  //   console.log("[Middleware][API] corsOptions:", JSON.stringify(corsOptions));
 
-    return response;
-  }
+  //   return response;
+  // }
 
   // App routing logic (non-API)
   const hostname = request.headers.get("host") || "";
