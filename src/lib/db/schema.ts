@@ -88,7 +88,7 @@ export const admin_user = pgTable("admin_user", {
   updatedAt: timestamp("updated_at")
     .$defaultFn(() => /* @__PURE__ */ new Date())
     .notNull(),
-  role: text("role"),
+  roleId: integer("role_id").references(() => admin_roles.id),
   banned: boolean("banned"),
   banReason: text("ban_reason"),
   banExpires: timestamp("ban_expires"),
@@ -366,19 +366,10 @@ export const paymentLog = pgTable("payment_log", {
     .notNull(),
 });
 
-export const adminRoles = pgTable("admin_roles", {
+export const admin_roles = pgTable("admin_roles", {
   id: integer("id").generatedByDefaultAsIdentity().primaryKey(),
-  adminId: text("admin_id")
-    .notNull()
-    .references(() => admin_user.id),
   permissions: permissionEnum("permissions").array().notNull(),
   name: text("name").notNull(),
-  createdBy: text("created_by")
-    .references(() => admin_user.id)
-    .notNull(),
-  updatedBy: text("updated_by")
-    .references(() => admin_user.id)
-    .notNull(),
   createdAt: timestamp("created_at")
     .$defaultFn(() => /* @__PURE__ */ new Date())
     .notNull(),

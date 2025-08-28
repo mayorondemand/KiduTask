@@ -120,6 +120,13 @@
       "when": 1756386583786,
       "tag": "0016_chief_cobalt_man",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1756395045994,
+      "tag": "0017_groovy_bruce_banner",
+      "breakpoints": true
     }
   ]
 }
